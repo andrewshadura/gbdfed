@@ -1,7 +1,7 @@
 .\"
-.\" $Id: xmbdfed.man,v 1.15 2000/03/16 21:21:41 mleisher Exp $
+.\" $Id: xmbdfed.man,v 1.16 2001/09/19 21:00:44 mleisher Exp $
 .\"
-.TH XMBDFED 1 "06 March 2000" "X Version 11"
+.TH XMBDFED 1 "07 September 2001" "X Version 11"
 .SH NAME 
 xmbdfed \- Motif-based BDF font editor
 
@@ -709,6 +709,8 @@ Stefan Monnier <monnier@cs.yale.edu> for a bug report.
 Humphrey Clerx <humphrey.clerx@eurocontrol.be> for a bug report.
 .br
 Rudolf Cejka <cejkar@dcse.fee.vutbr.cz> for bug fixes and a suggestion.
+.br
+Baruch Even <baruch@ev-en.org> for a bug fix.
 
 .SH AUTHOR
 Mark Leisher

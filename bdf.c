@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdf.c,v 1.22 2000/03/16 20:08:50 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdf.c,v 1.23 2001/09/19 21:00:42 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdf.c,v 1.22 2000/03/16 20:08:50 mleisher Exp $";
+static char rcsid[] = "$Id: bdf.c,v 1.23 2001/09/19 21:00:42 mleisher Exp $";
 #endif
 #endif
 
@@ -1232,7 +1232,7 @@ char *name, *value;
          */
         fp = font->props + (unsigned long) hn->data;
 
-        switch (prop->format) {
+        switch (fp->format) {
           case BDF_ATOM:
             /*
              * Delete the current atom if it exists.
@@ -2710,6 +2710,7 @@ bdf_glyph_t *glyph;
     maxx = maxy = 0;
     minx = miny = 32767;
 
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2821,6 +2822,7 @@ bdf_glyph_t *glyph, *cell;
     unsigned short x, y, dx, dy, bx, by, bpr, nbpr;
     unsigned char *bmap, *masks;
 
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2899,6 +2901,7 @@ void *data;
     if (font == 0)
       return;
 
+    eol = 0;
     switch (opts->eol) {
       case BDF_UNIX_EOL: eol = unix_eol; break;
       case BDF_DOS_EOL: eol = dos_eol; break;
@@ -3177,6 +3180,7 @@ char *appname;
 {
     char *eol;
 
+    eol = 0;
     switch (opts->eol) {
       case BDF_UNIX_EOL: eol = unix_eol; break;
       case BDF_DOS_EOL: eol = dos_eol; break;
@@ -4753,6 +4757,7 @@ int n;
     if (gl == 0 || gl->glyphs_used == 0)
       return;
 
+    masks = 0;
     switch (n) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -4797,6 +4802,7 @@ bdf_glyphlist_t *gl;
     if (gl == 0 || gl->glyphs_used == 0)
       return;
 
+    masks = 0;
     switch (gl->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -5352,6 +5358,7 @@ bdf_glyph_t *f, *g;
     nbbx.descent = maxds;
     nbbx.y_offset = -maxds;
 
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -6600,6 +6607,7 @@ int unencoded;
 
     mul90 = ((degrees % 90) == 0) ? 1 : 0;
 
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -6889,6 +6897,7 @@ int unencoded;
     if ((neg = (degrees < 0)))
       degrees = -degrees;
 
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -7042,6 +7051,7 @@ int n;
     short x, y, si, di;
     unsigned char *bmap, *masks;
 
+    masks = 0;
     switch (f->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -7127,7 +7137,9 @@ int unencoded, *resize;
     (void) memset((char *) &scratch, 0, sizeof(bdf_bitmap_t));
 
     mod = 0;
+    gp = 0;
 
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;

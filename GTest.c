@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: GTest.c,v 1.7 2000/03/16 20:08:49 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: GTest.c,v 1.9 2001/11/09 22:01:16 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: GTest.c,v 1.7 2000/03/16 20:08:49 mleisher Exp $";
+static char rcsid[] = "$Id: GTest.c,v 1.9 2001/11/09 22:01:16 mleisher Exp $";
 #endif
 #endif
 
@@ -256,12 +256,7 @@ XmuttGlyphTestWidget gw;
         bbx.ascent = MAX(bbx.ascent, lp->glyphs[i].font->bbx.ascent);
         bbx.descent = MAX(bbx.descent, lp->glyphs[i].font->bbx.descent);
         bbx.width = MAX(bbx.width, lp->glyphs[i].font->bbx.width);
-        if (lp->glyphs[i].glyph->dwidth !=
-            lp->glyphs[i].glyph->bbx.width + lp->glyphs[i].glyph->bbx.x_offset)
-          wd += lp->glyphs[i].glyph->dwidth;
-        else
-          wd += lp->glyphs[i].glyph->bbx.x_offset +
-            lp->glyphs[i].glyph->bbx.width;
+        wd += lp->glyphs[i].glyph->dwidth;
     }
 
     if (lp->glyphs_used == 0) {
@@ -373,6 +368,8 @@ int color;
 
     gw->gtest.image_used = 0;
 
+    di = 0;
+    masks = 0;
     switch (font->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -428,6 +425,7 @@ bdf_font_t *font;
 
     gw = (XmuttGlyphTestWidget) w;
 
+    s = e = 0;
     switch (font->bpp) {
       case 1: s = 0; e = 2; break;
       case 2: s = 0; e = 4; break;
@@ -437,7 +435,7 @@ bdf_font_t *font;
     ry = gw->gtest.line.cpoint.y;
     rx = gw->gtest.line.cpoint.x;
     if (gw->gtest.dir != XmuttGlyphTestLeftToRight)
-      rx -= glyph->bbx.width;
+      rx -= glyph->dwidth;
 
     for (i = s; i < e; i++) {
         if (i == 0)
@@ -508,28 +506,16 @@ Widget w;
         } else {
             if (i == 0 && gp->glyph->bbx.x_offset > 0 &&
                 gp->glyph->bbx.x_offset > gp->glyph->bbx.width)
-              lp->cpoint.x -= gp->glyph->bbx.width - gp->glyph->bbx.x_offset;
+              lp->cpoint.x -= gp->glyph->dwidth - gp->glyph->bbx.x_offset;
         }
         _XmuttGlyphTestDrawGlyph(w, gp->glyph, gp->font);
 
-        if (gw->gtest.dir == XmuttGlyphTestLeftToRight) {
-            if (gp->glyph->dwidth !=
-                gp->glyph->bbx.width + gp->glyph->bbx.x_offset)
-              lp->cpoint.x += gp->glyph->dwidth;
-            else
-              lp->cpoint.x += gp->glyph->bbx.width + gp->glyph->bbx.x_offset;
-        } else {
-            if (gp->glyph->dwidth !=
-                gp->glyph->bbx.width + gp->glyph->bbx.x_offset)
-              lp->cpoint.x -= gp->glyph->dwidth;
-            else
-              lp->cpoint.x -= gp->glyph->bbx.width - gp->glyph->bbx.x_offset;
-        }
-        if (gp->glyph->dwidth !=
-            gp->glyph->bbx.width + gp->glyph->bbx.x_offset)
-          lp->width += gp->glyph->dwidth;
+        if (gw->gtest.dir == XmuttGlyphTestLeftToRight)
+          lp->cpoint.x += gp->glyph->dwidth;
         else
-          lp->width += gp->glyph->bbx.width + gp->glyph->bbx.x_offset;
+          lp->cpoint.x -= gp->glyph->dwidth;
+
+        lp->width += gp->glyph->dwidth;
     }
 }
 
@@ -829,24 +815,12 @@ bdf_glyph_t *glyph;
 
         _XmuttGlyphTestDrawGlyph(w, glyph, font);
 
-        if (gw->gtest.dir == XmuttGlyphTestLeftToRight) {
-            if (glyph->dwidth !=
-                glyph->bbx.width + glyph->bbx.x_offset)
-              lp->cpoint.x += glyph->dwidth;
-            else
-              lp->cpoint.x += glyph->bbx.width + glyph->bbx.x_offset;
-        } else {
-            if (glyph->dwidth !=
-                glyph->bbx.width + glyph->bbx.x_offset)
-              lp->cpoint.x -= glyph->dwidth;
-            else
-              lp->cpoint.x -= glyph->bbx.width - glyph->bbx.x_offset;
-        }
-        if (glyph->dwidth !=
-            glyph->bbx.width + glyph->bbx.x_offset)
-          lp->width += glyph->dwidth;
+        if (gw->gtest.dir == XmuttGlyphTestLeftToRight)
+          lp->cpoint.x += glyph->dwidth;
         else
-          lp->width += glyph->bbx.width + glyph->bbx.x_offset;
+          lp->cpoint.x -= glyph->dwidth;
+
+        lp->width += glyph->dwidth;
     }
 
     /*

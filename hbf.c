@@ -1,12 +1,12 @@
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: hbf.c,v 1.3 2000/03/16 20:08:54 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: hbf.c,v 1.4 2001/09/19 21:00:44 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: hbf.c,v 1.3 2000/03/16 20:08:54 mleisher Exp $";
+static char rcsid[] = "$Id: hbf.c,v 1.4 2001/09/19 21:00:44 mleisher Exp $";
 #endif
 #endif
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * - You can use this code for any purpose and without fee, except that
  *   you may distribute only verbatim copies of it.  Please send me any

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: FGrid.c,v 1.24 2000/03/16 20:08:47 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: FGrid.c,v 1.25 2001/09/19 21:00:40 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: FGrid.c,v 1.24 2000/03/16 20:08:47 mleisher Exp $";
+static char rcsid[] = "$Id: FGrid.c,v 1.25 2001/09/19 21:00:40 mleisher Exp $";
 #endif
 #endif
 
@@ -969,6 +969,8 @@ bdf_glyph_t *glyph;
     int i, j, bpr, col;
     unsigned char *bmap, *masks;
 
+    masks = 0;
+
     switch (fw->fgrid.bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -1023,6 +1025,9 @@ bdf_glyph_t *glyph;
     int i, j, bpr, col, byte, di, si;
     unsigned char *bmap, *masks;
 
+    di = 0;
+    masks = 0;
+    
     switch (fw->fgrid.bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -2111,6 +2116,8 @@ Cardinal *num_args;
     cfw = (XmuttFontGridWidget) curr;
     nfw = (XmuttFontGridWidget) newone;
 
+    font = 0;
+
     redraw = False;
 
     if (nfw->fgrid.font != cfw->fgrid.font ||
@@ -2597,6 +2604,7 @@ XmuttFontGridSelectionStruct *selinfo;
 
     font = fw->fgrid.font;
     ng = 0;
+    glyphs = 0;
     selinfo->glyphs = 0;
     selinfo->num_glyphs = 0;
 
@@ -4770,6 +4778,8 @@ Cardinal *num_params;
 
     fw = (XmuttFontGridWidget) w;
 
+    glyphs = 0;
+
     /*
      * If the event occurs somewhere off the edge of the actual grid area,
      * simply return.
@@ -5535,6 +5545,7 @@ Cardinal *num_params;
 
     font = fw->fgrid.font;
     ng = 0;
+    glyphs = 0;
     cb.glyphs = 0;
     cb.num_glyphs = 0;
 

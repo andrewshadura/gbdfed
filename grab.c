@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: grab.c,v 1.5 2000/03/16 20:08:54 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: grab.c,v 1.6 2001/09/19 21:00:43 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: grab.c,v 1.5 2000/03/16 20:08:54 mleisher Exp $";
+static char rcsid[] = "$Id: grab.c,v 1.6 2001/09/19 21:00:43 mleisher Exp $";
 #endif
 #endif
 
@@ -350,6 +350,9 @@ BuildFontGrabber()
     XmString s, *items;
     Cardinal ac;
     Arg av[10];
+
+    sorted_names = 0;
+    items = 0;
 
     sprintf(title, "%s - Grab Server Font", app_name);
     ac = 0;

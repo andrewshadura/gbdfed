@@ -1,11 +1,30 @@
 #
-# $Id: CHANGES,v 1.20 2000/03/16 21:21:40 mleisher Exp $
+# $Id: CHANGES,v 1.22 2001/11/09 22:00:18 mleisher Exp $
 #
                                XMBDFED CHANGES
 
+Version: 4.5
+Date   : 09 November 2001
+==========================
+  1. Fixed handling of double quotes in properties.
+
+  2. Fixed an incorrect value in a switch statement having to do with EOL's.
+
+  3. Fixed a bug dealing with adding properties to fonts.
+
+  4. Fixed numerous warnings about possible use of uninitialized variables.
+
+  5. Fixed an invalid indication of no next page when glyphs pasted span more
+     than one page.
+
+  6. Fixed a problem with drawing offsets in the GlyphTest widget in
+     right-to-left drawing.
+
+  7. Started a "Tips" section in the Help text.
+
 Version: 4.4
 Date   : 16 March 2000
-========================
+======================
   1. Fixed a bug when opening the file selection dialog more than once.
 
   2. Added .tte as an extension when opening TT fonts.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: GEditTB.c,v 1.5 2000/03/16 20:08:48 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: GEditTB.c,v 1.6 2001/09/19 21:00:41 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: GEditTB.c,v 1.5 2000/03/16 20:08:48 mleisher Exp $";
+static char rcsid[] = "$Id: GEditTB.c,v 1.6 2001/09/19 21:00:41 mleisher Exp $";
 #endif
 #endif
 
@@ -617,6 +617,8 @@ int color;
 
     gw->gedittb.points_used = 0;
 
+    di = 0;
+    masks = 0;
     switch (im->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -669,6 +671,7 @@ Widget w;
     if (!XtIsRealized(w) || (im = gw->gedittb.gimage) == 0)
       return;
 
+    si = ei = 0;
     switch (im->bpp) {
       case 1: si = 0; ei = 2; break;
       case 2: si = 0; ei = 4; break;
