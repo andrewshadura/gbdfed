@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrid.c,v 1.9 2000/03/16 20:08:52 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrid.c,v 1.10 2001/09/19 21:00:43 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfgrid.c,v 1.9 2000/03/16 20:08:52 mleisher Exp $";
+static char rcsid[] = "$Id: bdfgrid.c,v 1.10 2001/09/19 21:00:43 mleisher Exp $";
 #endif
 #endif
 
@@ -200,6 +200,7 @@ short *x, *y, *width, *height;
     unsigned short bpr, ink, sel, col;
     unsigned char *bmap, *masks;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -316,6 +317,7 @@ int unencoded;
     if ((p = bdf_get_font_property(font, "X_HEIGHT")) != 0)
       gr->x_height = (short) p->value.int32;
 
+    masks = 0;
     switch (gr->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -560,6 +562,7 @@ unsigned short width, height;
     if (grid == 0 || (width < grid->grid_width && height < grid->grid_height))
       return 0;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -669,6 +672,7 @@ bdf_metrics_t *metrics;
     if (grid == 0 || metrics == 0)
       return changed;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -874,6 +878,7 @@ int grid_modified;
     if (grid == 0)
       return cropped;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -988,6 +993,8 @@ int val;
         y < 0 || y >= grid->grid_height)
       return set;
 
+    si = 0;
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; si = 7; break;
       case 2: masks = twobpp; si = 3; break;
@@ -1087,6 +1094,7 @@ short x, y;
         y < 0 || y >= grid->grid_height)
       return cleared;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -1204,6 +1212,7 @@ int val;
         y < 0 || y >= grid->grid_height)
       return 0;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -1285,6 +1294,7 @@ short degrees;
     if (grid == 0 || degrees == 0)
       return rotated;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -1713,6 +1723,7 @@ int *resize;
         (grid->glyph_bbx.width == 0 && grid->glyph_bbx.height == 0))
       return rotated;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -1936,6 +1947,7 @@ int *resize;
      */
     _bdf_shear_resize(grid, degrees, neg, resize);
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2113,6 +2125,7 @@ bdf_glyph_grid_t *grid;
         (grid->glyph_bbx.width == 0 && grid->glyph_bbx.height == 0))
       return done;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2254,6 +2267,7 @@ short x, y, width, height;
     if (bytes == 0)
       return;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2319,6 +2333,7 @@ bdf_glyph_grid_t *grid;
     if (grid == 0 || (grid->sel.width == 0 && grid->sel.height == 0))
       return;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2364,6 +2379,7 @@ bdf_glyph_grid_t *grid;
     if (grid == 0 || (grid->sel.width == 0 && grid->sel.height == 0))
       return;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -2450,6 +2466,8 @@ short x, y, *set;
     if (grid == 0 || (grid->sel.width == 0 && grid->sel.height == 0))
       return 0;
 
+    di = 0;
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -2608,6 +2626,7 @@ short xcount, ycount;
         return 1;
     }
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -2724,6 +2743,8 @@ short dir;
     if (wd == 0|| ht == 0)
       return flipped;
 
+    nx = 0;
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -2883,6 +2904,7 @@ bdf_glyph_grid_t *grid;
     if (grid == 0)
       return 0;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -2993,6 +3015,7 @@ bdf_bitmap_t *image;
     if (grid == 0 || image == 0)
       return;
 
+    masks = 0;
     switch (grid->bpp) {
       case 1: masks = onebpp; di = 7; break;
       case 2: masks = twobpp; di = 3; break;
@@ -3050,6 +3073,7 @@ int n;
     if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
       return;
 
+    masks = 0;
     switch (n) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -3088,6 +3112,7 @@ bdf_bitmap_t *bmap;
     if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
       return;
 
+    masks = 0;
     switch (bmap->bpp) {
       case 1: masks = onebpp; break;
       case 2: masks = twobpp; break;
@@ -3317,9 +3342,11 @@ short x, y;
     if (grid->bpp == 1)
       return -1;
 
+    masks = twobpp;
+    di = 0;
     switch (grid->bpp) {
-      case 2: masks = twobpp; di = 3; break;
-      case 4: masks = twobpp; di = 1; break;
+      case 2: di = 3; break;
+      case 4: di = 1; break;
     }
 
     x *= grid->bpp;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: xmbdfed.c,v 1.26 2000/03/16 21:21:40 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: xmbdfed.c,v 1.27 2001/09/19 21:00:44 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: xmbdfed.c,v 1.26 2000/03/16 21:21:40 mleisher Exp $";
+static char rcsid[] = "$Id: xmbdfed.c,v 1.27 2001/09/19 21:00:44 mleisher Exp $";
 #endif
 #endif
 
@@ -541,6 +541,7 @@ XtPointer client_data, call_data;
     dialog = (Widget) client_data;
     ed = &editors[active_editor];
 
+    suff = 0;
     switch (ed->filemenu.export_type) {
       case XMBDFED_EXPORT_PSF: suff = ".psf"; break;
       case XMBDFED_EXPORT_HEX: suff = ".hex"; break;
@@ -596,7 +597,7 @@ XtPointer client_data, call_data;
 
     ed = &editors[active_editor];
 
-    path = 0;
+    path = fp = 0;
 
     cb = (XmFileSelectionBoxCallbackStruct *) call_data;
     XmStringGetLtoR(cb->value, XmSTRING_DEFAULT_CHARSET, &path);
@@ -711,6 +712,7 @@ XtPointer client_data, call_data;
     id = (unsigned long) client_data;
     ed = &editors[id];
 
+    dir = 0;
     fdir = (ed->path) ? XmStringCreateSimple(ed->path) : 0;
 
     if (saved == 0) {
@@ -911,6 +913,9 @@ MXFEditor *ed;
     Arg av[2];
 
     font = XmuttFontGridFont(ed->fgrid);
+
+    suff = 0;
+    s = 0;
 
     switch (ed->filemenu.export_type) {
       case XMBDFED_EXPORT_PSF:
@@ -1216,6 +1221,8 @@ MXFEditor *ed;
     bdf_font_t *fonts[3];
     Arg av[2];
     XmuttFontGridPageInfoStruct pi;
+
+    unenc = nn = 0;
 
     /*
      * Get the file name part of the path.
@@ -1794,6 +1801,8 @@ MXFEditor *ed;
 
     if (XmuttFontGridModified(ed->fgrid) == True)
       WaitSave(w, ed);
+
+    s = 0;
 
     switch (ed->filemenu.open_type) {
       case XMBDFED_OPEN_BDF:
@@ -4647,7 +4656,7 @@ XtPointer *conv_data;
     s = (char *) from->addr;
     switch (*s) {
       case 'U': case 'u': eol = BDF_UNIX_EOL; break;
-      case 'D': case 'd': eol = BDF_MAC_EOL; break;
+      case 'D': case 'd': eol = BDF_DOS_EOL; break;
       case 'M': case 'm': eol = BDF_MAC_EOL; break;
       default:
           XtDisplayStringConversionWarning(d, (char *) from->addr,

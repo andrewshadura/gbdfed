@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,9 +27,9 @@
 
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: ttfin.c,v 1.4 2000/03/16 20:08:56 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: ttfin.c,v 1.5 2001/09/19 21:00:44 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: ttfin.c,v 1.4 2000/03/16 20:08:56 mleisher Exp $";
+static char rcsid[] = "$Id: ttfin.c,v 1.5 2001/09/19 21:00:44 mleisher Exp $";
 #endif
 #endif
 
@@ -401,6 +401,8 @@ bdf_font_t **font;
     int i, plen, res;
     bdf_property_t prop;
     char *pp, *file, *ext, name[256];
+
+    pid = eid = 0;
 
     /*
      * Get the file name part of the path.

@@ -1,5 +1,5 @@
 #
-# Copyright 2000 Computing Research Labs, New Mexico State University
+# Copyright 2001 Computing Research Labs, New Mexico State University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,7 +20,7 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 #
-# $Id: Makefile,v 1.9 2000/03/16 20:08:49 mleisher Exp $
+# $Id: Makefile,v 1.10 2001/09/19 21:00:42 mleisher Exp $
 #
 CC = gcc
 CFLAGS = -g -Wall

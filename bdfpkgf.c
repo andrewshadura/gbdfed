@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,9 +38,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfpkgf.c,v 1.6 2000/03/16 20:08:52 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfpkgf.c,v 1.7 2001/09/19 21:00:43 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfpkgf.c,v 1.6 2000/03/16 20:08:52 mleisher Exp $";
+static char rcsid[] = "$Id: bdfpkgf.c,v 1.7 2001/09/19 21:00:43 mleisher Exp $";
 #endif
 #endif
 
@@ -422,6 +422,7 @@ bdf_font_t **font;
     struct stat st;
     unsigned char *row, bytes[256], glyphname[256];
 
+    row = 0;
     glyphname[0] = 0;
 
     /*
@@ -992,6 +993,7 @@ char glyphname[];
      * Initialize the variable that keeps track of the storage allocated
      * for the comments encountered.
      */
+    comment = 0;
     comment_size = 0;
 
     while ((c = getc(in)) >= GF_xxx1) {

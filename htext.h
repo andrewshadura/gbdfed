@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,12 +21,12 @@
  */
 
 /*
- * $Id: htext.h,v 1.30 2000/03/16 21:21:40 mleisher Exp $
+ * $Id: htext.h,v 1.32 2001/11/09 22:01:42 mleisher Exp $
  */
 static char *about_text = "\
-                 XmBDFEditor 4.4\n\
+                 XmBDFEditor 4.5\n\
               mleisher@crl.nmsu.edu\n\
-                       16 March 2000\n\
+                       09 November 2001\n\
 \n\
 XmBDFEditor is a BDF font editor that supports\n\
 these main features:\n\
@@ -57,7 +57,7 @@ these main features:\n\
   o  Edits gray scale fonts with 2 or 4 bits per pixel.\n\
 \n\
 XmBDFEditor works on X11R5 or X11R6 with Motif\n\
-1.2.*, Motif 2.*, or Lesstif.\n\
+1.2.*, Motif 2.*, OpenMotif, or Lesstif.\n\
 ";
 
 static char *program_text = "\
@@ -1470,4 +1470,13 @@ will be embedded in OpenType fonts.\n\
 \n\
 See the Microsoft Web pages for details on the SBITS\n\
 utility.\n\
+";
+
+static char *tips_text = "\
+Useful Tips:\n\
+\n\
+To add space glyphs to proportional fonts, simply set\n\
+the Device Width field to the desired width of the blank.\n\
+When the font is saved, a bitmap is automatically\n\
+generated for it.\n\
 ";

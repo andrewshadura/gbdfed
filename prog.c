@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: prog.c,v 1.5 2000/03/16 20:08:55 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: prog.c,v 1.6 2001/09/19 21:00:44 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: prog.c,v 1.5 2000/03/16 20:08:55 mleisher Exp $";
+static char rcsid[] = "$Id: prog.c,v 1.6 2001/09/19 21:00:44 mleisher Exp $";
 #endif
 #endif
 
@@ -79,6 +79,8 @@ void *data;
     XmString label;
     XtInputMask mask;
     Arg av[5];
+
+    op = op1 = 0;
 
     if (progbar_shell == 0)
       MakeProgressDialog();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000 Computing Research Labs, New Mexico State University
+ * Copyright 2001 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: help.c,v 1.8 2000/03/16 20:08:54 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: help.c,v 1.10 2001/11/09 22:01:42 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: help.c,v 1.8 2000/03/16 20:08:54 mleisher Exp $";
+static char rcsid[] = "$Id: help.c,v 1.10 2001/11/09 22:01:42 mleisher Exp $";
 #endif
 #endif
 
@@ -70,6 +70,7 @@ static MXFEditorHelpMap topics[] = {
     {'P', "PSF Font Notes", 0},
     {'H', "HEX Font Notes", 0},
     {'o', "Color Notes", 0},
+    {'i', "Tips", 0},
 };
 
 static unsigned long ntopics = sizeof(topics) / sizeof(topics[0]);
@@ -121,6 +122,7 @@ XtPointer client_data, call_data;
         topics[8].help_text = psf_text;
         topics[9].help_text = hex_text;
         topics[10].help_text = color_text;
+        topics[11].help_text = tips_text;
 
         sprintf(title, "%s - Help", app_name);
         ac = 0;

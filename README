@@ -1,8 +1,8 @@
 #
-# $Id: README,v 1.22 2000/03/16 20:08:50 mleisher Exp $
+# $Id: README,v 1.24 2001/11/09 22:00:18 mleisher Exp $
 #
 
-XmBDFEditor 4.4
+XmBDFEditor 4.5
 
 INTRO
 -----
@@ -40,7 +40,7 @@ A few things missing from this font editor:
   o  Selecting a non-console font when importing a console font should
      autodetect by filename extension.
   o  No support for scaling fonts.
-  o  No way to create space glyphs.
+  o  No way to create space glyphs in monowidth or character cell fonts.
   o  Fonts with right-to-left direction (negative widths) not supported.
   o  Many more font properties could be automatically calculated.
   o  No way to edit comments appearing in the properties list.
@@ -50,8 +50,6 @@ Known problems:
   o  Text fields do not have horizontal scrollbars.  Some machines running
      X11R6 only have arrow keys on the keypad which earlier versions of Motif
      don't recognize.
-  o  Does not handle double quotes correctly in values for properties of type
-     ATOM.
   o  Deleting glyphs from or inserting glyphs into a font grid do not update
      the glyph editors if they happen to be editing a deleted glyph or a glyph
      that moved due to an insertion.
@@ -212,7 +210,10 @@ Thanks go to the following people:
   problems with grabbing fonts from the X server and alerting me to
   uninitialized variable warnings.
 
+  Baruch Even <baruch@ev-en.org> for providing a fix for a bug that should
+  have shown up long ago dealing with font properties.
+
 AUTHOR
 ------
   mleisher@crl.nmsu.edu (Mark Leisher)
-  06 March 2000
+  09 November 2001
