@@ -1,5 +1,5 @@
 #
-# Copyright 2001 Computing Research Labs, New Mexico State University
+# Copyright 2004 Computing Research Labs, New Mexico State University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,7 +20,7 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 #
-# $Id: Makefile,v 1.10 2001/09/19 21:00:42 mleisher Exp $
+# $Id: Makefile,v 1.13 2004/02/17 15:24:06 mleisher Exp $
 #
 CC = gcc
 CFLAGS = -g -Wall
@@ -33,21 +33,21 @@ HDRS = FGrid.h FGridP.h GEShared.h GEdit.h GEditP.h GEditTB.h GEditTBP.h \
        htext.h xmbdfed.h
 
 SRCS = FGrid.c GEdit.c GEditTB.c GTest.c ProgBar.c bdf.c bdfcons.c bdffnt.c \
-       bdfgname.c bdfgrab.c bdfgrid.c bdfpkgf.c bdfttf.c color.c comment.c \
-       finfo.c fntin.c glyphed.c grab.c help.c ops.c prog.c props.c setup.c \
-       test.c ttfin.c xmbdfed.c
+       bdfgname.c bdfgrab.c bdfgrid.c bdfotf.c bdfpkgf.c bdfpsf.c color.c \
+       comment.c finfo.c fntin.c glyphed.c grab.c help.c ops.c otfin.c prog.c \
+       props.c setup.c test.c xmbdfed.c
 
 OBJS = FGrid.o GEdit.o GEditTB.o GTest.o ProgBar.o bdf.o bdfcons.o bdffnt.o \
-       bdfgname.o bdfgrab.o bdfgrid.o bdfpkgf.o bdfttf.o color.o comment.o \
-       finfo.o fntin.o glyphed.o grab.o help.o ops.o prog.o props.o setup.o \
-       test.o ttfin.o xmbdfed.o $(HBF_OBJS)
+       bdfgname.o bdfgrab.o bdfgrid.o bdfotf.o bdfpkgf.o bdfpsf.o color.o \
+       comment.o finfo.o fntin.o glyphed.o grab.o help.o ops.o otfin.o prog.o \
+       props.o setup.o test.o xmbdfed.o $(HBF_OBJS)
 
 #
 # Uncomment these if you have the FreeType library and want to use it to
-# import TrueType fonts.
+# import OpenType fonts.
 #
 #FTYPE_INCS = -I/usr/local/include
-#FTYPE_LIBS = -L/user/local/lib -lttf
+#FTYPE_LIBS = -L/usr/local/lib -lfreetype
 #FTYPE_DEFS = -DHAVE_FREETYPE
 
 #
@@ -89,9 +89,8 @@ LIBS = -R/usr/openwin/lib -R/usr/dt/lib -L/usr/dt/lib -lXm \
 #
 # Uncomment these for Linux.
 #
-#INCS = -I/usr/X11/include -I/usr/local/Motif-2.0.1/include $(FTYPE_INCS)
-#LIBS = -L/usr/local/Motif-2.0.1/lib -lXm \
-#       -L/usr/X11/lib -lXpm -lXmu -lXt -lXext -lX11 -lSM -lICE $(FTYPE_LIBS)
+#INCS = -I/usr/X11/include $(FTYPE_INCS)
+#LIBS = -L/usr/X11/lib -lXm -lXpm -lXmu -lXt -lXext -lX11 -lSM -lICE $(FTYPE_LIBS)
 
 #
 # Uncomment these for HPUX.
@@ -151,34 +150,35 @@ realclean: clean
 	/bin/rm -f xmbdfed
 
 #
-# Dependencies.
+# Local dependencies.
 #
-FGrid.o: FGrid.c FGridP.h FGrid.h bdfP.h bdf.h
-GEdit.o: GEdit.c GEditP.h GEdit.h bdfP.h bdf.h GEShared.h
-GEditTB.o: GEditTB.c GEditTBP.h GEditTB.h bdfP.h bdf.h GEShared.h \
- bitmaps.h
-GTest.o: GTest.c GTestP.h GTest.h bdfP.h bdf.h
-ProgBar.o: ProgBar.c ProgBarP.h ProgBar.h
+bdfcons.o: bdfcons.c bdfP.h bdf.h 
 bdf.o: bdf.c bdfP.h bdf.h $(HBF_HDRS)
-bdfcons.o: bdfcons.c bdfP.h bdf.h
-bdffnt.o: bdffnt.c bdfP.h bdf.h
-bdfgname.o: bdfgname.c bdfP.h bdf.h
-bdfgrab.o: bdfgrab.c bdfP.h bdf.h
-bdfgrid.o: bdfgrid.c bdfP.h bdf.h
-bdfpkgf.o: bdfpkgf.c bdfP.h bdf.h
-bdfttf.o: bdfttf.c
+bdffnt.o: bdffnt.c bdfP.h bdf.h 
+bdfgname.o: bdfgname.c bdfP.h bdf.h 
+bdfgrab.o: bdfgrab.c bdfP.h bdf.h 
+bdfgrid.o: bdfgrid.c bdfP.h bdf.h 
+bdfotf.o: bdfotf.c bdfP.h bdf.h 
+bdfpkgf.o: bdfpkgf.c bdfP.h bdf.h 
+bdfpsf.o: bdfpsf.c bdfP.h bdf.h 
 color.o: color.c bdfP.h bdf.h xmbdfed.h
 comment.o: comment.c FGrid.h bdfP.h bdf.h xmbdfed.h
+FGrid.o: FGrid.c FGridP.h FGrid.h bdfP.h bdf.h 
 finfo.o: finfo.c FGrid.h bdfP.h bdf.h xmbdfed.h
 fntin.o: fntin.c FGrid.h bdfP.h bdf.h GTest.h xmbdfed.h
+GEdit.o: GEdit.c GEditP.h GEdit.h bdfP.h bdf.h GEShared.h 
+GEditTB.o: GEditTB.c GEditTBP.h GEditTB.h bdfP.h bdf.h GEShared.h bitmaps.h
 glyphed.o: glyphed.c FGrid.h bdfP.h bdf.h GEdit.h GEShared.h GEditTB.h \
- xmbdfed.h
+           xmbdfed.h
 grab.o: grab.c FGrid.h bdfP.h bdf.h xmbdfed.h
+GTest.o: GTest.c GTestP.h GTest.h bdfP.h bdf.h 
+$(HBF_OBJS): $(HBF_SRCS) $(HBF_HDRS)
 help.o: help.c bdf.h xmbdfed.h htext.h
 ops.o: ops.c FGrid.h bdfP.h bdf.h GTest.h xmbdfed.h
+otfin.o: otfin.c FGrid.h bdfP.h bdf.h GTest.h xmbdfed.h
+ProgBar.o: ProgBar.c ProgBarP.h ProgBar.h
 prog.o: prog.c ProgBar.h bdf.h xmbdfed.h
 props.o: props.c FGrid.h bdfP.h bdf.h xmbdfed.h
 setup.o: setup.c FGrid.h bdfP.h bdf.h xmbdfed.h
 test.o: test.c FGrid.h bdfP.h bdf.h xmbdfed.h GTest.h
-ttfin.o: ttfin.c
 xmbdfed.o: xmbdfed.c FGrid.h bdfP.h bdf.h GTest.h xmbdfed.h

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_bdf
 
 /*
- * $Id: bdf.h,v 1.17 2001/09/19 21:00:42 mleisher Exp $
+ * $Id: bdf.h,v 1.25 2004/02/08 23:58:59 mleisher Exp $
  */
 
 #include <stdio.h>
@@ -40,8 +40,8 @@
 #endif /* HAVE_XLIB */
 
 #ifdef HAVE_FREETYPE
-#include <freetype.h>
-#include <extend/ftxsbit.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #endif /* HAVE_FREETYPE */
 
 #ifdef __cplusplus
@@ -81,7 +81,7 @@ extern "C" {
     (BDF_CORRECT_METRICS|BDF_KEEP_COMMENTS|BDF_KEEP_UNENCODED|BDF_PROPORTIONAL)
 
 typedef struct {
-    int ttf_hint;
+    int otf_flags;
     int correct_metrics;
     int keep_unencoded;
     int keep_comments;
@@ -92,6 +92,7 @@ typedef struct {
     unsigned long resolution_y;
     int bits_per_pixel;
     int eol;
+    int psf_flags;
 } bdf_options_t;
 
 /*
@@ -171,6 +172,25 @@ typedef struct _bdf_undo_t *bdf_undo_t;
 
 /**************************************************************************
  *
+ * PSF font flags and Unicode mapping tables.  Stored internally in UTF-8.
+ *
+ **************************************************************************/
+
+/*
+ * Flags used for exporting PSF fonts and their Unicode maps.
+ */
+#define BDF_PSF_FONT   0x01
+#define BDF_PSF_UNIMAP 0x02
+#define BDF_PSF_ALL (BDF_PSF_FONT|BDF_PSF_UNIMAP)
+
+typedef struct {
+    unsigned char *map;
+    unsigned long map_used;
+    unsigned long map_size;
+} bdf_psf_unimap_t;
+
+/**************************************************************************
+ *
  * BDF font metric and glyph types.
  *
  **************************************************************************/
@@ -218,6 +238,7 @@ typedef struct {
     bdf_bbx_t bbx;              /* Glyph bounding box.                  */
     unsigned char *bitmap;      /* Glyph bitmap.                        */
     unsigned short bytes;       /* Number of bytes used for the bitmap. */
+    bdf_psf_unimap_t unicode;   /* PSF Unicode mappings.                */
 } bdf_glyph_t;
 
 typedef struct {
@@ -285,6 +306,8 @@ typedef struct {
     bdf_undo_t *undo_stack;     /* Record of undoable operations.        */
     unsigned long undo_used;    /* Amount of undo stack used.            */
     unsigned long undo_size;    /* Amount of undo stack allocated.       */
+
+    bdf_psf_unimap_t unicode;   /* PSF Unicode table.                    */
 } bdf_font_t;
 
 /**************************************************************************
@@ -318,6 +341,7 @@ typedef struct {
     short cap_height;           /* Font CAP_HEIGHT if it exists.        */
     short x_height;             /* Font X_HEIGHT if it exists.          */
     bdf_bitmap_t sel;           /* Selected portion of the glyph bitmap.*/
+    bdf_psf_unimap_t unicode;   /* PSF Unicode mappings for this glyph. */
 } bdf_glyph_grid_t;
 
 /**************************************************************************
@@ -364,6 +388,12 @@ typedef struct {
 #define BDF_NOT_CONSOLE_FONT  -10
 #define BDF_NOT_MF_FONT       -11
 #define BDF_NOT_PSF_FONT      -12
+#define BDF_PSF_SHORT_TABLE   -13
+#define BDF_PSF_LONG_TABLE    -14
+#define BDF_PSF_CORRUPT_UTF8  -15
+#define BDF_PSF_BUFFER_OVRFL  -16
+#define BDF_PSF_UNSUPPORTED   -17
+#define BDF_BAD_RANGE         -98
 #define BDF_EMPTY_FONT        -99
 #define BDF_INVALID_LINE      -100
 
@@ -436,39 +466,40 @@ extern void bdf_save_sbit_metrics __((FILE *out, bdf_font_t *font,
                                       bdf_options_t *opts, char *appname));
 
 extern void bdf_export_hex __((FILE *out, bdf_font_t *font,
-                               bdf_callback_t callback, void *data));
+                               bdf_options_t *opts, bdf_callback_t callback,
+                               void *data));
 
-extern int bdf_export_psf __((FILE *out, bdf_font_t *font));
+extern int bdf_export_psf __((FILE *out, bdf_font_t *font, bdf_options_t *opts,
+                              long start, long end));
 
 extern void bdf_free_font __((bdf_font_t *font));
 
 #ifdef HAVE_FREETYPE
 
 /*
- * TrueType related macros and functions.
+ * OpenType related macros and functions.
  */
 
 /*
- * ID numbers of the strings that can appear in a TrueType font.
+ * ID numbers of the strings that can appear in an OpenType font.
  */
-#define BDFTTF_COPYRIGHT_STRING  0
-#define BDFTTF_FAMILY_STRING     1
-#define BDFTTF_SUBFAMILY_STRING  2
-#define BDFTTF_UNIQUEID_STRING   3
-#define BDFTTF_FULLNAME_STRING   4
-#define BDFTTF_VENDOR_STRING     5
-#define BDFTTF_POSTSCRIPT_STRING 6
-#define BDFTTF_TRADEMARK_STRING  7
+#define BDFOTF_COPYRIGHT_STRING  0
+#define BDFOTF_FAMILY_STRING     1
+#define BDFOTF_SUBFAMILY_STRING  2
+#define BDFOTF_UNIQUEID_STRING   3
+#define BDFOTF_FULLNAME_STRING   4
+#define BDFOTF_VENDOR_STRING     5
+#define BDFOTF_POSTSCRIPT_STRING 6
+#define BDFOTF_TRADEMARK_STRING  7
 
-extern char *bdfttf_platform_name __((short pid));
-extern char *bdfttf_encoding_name __((short pid, short eid));
-extern int bdfttf_get_english_string __((TT_Face face, int nameID,
+extern char *bdfotf_platform_name __((short pid));
+extern char *bdfotf_encoding_name __((short pid, short eid));
+extern int bdfotf_get_english_string __((FT_Face face, int nameID,
                                          int dash_to_space, char *name));
 
-extern int bdfttf_load_font __((TT_Face face, TT_Face_Properties *properties,
-                                short pid, short eid, bdf_options_t *opts,
-                                bdf_callback_t callback, void *data,
-                                bdf_font_t **font));
+extern int bdfotf_load_font __((FT_Face face, short pid, short eid,
+                                bdf_options_t *opts, bdf_callback_t callback,
+                                void *data, bdf_font_t **font));
 
 #endif /* HAVE_FREETYPE */
 
@@ -500,6 +531,22 @@ extern int bdffnt_font_pointsize __((bdffnt_font_t font,
 extern int bdffnt_load_font __((bdffnt_font_t font, unsigned long fontID,
                                 bdf_callback_t callback, void *data,
                                 bdf_font_t **out));
+
+/*
+ * PSF font section.
+ *
+ * In PSF fonts, a Unicode table on the end of the font may map a single
+ * glyph to several locations.  The BDFPSF_SOURCE_GLYPH marks the glyphs that
+ * are source glyphs and the BDFPSF_PSEUDO_GLYPH flag marks glyphs that are
+ * clones of a source glyph.
+ */
+#define BDFPSF_SOURCE_GLYPH 0x0001
+#define BDFPSF_PSEUDO_GLYPH 0x0002
+
+extern bdf_font_t *bdf_load_psf __((FILE *in, unsigned char *magic,
+                                    bdf_options_t *opts,
+                                    bdf_callback_t callback, void *data,
+                                    int *awidth));
 
 /*
  * Font property functions.
@@ -548,6 +595,9 @@ extern int bdf_replace_glyphs __((bdf_font_t *font, long start,
 extern int bdf_merge_glyphs __((bdf_font_t *font, long start,
                                 bdf_glyphlist_t *glyphs, int unencoded));
 
+extern int bdf_replace_mappings __((bdf_font_t *font, long encoding,
+                                    bdf_psf_unimap_t *map, int unencoded));
+
 /**************************************************************************
  *
  * Other API functions.
@@ -577,6 +627,13 @@ extern int bdf_set_adobe_glyph_names __((FILE *in, bdf_font_t *font,
 
 extern int bdf_set_glyph_code_names __((int prefix, bdf_font_t *font,
                                         bdf_callback_t callback));
+
+/*
+ * Routine to add Unicode mappings when editing PSF fonts.
+ */
+extern int bdf_psf_add_unicode_mapping __((bdf_psf_unimap_t *u,
+                                           unsigned long *mapping,
+                                           unsigned long mapping_cnt));
 
 /**************************************************************************
  *

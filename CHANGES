@@ -1,10 +1,51 @@
 #
-# $Id: CHANGES,v 1.22 2001/11/09 22:00:18 mleisher Exp $
+# $Id: CHANGES,v 1.32 2004/02/23 17:33:30 mleisher Exp $
 #
                                XMBDFED CHANGES
 
+Version: 4.7
+Date   : 23 February 2004
+==========================
+  1. Completely revamped the PSF font import/export system to make it
+     actually useable.
+
+  2. Changed to use FreeType 2.  FreeType 1 no longer supported.
+
+  3. Changed to use a fallback of the 75dpi New Century Schoolbook for RH
+     distributions that don't come with the 100dpi.
+
+  4. Fixed a problem with the OpenType hinting flag not being updated after
+     being changed.
+
+  5. Changed all TrueType references to OpenType to reflect the move to
+     FreeType 2.
+
+  6. Renamed some of the files that referred to TrueType (bdfttf.c and ttfin.c
+     renamed to bdfotf.c and otfin.c).
+
+  7. Removed an unecessary copy when padding character cell glyphs.
+
+  8. Some minor documentation improvements.
+
+  9. Fixed several serious problems loading Windows FON/FNT fonts.
+
+  10. Added comments about conversion to imported FON/FNT fonts.
+
+  11. Added comments about conversion to imported OTF fonts.
+
+  12. Fixed a previously unnoticed problem with font comment strings not being
+      NULL terminated properly.
+
+Version: 4.6
+Date   : 29 January 2004
+==========================
+  1. Fixed a problem with FON/FNT fonts that have the names at the very end of
+     the file.
+
+  2. Released as Linux binary only.
+
 Version: 4.5
-Date   : 09 November 2001
+Date   : 23 July 2002
 ==========================
   1. Fixed handling of double quotes in properties.
 
@@ -21,6 +62,8 @@ Date   : 09 November 2001
      right-to-left drawing.
 
   7. Started a "Tips" section in the Help text.
+
+  8. Fixed a problem with display of some glyphs in the FontGrid.
 
 Version: 4.4
 Date   : 16 March 2000

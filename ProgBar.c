@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,12 +21,13 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: ProgBar.c,v 1.6 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: ProgBar.c,v 1.8 2004/02/09 16:28:25 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: ProgBar.c,v 1.6 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] = "$Id: ProgBar.c,v 1.8 2004/02/09 16:28:25 mleisher Exp $";
 #endif
 #endif
 
+#include <stdlib.h>
 #include "ProgBarP.h"
 
 static Dimension

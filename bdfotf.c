@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,13 +27,16 @@
 
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfttf.c,v 1.7 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfotf.c,v 1.11 2004/02/23 14:08:07 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfttf.c,v 1.7 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] = "$Id: bdfotf.c,v 1.11 2004/02/23 14:08:07 mleisher Exp $";
 #endif
 #endif
 
 #include "bdfP.h"
+#include FT_GLYPH_H
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_TABLES_H
 
 #undef MAX
 #define MAX(h, i) ((h) > (i) ? (h) : (i))
@@ -100,9 +103,9 @@ static int nms_encodings = sizeof(ms_encodings) / sizeof(ms_encodings[0]);
  */
 char *
 #ifdef __STDC__
-bdfttf_platform_name(short pid)
+bdfotf_platform_name(short pid)
 #else
-bdfttf_platform_name(pid)
+bdfotf_platform_name(pid)
 short pid;
 #endif
 {
@@ -115,9 +118,9 @@ short pid;
  */
 char *
 #ifdef __STDC__
-bdfttf_encoding_name(short pid, short eid)
+bdfotf_encoding_name(short pid, short eid)
 #else
-bdfttf_encoding_name(pid, eid)
+bdfotf_encoding_name(pid, eid)
 short pid, eid;
 #endif
 {
@@ -161,38 +164,42 @@ short pid, eid;
  */
 int
 #ifdef __STDC__
-bdfttf_get_english_string(TT_Face face, int nameID, int dash_to_space,
+bdfotf_get_english_string(FT_Face face, int nameID, int dash_to_space,
                           char *name)
 #else
-bdfttf_get_english_string(face, nameID, dash_to_space, name)
-TT_Face face;
+bdfotf_get_english_string(face, nameID, dash_to_space, name)
+FT_Face face;
 int nameID, dash_to_space;
 char *name;
 #endif
 {
-    int i, j, encid, nrec;
-    short nrPlatformID, nrEncodingID, nrLanguageID, nrNameID;
+    int j, encid;
+    FT_UInt i, nrec;
+    FT_SfntName sfntName;
     char *s;
     unsigned short slen;
 
-    nrec = TT_Get_Name_Count(face);
+    nrec = FT_Get_Sfnt_Name_Count(face);
 
     for (encid = 1, j = 0; j < 2; j++, encid--) {
         /*
          * Locate one of the MS English font names.
          */
         for (i = 0; i < nrec; i++) {
-            TT_Get_Name_ID(face, i, &nrPlatformID, &nrEncodingID,
-                           &nrLanguageID, &nrNameID);
-            if (nrPlatformID == 3 &&
-                nrEncodingID == encid &&
-                nrNameID == nameID &&
-                (nrLanguageID == 0x0409 || nrLanguageID == 0x0809 ||
-                 nrLanguageID == 0x0c09 || nrLanguageID == 0x1009 ||
-                 nrLanguageID == 0x1409 || nrLanguageID == 0x1809)) {
-                TT_Get_Name_String(face, i, &s, &slen);
-                break;
-            }
+           FT_Get_Sfnt_Name(face, i, &sfntName);
+           if (sfntName.platform_id == 3 &&
+               sfntName.encoding_id == encid &&
+               sfntName.name_id == nameID &&
+               (sfntName.language_id == 0x0409 ||
+                sfntName.language_id == 0x0809 ||
+                sfntName.language_id == 0x0c09 ||
+                sfntName.language_id == 0x1009 ||
+                sfntName.language_id == 0x1409 ||
+                sfntName.language_id == 0x1809)) {
+               s = sfntName.string;
+               slen = sfntName.string_len;
+               break;
+           }
         }
 
         if (i < nrec) {
@@ -222,11 +229,11 @@ char *name;
      * name.
      */
     for (i = 0; i < nrec; i++) {
-        TT_Get_Name_ID(face, i, &nrPlatformID, &nrEncodingID,
-                       &nrLanguageID, &nrNameID);
-        if (nrPlatformID == 0 && nrLanguageID == 0 &&
-            nrNameID == nameID) {
-            TT_Get_Name_String(face, i, &s, &slen);
+        FT_Get_Sfnt_Name(face, i, &sfntName);
+        if (sfntName.platform_id == 0 && sfntName.language_id == 0 &&
+            sfntName.name_id == nameID) {
+            s = sfntName.string;
+            slen = sfntName.string_len;
             break;
         }
     }
@@ -257,14 +264,11 @@ char *name;
 
 static int
 #ifdef __STDC__
-_bdfttf_generate(TT_Face face, TT_Face_Properties *properties, TT_CharMap cmap,
-                 int nocmap, bdf_options_t *opts, bdf_callback_t callback,
-                 void *data, bdf_font_t *fp)
+_bdfotf_generate(FT_Face face, int nocmap, bdf_options_t *opts,
+                 bdf_callback_t callback, void *data, bdf_font_t *fp)
 #else
-_bdfttf_generate(face, properties, cmap, nocmap, opts, callback, data, fp)
-TT_Face face;
-TT_Face_Properties *properties;
-TT_CharMap cmap;
+_bdfotf_generate(face, nocmap, opts, callback, data, fp)
+FT_Face face;
 int nocmap;
 bdf_options_t *opts;
 bdf_callback_t callback;
@@ -272,49 +276,26 @@ void *data;
 bdf_font_t *fp;
 #endif
 {
-    int ismono, load_flags, have_strike;
+    int ismono;
     long awidth, code, idx;
-    short maxrb, maxlb, minlb, minx, maxx, miny, maxy;
-    short xoff, yoff, x_off, y_off, maxas, maxds;
+    short maxrb, maxlb, minlb, y, x;
+    short x_off, y_off, maxas, maxds;
     unsigned short upm, bpr, wd, ht, sx, ex, sy, ey;
     unsigned char *bmap;
     bdf_glyph_t *gp;
     double swscale;
     bdf_callback_struct_t cb;
     bdf_property_t prop;
-    TT_Instance instance;
-    TT_Glyph glyph;
-    TT_Big_Glyph_Metrics metrics, *mp;
-    TT_Instance_Metrics imetrics;
-    TT_Raster_Map raster, *rp;
-    TT_SBit_Image *sbit;
-    TT_SBit_Strike strike;
 
-    /*
-     * Create a new instance.
-     */
-    if (TT_New_Instance(face, &instance))
-      return 0;
+    FT_Size_Metrics imetrics;
+    TT_HoriHeader *horizontal = FT_Get_Sfnt_Table(face, ft_sfnt_hhea);
 
     /*
      * Set the instance resolution and point size.
      */
-    (void) TT_Set_Instance_Resolutions(instance, opts->resolution_x,
-                                       opts->resolution_y);
-    (void) TT_Set_Instance_PointSize(instance, opts->point_size);
-    (void) TT_Get_Instance_Metrics(instance, &imetrics);
-
-    /*
-     * Check to see if this font has embedded bitmaps.
-     */
-    have_strike = (TT_Get_SBit_Strike(face, instance, &strike)) ? 0 : 1;
-
-    if (have_strike)
-      (void) TT_New_SBit_Image(&sbit);
-    else if (TT_New_Glyph(face, &glyph)) {
-        (void) TT_Done_Instance(instance);
-        return 0;
-    }
+    FT_Set_Char_Size(face, 0, opts->point_size * 64,
+                     opts->resolution_x, opts->resolution_y);
+    imetrics = face->size->metrics;
 
     /*
      * Set up the initialization callback.
@@ -322,21 +303,14 @@ bdf_font_t *fp;
     if (callback != 0) {
         cb.reason = BDF_LOAD_START;
         cb.current = 0;
-        cb.total = properties->num_Glyphs;
+        cb.total = face->num_glyphs;
         (*callback)(&cb, data);
     }
 
     /*
      * Get the units per em value.
      */
-    upm = properties->header->Units_Per_EM;
-
-    /*
-     * Set the glyph loading flags.
-     */
-    load_flags = TTLOAD_SCALE_GLYPH;
-    if (opts->ttf_hint)
-      load_flags |= TTLOAD_HINT_GLYPH;
+    upm = face->units_per_EM;
 
     ismono = 1;
     wd = 0xffff;
@@ -349,73 +323,23 @@ bdf_font_t *fp;
      */
     swscale = ((double) opts->resolution_y) * ((double) opts->point_size);
 
-    minx = (properties->header->xMin * imetrics.x_ppem) / upm;
-    miny = (properties->header->yMin * imetrics.y_ppem) / upm;
-    maxx = (properties->header->xMax * imetrics.x_ppem) / upm;
-    maxy = (properties->header->yMax * imetrics.y_ppem) / upm;
-
-    maxx = (maxx - minx) + 1;
-    maxy = (maxy - miny) + 1;
-
-    raster.size = 0;
-
     for (code = fp->glyphs_used = 0; code < 0xffff; code++) {
         if (nocmap) {
             /*
              * No cmap is being used, so do each index in turn.
              */
-            if (code >= properties->num_Glyphs)
+            if (code >= face->num_glyphs)
               break;
             idx = code;
         } else
-          idx = TT_Char_Index(cmap, code);
+          idx = FT_Get_Char_Index(face, code);
 
         if (idx <= 0 ||
-            (have_strike && TT_Load_Glyph_Bitmap(face, instance, idx, sbit)) ||
-            (!have_strike && TT_Load_Glyph(instance, glyph, idx, load_flags)))
+            FT_Load_Glyph(face, idx, opts->otf_flags))
           continue;
 
-        if (have_strike) {
-            /*
-             * Set the pointers to the raster and metrics structures.
-             */
-            rp = &sbit->map;
-            mp = &sbit->metrics;
-            xoff = (63 - mp->bbox.xMin) & -64;
-            yoff = (63 - mp->bbox.yMin) & -64;
-        } else {
-            if (raster.size == 0) {
-                raster.flow = TT_Flow_Down;
-                raster.width = maxx;
-                raster.rows = maxy;
-                raster.cols = (maxx + 7) >> 3;
-                raster.size = raster.cols * raster.rows;
-                raster.bitmap = (void *) malloc(raster.size);
-            }
-
-            (void) TT_Get_Glyph_Big_Metrics(glyph, &metrics);
-
-            /*
-             * Clear the raster bitmap.
-             */
-            (void) memset((char *) raster.bitmap, 0, raster.size);
-
-            /*
-             * Grid fit to determine the x and y offsets that will force the
-             * bitmap to fit into the storage provided.
-             */
-            xoff = (63 - metrics.bbox.xMin) & -64;
-            yoff = (63 - metrics.bbox.yMin) & -64;
-
-            /*
-             * If the bitmap cannot be generated, simply continue.
-             */
-            if (TT_Get_Glyph_Bitmap(glyph, &raster, xoff, yoff))
-              continue;
-
-            rp = &raster;
-            mp = &metrics;
-        }
+        if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_MONO))
+          continue;
 
         /*
          * Increase the amount of storage by 128 every time.
@@ -434,7 +358,7 @@ bdf_font_t *fp;
          */
         gp = fp->glyphs + fp->glyphs_used++;
         gp->encoding = code;
-        gp->dwidth = mp->horiAdvance >> 6;
+        gp->dwidth = face->glyph->metrics.horiAdvance >> 6;
         gp->swidth = (unsigned short)
             (((double) gp->dwidth) * 72000.0) / swscale;
 
@@ -444,17 +368,17 @@ bdf_font_t *fp;
          */
         sx = sy = 0xffff;
         ex = ey = 0;
-        bmap = (unsigned char *) rp->bitmap;
-        for (miny = 0; miny < rp->rows; miny++) {
-            for (minx = 0; minx < rp->width; minx++) {
-                if (bmap[(miny * rp->cols) + (minx >> 3)] &
-                    (0x80 >> (minx & 7))) {
-                    if (minx < sx) sx = minx;
-                    if (minx > ex) ex = minx;
-                    if (miny < sy) sy = miny;
-                    if (miny > ey) ey = miny;
+        bmap = face->glyph->bitmap.buffer;
+        for (y = 0; y <  face->glyph->bitmap.rows; y++) {
+            for (x = 0; x < face->glyph->bitmap.width; x++) {
+                if (bmap[x >> 3] & (0x80 >> (x & 7))) {
+                    if (x < sx) sx = x;
+                    if (x > ex) ex = x;
+                    if (y < sy) sy = y;
+                    if (y > ey) ey = y;
                 }
             }
+            bmap += face->glyph->bitmap.pitch;
         }
 
         /*
@@ -483,8 +407,8 @@ bdf_font_t *fp;
          */
         wd = ex - sx;
         ht = ey - sy;
-        x_off = sx - (xoff >> 6);
-        y_off = -(yoff >> 6);
+        x_off = sx + face->glyph->bitmap_left;
+        y_off = sy + face->glyph->bitmap_top - face->glyph->bitmap.rows;
 
         /*
          * Adjust the overall bounding box.
@@ -521,13 +445,13 @@ bdf_font_t *fp;
         /*
          * Shift the bits into the glyph bitmap.
          */
-        for (maxy = 0, miny = sy; miny < ey; miny++, maxy++) {
-            for (maxx = 0, minx = sx; minx < ex; minx++, maxx++) {
-                if (bmap[(miny * rp->cols) + ((minx - sx) >> 3)] &
-                    (0x80 >> ((minx - sx) & 7)))
-                  gp->bitmap[(maxy * bpr) + (maxx >> 3)] |=
-                      (0x80 >> (maxx & 7));
+        bmap = face->glyph->bitmap.buffer + sy * face->glyph->bitmap.pitch;
+        for (y = 0; y < ey - sy; y++) {
+            for (x = 0; x < ex - sx; x++) {
+                if (bmap[(x+sx) >> 3] & (0x80 >> ((x+sx) & 7)))
+                  gp->bitmap[(y * bpr) + (x >> 3)] |= (0x80 >> (x & 7));
             }
+            bmap += face->glyph->bitmap.pitch;
         }
 
         /*
@@ -536,23 +460,10 @@ bdf_font_t *fp;
         if (callback != 0) {
             cb.reason = BDF_LOADING;
             cb.current = fp->glyphs_used;
-            cb.total = properties->num_Glyphs;
+            cb.total = face->num_glyphs;
             (*callback)(&cb, data);
         }
     }
-
-    /*
-     * Do cleanup.
-     */
-    if (have_strike)
-      TT_Done_SBit_Image(sbit);
-    else
-      TT_Done_Glyph(glyph);
-
-    TT_Done_Instance(instance);
-
-    if (raster.size > 0)
-      free((char *) raster.bitmap);
 
     /*
      * Calculate the font average width.
@@ -574,9 +485,9 @@ bdf_font_t *fp;
      * Set the font ascent and descent.
      */
     fp->font_ascent =
-        (properties->horizontal->Ascender * imetrics.y_ppem) / upm;
+        (horizontal->Ascender * imetrics.y_ppem) / upm;
     fp->font_descent =
-        -((properties->horizontal->Descender * imetrics.y_ppem) / upm);
+        -((horizontal->Descender * imetrics.y_ppem) / upm);
 
     /*
      * Determine if the font is monowidth.
@@ -641,13 +552,11 @@ bdf_font_t *fp;
 
 int
 #ifdef __STDC__
-bdfttf_load_font(TT_Face face, TT_Face_Properties *properties, short pid,
-                 short eid, bdf_options_t *opts, bdf_callback_t callback,
-                 void *data, bdf_font_t **font)
+bdfotf_load_font(FT_Face face, short pid, short eid, bdf_options_t *opts,
+                 bdf_callback_t callback, void *data, bdf_font_t **font)
 #else
-bdfttf_load_font(face, properties, pid, eid, opts, callback, data, font)
-TT_Face face;
-TT_Face_Properties *properties;
+bdfotf_load_font(face, pid, eid, opts, callback, data, font)
+FT_Face face;
 short pid, eid;
 bdf_options_t *opts;
 bdf_callback_t callback;
@@ -655,19 +564,19 @@ void *data;
 bdf_font_t **font;
 #endif
 {
-    short p, e;
     int i, nocmap, res, slen;
     bdf_font_t *fp;
     char *np, str[256];
     bdf_property_t prop;
     bdf_callback_struct_t cb;
-    TT_CharMap cmap;
+    TT_OS2 *os2 = FT_Get_Sfnt_Table(face, ft_sfnt_os2);
 
     /*
      * First get the requested cmap from the font.
      */
-    for (nocmap = i = 0; i < TT_Get_CharMap_Count(face); i++) {
-        if (!TT_Get_CharMap_ID(face, i, &p, &e) && p == pid && e == eid)
+    for (nocmap = i = 0; i < face->num_charmaps; i++) {
+        if (face->charmaps[i]->platform_id == pid &&
+            face->charmaps[i]->encoding_id == eid)
           break;
     }
 
@@ -675,12 +584,13 @@ bdf_font_t **font;
      * If the requested cmap was not found, attempt to fall back on the
      * Microsoft Unicode cmap.
      */
-    if (i == TT_Get_CharMap_Count(face)) {
-        for (i = 0; i < TT_Get_CharMap_Count(face); i++) {
-            if (!TT_Get_CharMap_ID(face, i, &p, &e) && p == 3 && e == 1)
+    if (i == face->num_charmaps) {
+        for (i = 0; i < face->num_charmaps; i++) {
+            if (face->charmaps[i]->platform_id == 3 &&
+                face->charmaps[i]->encoding_id == 1)
               break;
         }
-        if (i == TT_Get_CharMap_Count(face)) {
+        if (i == face->num_charmaps) {
             /*
              * No cmap was found.
              */
@@ -692,21 +602,10 @@ bdf_font_t **font;
              */
             pid = 3;
             eid = 1;
-            if (TT_Get_CharMap(face, i, &cmap)) {
-                /*
-                 * Could not load the Microsoft cmap for some reason.
-                 */
-                nocmap = 1;
-                pid = eid = -1;
-            }
+            FT_Set_Charmap(face, face->charmaps[i]);
         }
-    } else if (TT_Get_CharMap(face, i, &cmap)) {
-        /*
-         * Could not load the requested cmap for some reason.
-         */
-        nocmap = 1;
-        pid = eid = -1;
-    }
+    } else
+      FT_Set_Charmap(face, face->charmaps[i]);
 
     /*
      * Create the font.
@@ -722,11 +621,11 @@ bdf_font_t **font;
     fp->bpp = 1;
     fp->default_glyph = -1;
     fp->spacing = BDF_PROPORTIONAL;
-    fp->glyphs_size = properties->num_Glyphs;
+    fp->glyphs_size = face->num_glyphs;
     fp->glyphs = (bdf_glyph_t *)
-        malloc(sizeof(bdf_glyph_t) * properties->num_Glyphs);
+        malloc(sizeof(bdf_glyph_t) * face->num_glyphs);
     (void) memset((char *) fp->glyphs, 0,
-                  sizeof(bdf_glyph_t) * properties->num_Glyphs);
+                  sizeof(bdf_glyph_t) * face->num_glyphs);
 
     /*
      * Set the metrics.
@@ -738,16 +637,15 @@ bdf_font_t **font;
     /*
      * Actually generate the font.
      */
-    res = _bdfttf_generate(face, properties, cmap, nocmap, opts,
-                           callback, data, fp);
+    res = _bdfotf_generate(face, nocmap, opts, callback, data, fp);
 
     /*
      * If the number of glyphs loaded is less than the reported number of
      * glyphs, force a callback if one was provided.
      */
-    if (callback != 0 && fp->glyphs_used < properties->num_Glyphs) {
+    if (callback != 0 && fp->glyphs_used < face->num_glyphs) {
         cb.reason = BDF_LOADING;
-        cb.total = cb.current = properties->num_Glyphs;
+        cb.total = cb.current = face->num_glyphs;
         (*callback)(&cb, data);
     }
 
@@ -769,7 +667,7 @@ bdf_font_t **font;
         /*
          * Get the typeface name.
          */
-        slen = bdfttf_get_english_string(face, BDFTTF_FAMILY_STRING, 1, str);
+        slen = bdfotf_get_english_string(face, BDFOTF_FAMILY_STRING, 1, str);
         prop.name = "FAMILY_NAME";
         prop.format = BDF_ATOM;
         if (slen > 0)
@@ -781,7 +679,7 @@ bdf_font_t **font;
         /*
          * Add the CHARSET_REGISTRY and CHARSET_ENCODING properties.
          */
-        np = bdfttf_encoding_name(pid, eid);
+        np = bdfotf_encoding_name(pid, eid);
         if (strcmp(np, "ISO8859-1") == 0) {
             prop.name = "CHARSET_REGISTRY";
             prop.format = BDF_ATOM;
@@ -816,11 +714,11 @@ bdf_font_t **font;
          */
         prop.name = "WEIGHT_NAME";
         prop.format = BDF_ATOM;
-        slen = bdfttf_get_english_string(face, BDFTTF_SUBFAMILY_STRING,
+        slen = bdfotf_get_english_string(face, BDFOTF_SUBFAMILY_STRING,
                                          1, str);
         if (strcmp(str, "Regular") == 0)
           prop.value.atom = "Medium";
-        else if (properties->os2->fsSelection & 0x20)
+        else if (os2->fsSelection & 0x20)
           prop.value.atom = "Bold";
         else if (slen > 0)
           prop.value.atom = str;
@@ -833,7 +731,7 @@ bdf_font_t **font;
          */
         prop.name = "SLANT";
         prop.format = BDF_ATOM;
-        if (properties->os2->fsSelection & 0x01)
+        if (os2->fsSelection & 0x01)
           prop.value.atom = "I";
         else
           prop.value.atom = "R";
@@ -855,7 +753,7 @@ bdf_font_t **font;
         /*
          * Add the COPYRIGHT notice.
          */
-        slen = bdfttf_get_english_string(face, BDFTTF_COPYRIGHT_STRING,
+        slen = bdfotf_get_english_string(face, BDFOTF_COPYRIGHT_STRING,
                                          0, str);
         if (slen > 0) {
             prop.name = "COPYRIGHT";
@@ -867,7 +765,7 @@ bdf_font_t **font;
         /*
          * Add the special _TTF_PSNAME atom with the font Postscript name.
          */
-        slen = bdfttf_get_english_string(face, BDFTTF_POSTSCRIPT_STRING,
+        slen = bdfotf_get_english_string(face, BDFOTF_POSTSCRIPT_STRING,
                                          0, str);
         if (slen > 0) {
             prop.name = "_TTF_PSNAME";
@@ -875,6 +773,12 @@ bdf_font_t **font;
             prop.value.atom = str;
             bdf_add_font_property(fp, &prop);
         }
+
+        /*
+         * Add a message indicating the font was converted.
+         */
+        _bdf_add_comment(fp, "Font converted from OTF to BDF.", 31);
+        _bdf_add_acmsg(fp, "Font converted from OTF to BDF.", 31);
 
         /*
          * Finally, mark the font as being modified.

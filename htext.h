@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,12 +21,12 @@
  */
 
 /*
- * $Id: htext.h,v 1.32 2001/11/09 22:01:42 mleisher Exp $
+ * $Id: htext.h,v 1.37 2004/02/08 23:59:00 mleisher Exp $
  */
 static char *about_text = "\
-                 XmBDFEditor 4.5\n\
+                 XmBDFEditor 4.7\n\
               mleisher@crl.nmsu.edu\n\
-                       09 November 2001\n\
+                       09 February 2004\n\
 \n\
 XmBDFEditor is a BDF font editor that supports\n\
 these main features:\n\
@@ -51,8 +51,8 @@ these main features:\n\
   o  Imports Sun console fonts (vfont format).\n\
   o  Imports fonts from the X server.\n\
   o  Imports Windows FON/FNT fonts.\n\
-  o  Imports TrueType fonts and collections.\n\
-  o  Exports PSF fonts.\n\
+  o  Imports OpenType fonts and collections.\n\
+  o  Exports Linux console PSF2 fonts.\n\
   o  Exports HEX fonts (http://czyborra.com/unifont).\n\
   o  Edits gray scale fonts with 2 or 4 bits per pixel.\n\
 \n\
@@ -164,9 +164,8 @@ File\n\
       If the font is a CP (Linux codepage) font, this\n\
       will load all three point sizes of the font,\n\
       display the 16pt font and create editors for the\n\
-      14pt and 8pt fonts. If the font is a PSF font\n\
-      that has an embedded mapping table, this will\n\
-      remap the glyphs based on the mapping table.\n\
+      14pt and 8pt fonts. If the font is a PSF1 or PSF2\n\
+      font, the embedded mapping table is loaded as well.\n\
 \n\
     HBF Font <Ctrl+H>\n\
       Import an HBF font.\n\
@@ -175,8 +174,9 @@ File\n\
       Import a Windows FON/FNT font.  This will also\n\
       import fonts from .EXE and .DLL files.\n\
 \n\
-    TrueType Font <Ctrl+Y>\n\
-      Import a TrueType font (.ttf) or collection (.ttc).\n\
+    OpenType Font <Ctrl+Y>\n\
+      Import an OpenType (.otf), TrueType font (.ttf) or\n\
+      collection (.ttc).\n\
 \n\
     Server Font <Ctrl+G>\n\
       This will import a font from the X server.\n\
@@ -185,15 +185,21 @@ File\n\
   ======\n\
 \n\
     PSF <Ctrl+F>\n\
-      This will export the current BDF font to a PSF font\n\
-      if the BDF font is less than or equal to 8 pixels wide\n\
-      and is a character cell font.\n\
+      This will export the current BDF font or the current selection\n\
+      of glyphs to a PSF2 font.\n\
 \n\
-      Only the first 512 or 256 glyphs will be exported\n\
-      depending on how many glyphs are in the font.  A\n\
-      mapping table will be appended to the end of the\n\
-      font if there is any break in the encodings of the\n\
-      glyphs.\n\
+      During the export, an option menu will let you select whether you\n\
+      want to:\n\
+\n\
+        A. Export the font with it's Unicode mappings.\n\
+\n\
+        B. Export just the glyphs.\n\
+\n\
+        C. Export just the Unicode mappings in the simple\n\
+           ASCII form used by the psfaddtable(1) program.\n\
+\n\
+      Only the first 512 glyphs will be exported from\n\
+      the font.\n\
 \n\
     HEX\n\
       This will export the current BDF font into the\n\
@@ -657,6 +663,17 @@ Edit\n\
     glyph position in the Font Grid.  If the\n\
     current glyph has been modified, a save prompt\n\
     will appear before moving to the previous glyph.\n\
+\n\
+  Edit PSF Unicode Mappings <Ctrl+F>\n\
+    This will pop up a list of Unicode mappings\n\
+    associated with the glyph.  The list can be edited\n\
+    and once the Apply button has been pressed, the\n\
+    the changes will be applied to the glyph in the\n\
+    font proper.\n\
+\n\
+    If you do not close this editor, it will be updated\n\
+    with Unicode mappings if you move to the next or\n\
+    previous glyph.\n\
 \n\
 Operation\n\
 =========\n\
@@ -1177,7 +1194,7 @@ the configuration file:\n\
 \n\
     hint_truetype_glyphs <boolean> [default: \"true\"]\n\
 \n\
-      By default, importing TrueType fonts will have\n\
+      By default, importing OpenType fonts will have\n\
       the glyphs hinted.  If this option is set to\n\
       \"false\", the glyphs will not be hinted.\n\
 \n\
@@ -1210,26 +1227,26 @@ the configuration file:\n\
       file.\n\
 ";
 
-static char *ttf_text = "\
+static char *otf_text = "\
 If this program was compiled with the FreeType\n\
-library to support importing TrueType fonts (.ttf\n\
-extension) and TrueType collections (.ttc extension),\n\
-when importing a TrueType font or collection, a dialog\n\
+library to support importing OpenType fonts\n\
+(.otf extension), TrueType fonts (.ttfextension), and\n\
+TrueType collections (.ttc extension),\n\
+when importing a font or collection, a dialog\n\
 will be presented to allow you to choose a single font,\n\
 the platform, and encoding.  If you are loading a\n\
 TrueType collection, there will be more than one font\n\
 to choose from.\n\
 \n\
-TrueType fonts imported will use the point size and\n\
+OpenType fonts imported will use the point size and\n\
 resolution set in your ~/.xmbdfedrc file or the defaults\n\
 set at compile time if you do not have a ~/.xmbdfedrc.\n\
 \n\
 The point size and resolution can also be set before\n\
 importing using the \"Setup\" dialog.\n\
 \n\
-The renderer used to import TrueType fonts is\n\
-available from ftp.physiol.med.tu-muenchen.de\n\
-in the directory /pub/freetype/devel/.\n\
+The renderer used to import OpenType fonts is\n\
+available from http://www.freetype.org.\n\
 ";
 
 static char *fnt_text = "\
@@ -1241,18 +1258,34 @@ the \"Import All\" button.\n\
 ";
 
 static char *psf_text ="\
-When a PSF font is imported, it can map single glyphs\n\
-to multiple locations with a mapping table following\n\
-the glyphs.  This can cause a font to have more than\n\
-256 glyphs when it is imported, even if it only had\n\
-256 to begin with.  This means that when the font is\n\
-exported as PSF, it will be padded with blank glyphs\n\
-when necessary and will have appropriate separated\n\
-entries in the mapping table if one is generated.\n\
+This editor imports both PSF1 and PSF2 Linux\n\
+console fonts.  It only exports the newer PSF2\n\
+fonts, usually with a \".psfu\" extension.\n\
 \n\
-Because of this behavior, PSF fonts exported from\n\
-xmbdfed might not have the same size as the original\n\
-font.\n\
+When a PSF1 or PSF2 font is imported, it can have\n\
+a Unicode mapping table following the glyphs.\n\
+This mapping table can be modified through the\n\
+Glyph Editor from the Edit menu or by pressing\n\
+Ctrl+F.  There are two kinds of mappings:\n\
+\n\
+   1. A single Unicode character.\n\
+\n\
+   2. A sequence of more than one Unicode character.\n\
+\n\
+When editing the mappings, the common convention\n\
+is to prefix Unicode values with \"U+\" although\n\
+\"0x\" is accepted as well. When entering more than\n\
+one character code, the codes are expected to be\n\
+separated by at least one space.\n\
+\n\
+Unicode mappings are included during cut and paste\n\
+operations, allowing them to be transfered to other\n\
+fonts or other locations within one font.\n\
+\n\
+There is no support currently for attaching an\n\
+external mapping table to a font.  This can be\n\
+done outside this editor using the\n\
+\"psfaddtable(1)\" program on Linux.\n\
 ";
 
 static char *hex_text = "\
@@ -1326,7 +1359,7 @@ The options that can be set are:\n\
     These fields allow these three values to be set\n\
     for new fonts created with \"Ctrl+N\" and also are\n\
     used to set the desired size and resolution of\n\
-    TrueType fonts when they are imported.\n\
+    OpenType fonts when they are imported.\n\
 \n\
   Proportional, Monowidth, and Character Cell\n\
 \n\
@@ -1383,9 +1416,9 @@ Along the bottom are some buttons.  These buttons are:\n\
     more options.  The close button at the bottom\n\
     simply closes the window.  These options are:\n\
 \n\
-      Hint TrueType Glyphs\n\
+      Hint OpenType Glyphs\n\
 \n\
-        If this option is set, the TrueType renderer\n\
+        If this option is set, the OpenType renderer\n\
         will use the hints in the font if they exist.\n\
         This can sometimes make clearer glyphs at small\n\
         point sizes.\n\
@@ -1455,7 +1488,7 @@ Along the bottom are some buttons.  These buttons are:\n\
     SBIT Metrics\n\
 \n\
       This option toggles the generation of an SBIT metrics\n\
-      file which can be incorporated into a TrueType font\n\
+      file which can be incorporated into a OpenType font\n\
       using the SBIT utility provided by Microsoft.\n\
 ";
 

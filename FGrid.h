@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_XmuttFontGrid
 
 /*
- * $Id: FGrid.h,v 1.10 2001/09/19 21:00:41 mleisher Exp $
+ * $Id: FGrid.h,v 1.12 2004/02/07 21:20:08 mleisher Exp $
  */
 
 /*
@@ -141,10 +141,11 @@ typedef struct {
 #define XmuttFG_DELETE            4
 #define XmuttFG_INSERT            5
 #define XmuttFG_REPLACE           6
-#define XmuttFG_NAME_CHANGE       7
-#define XmuttFG_RESIZE            8
-#define XmuttFG_MODIFIED          9
-#define XmuttFG_GLYPH_NAME_CHANGE 10
+#define XmuttFG_REPLACE_MAPPINGS  7
+#define XmuttFG_NAME_CHANGE       8
+#define XmuttFG_RESIZE            9
+#define XmuttFG_MODIFIED          10
+#define XmuttFG_GLYPH_NAME_CHANGE 11
 
 typedef struct {
     int reason;
@@ -192,6 +193,9 @@ extern void XmuttFontGridUpdateMetrics __((Widget w, bdf_metrics_t *metrics));
 
 extern void XmuttFontGridUpdateFont __((Widget w, bdf_glyph_t *glyph,
                                         Boolean unencoded));
+
+extern void XmuttFontGridUpdatePSFMappings __((Widget w, long encoding,
+                                               bdf_psf_unimap_t *mappings));
 
 extern void XmuttFontGridPageInfo
     __((Widget w, XmuttFontGridPageInfoStruct *pageinfo));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrid.c,v 1.10 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrid.c,v 1.13 2004/02/08 23:58:59 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfgrid.c,v 1.10 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] = "$Id: bdfgrid.c,v 1.13 2004/02/08 23:58:59 mleisher Exp $";
 #endif
 #endif
 
@@ -483,8 +483,7 @@ int unencoded;
     gr->glyph_y = ny = gr->base_y - gr->glyph_bbx.ascent;
 
     /*
-     * Now copy the glyph bitmap to the appropriate location in the
-     * grid.
+     * Now copy the glyph bitmap to the appropriate location in the grid.
      */
     bpr = ((gr->glyph_bbx.width * gr->bpp) + 7) >> 3;
     gsize = ((gr->grid_width * gr->bpp) + 7) >> 3;
@@ -510,6 +509,18 @@ int unencoded;
     bdf_grid_crop(gr, 0);
 
     /*
+     * Copy any Unicode mappings that might be present for this glyph, even if
+     * it is a proportional font.  It might be changed to a character cell or
+     * monowidth font later.
+     */
+    gr->unicode.map_size = glp->unicode.map_size;
+    gr->unicode.map_used = glp->unicode.map_used;
+    gr->unicode.map = (unsigned char *)
+        malloc(sizeof(unsigned char) * gr->unicode.map_size);
+    (void) memcpy((char *) gr->unicode.map, (char *) glp->unicode.map,
+                  sizeof(unsigned char) * gr->unicode.map_used);
+
+    /*
      * Return the grid.
      */
     return gr;
@@ -532,6 +543,8 @@ bdf_glyph_grid_t *grid;
       free((char *) grid->bitmap);
     if (grid->sel.bytes > 0)
       free((char *) grid->sel.bitmap);
+    if (grid->unicode.map_size > 0)
+      free((char *) grid->unicode.map);
     free((char *) grid);
 }
 

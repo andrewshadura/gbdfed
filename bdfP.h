@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_bdfP
 
 /*
- * $Id: bdfP.h,v 1.7 2001/09/19 21:00:42 mleisher Exp $
+ * $Id: bdfP.h,v 1.17 2004/02/08 23:58:59 mleisher Exp $
  */
 
 #include "bdf.h"
@@ -91,6 +91,13 @@ extern double _bdf_sin_tbl[];
 extern double _bdf_tan_tbl[];
 
 /*
+ * PSF magic numbers.
+ */
+extern unsigned char _bdf_psf1magic[];
+extern unsigned char _bdf_psf2magic[];
+extern char _bdf_psfcombined[];
+
+/*
  * Arrays of masks for test with different bits per pixel.
  */
 extern unsigned char onebpp[];
@@ -108,6 +115,12 @@ extern void _bdf_memmove __((char *dest, char *src, unsigned long bytes));
 extern short _bdf_atos __((char *s, char **end, int base));
 extern long _bdf_atol __((char *s, char **end, int base));
 extern unsigned long _bdf_atoul __((char *s, char **end, int base));
+
+/*
+ * Function to locate the nearest glyph to a specified encoding.
+ */
+extern bdf_glyph_t *_bdf_locate_glyph __((bdf_font_t *font, long encoding,
+                                          int unencoded));
 
 /*
  * Macros to test/set the modified status of a glyph.
@@ -132,6 +145,44 @@ extern void _bdf_add_comment __((bdf_font_t *font, char *comment,
  * Function to do glyph name table cleanup when exiting.
  */
 extern void _bdf_glyph_name_cleanup __((void));
+
+/*
+ * Function to pad cells when saving glyphs.
+ */
+extern void _bdf_pad_cell __((bdf_font_t *font, bdf_glyph_t *glyph,
+                              bdf_glyph_t *cell));
+
+/*
+ * Function to crop glyphs down to their minimum bitmap.
+ */
+extern void _bdf_crop_glyph __((bdf_font_t *font, bdf_glyph_t *glyph));
+
+/*
+ * Routine to generate a string list from the PSF2 Unicode mapping format.
+ */
+extern char **_bdf_psf_unpack_mapping __((bdf_psf_unimap_t *unimap,
+                                          int *num_seq));
+
+/*
+ * Routine to convert a string list of mappings back to PSF2 format.
+ */
+extern int _bdf_psf_pack_mapping __((char **list, int len,
+                                     long encoding, bdf_psf_unimap_t *map));
+
+#if 0
+/*
+ * This routine is used for locating Unicode mappings for PSF fonts.
+ */
+extern int _bdf_psf_locate_mapping __((bdf_font_t *font, long encoding,
+                                       unsigned char **pos,
+                                       unsigned long *len));
+
+/*
+ * A routine to replace Unicode mappings in the font.
+ */
+extern int _bdf_psf_replace_mappings __((bdf_font_t *font, long from,
+                                         bdf_psf_unimap_t *map));
+#endif
 
 #undef __
 

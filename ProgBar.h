@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_ProgBar
 
 /*
- * $Id: ProgBar.h,v 1.5 2001/09/19 21:00:42 mleisher Exp $
+ * $Id: ProgBar.h,v 1.6 2004/01/29 17:15:36 mleisher Exp $
  */
 
 #include <Xm/Xm.h>

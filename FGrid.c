@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: FGrid.c,v 1.25 2001/09/19 21:00:40 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: FGrid.c,v 1.28 2004/02/08 23:58:59 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: FGrid.c,v 1.25 2001/09/19 21:00:40 mleisher Exp $";
+static char rcsid[] = "$Id: FGrid.c,v 1.28 2004/02/08 23:58:59 mleisher Exp $";
 #endif
 #endif
 
@@ -319,13 +319,17 @@ unsigned long *bytes;
          gl->glyphs_used);
 
     /*
-     * Figure out how much extra will be needed for the names and bitmaps.
+     * Figure out how much extra will be needed for the names, bitmaps, and
+     * PSF Unicode mappings.
      */
     for (i = 0, gp = gl->glyphs; i < gl->glyphs_used; i++, gp++) {
-        nlen = 0;
-        if (gp->name)
-          nlen = (unsigned long) (strlen(gp->name) + 1);
-        bcount += nlen + gp->bytes;
+        nlen = (gp->name) ? (unsigned long) (strlen(gp->name) + 1) : 0;
+        /*
+         * The extra 2 bytes is for encoding the number of bytes used for the
+         * Unicode mappings, even if it is 0.  This could be a problem later
+         * if a set of mappings legitimately exceeds 2^16 in length.
+         */
+        bcount += nlen + gp->bytes + 2 + gp->unicode.map_used;
     }
 
     /*
@@ -441,6 +445,17 @@ unsigned long *bytes;
             (void) memcpy((char *) sp, (char *) gp->bitmap, gp->bytes);
             sp += gp->bytes;
         }
+
+        /*
+         * Encode the PSF Unicode mappings.  Even if there aren't any
+         */
+        *sp++ = (gp->unicode.map_used >> 8) & 0xff;
+        *sp++ = gp->unicode.map_used & 0xff;
+        if (gp->unicode.map_used > 0) {
+            (void) memcpy((char *) sp, (char *) gp->unicode.map,
+                          sizeof(unsigned char) * gp->unicode.map_used);
+            sp += gp->unicode.map_used;
+        }
     }
 
     /*
@@ -479,6 +494,8 @@ unsigned char *sel;
           free(gp->name);
         if (gp->bytes > 0)
           free((char *) gp->bitmap);
+        if (gp->unicode.map_size > 0)
+          free((char *) gp->unicode.map);
     }
 
     /*
@@ -591,6 +608,20 @@ unsigned char *sel;
             gp->bitmap = (unsigned char *) malloc(gp->bytes);
             (void) memcpy((char *) gp->bitmap, (char *) sel, gp->bytes);
             sel += gp->bytes;
+        }
+
+        /*
+         * Get the Unicode mappings.
+         */
+        gp->unicode.map_used = GETSHORT(sel);
+        sel += 2;
+        if (gp->unicode.map_used > 0) {
+            gp->unicode.map_size = ((gp->unicode.map_used >> 2) + 
+                                    ((gp->unicode.map_used & 3) ? 1 : 0)) << 2;
+            gp->unicode.map = (unsigned char *) malloc(gp->unicode.map_size);
+            (void) memcpy((char *) gp->unicode.map, (char *) sel,
+                          gp->unicode.map_used);
+            sel += gp->unicode.map_used;
         }
     }
 }
@@ -976,6 +1007,11 @@ bdf_glyph_t *glyph;
       case 2: masks = twobpp; break;
       case 4: masks = fourbpp; break;
     }
+
+    /*
+     * Don't forget the x_offset when positioning the glyph in the Fgrid.
+     */
+    x += glyph->bbx.x_offset;
 
     fw->fgrid.gpoints_used = 0;
     bmap = glyph->bitmap;
@@ -2507,6 +2543,38 @@ Boolean unencoded;
     cb.start = cb.end = glyph->encoding;
     cb.unencoded = fw->fgrid.unencoded;
     XtCallCallbackList(w, fw->fgrid.modified, (XtPointer) &cb);
+}
+
+void
+#ifndef _NO_PROTO
+XmuttFontGridUpdatePSFMappings(Widget w, long encoding,
+                               bdf_psf_unimap_t *mappings)
+#else
+XmuttFontGridUpdatePSFMappings(w, encoding, mappings)
+Widget w;
+long encoding;
+bdf_psf_unimap_t *mappings;
+#endif
+{
+    XmuttFontGridWidget fw;
+    XmuttFontGridModifiedCallbackStruct cb;
+    int unenc;
+
+    _XmuttFGridCheckClass(w);
+
+    fw = (XmuttFontGridWidget) w;
+
+    unenc = (fw->fgrid.unencoded == True) ? 1 : 0;
+
+    if (bdf_replace_mappings(fw->fgrid.font, encoding, mappings, unenc)) {
+        /*
+         * Set up and call the modified callback.
+         */
+        cb.reason = XmuttFG_REPLACE_MAPPINGS;
+        cb.start = cb.end = encoding;
+        cb.unencoded = fw->fgrid.unencoded;
+        XtCallCallbackList(w, fw->fgrid.modified, (XtPointer) &cb);
+    }
 }
 
 int

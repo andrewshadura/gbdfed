@@ -1,7 +1,7 @@
 .\"
-.\" $Id: xmbdfed.man,v 1.16 2001/09/19 21:00:44 mleisher Exp $
+.\" $Id: xmbdfed.man,v 1.20 2004/02/08 23:59:00 mleisher Exp $
 .\"
-.TH XMBDFED 1 "07 September 2001" "X Version 11"
+.TH XMBDFED 1 "09 February 2004" "X Version 11"
 .SH NAME 
 xmbdfed \- Motif-based BDF font editor
 
@@ -20,8 +20,8 @@ can import Metafont PK/GF fonts, Han Bitmap Font Format (HBF) fonts, Linux
 console fonts (PSF, CP, and EGA/VGA) fonts, Sun VF fonts, TrueType (TTF)
 fonts, or grab a font from the X server.
 .I xmbdfed
-can export PSF Linux fonts and HEX fonts (see online help).  The editor
-support two and four bits per pixel gray scale fonts.
+can export PSF2 Linux console fonts and HEX fonts (see online help).
+The editor support two and four bits per pixel gray scale fonts.
 
 .I xmbdfed
 works on X Window System Version 11 (X11), Release 5 or Release
@@ -54,7 +54,8 @@ attempts to make metrics corrections automatically).
 .I -np
 do not pad character-cell bitmaps (by default,
 .I xmbdfed
-pads character-cell bitmaps with 0's to the cell dimensions).
+pads character-cell bitmaps with 0's to the cell dimensions when the font is 
+saved).
 .PP
 .TP 8
 .I -bp
@@ -216,7 +217,7 @@ Import a Metafont PK or GF font.
 .TP 8
 .in 4
 .I Console Font <Ctrl+L>
-Import a binary console font used by Linux and Sun (PSF, CP, vfont, and
+Import a binary console font used by Linux and Sun (PSF1, PSF2, CP, vfont, and
 other font formats).
 .PP
 .TP 8
@@ -246,12 +247,24 @@ The \fIExport\fR submenu of the \fIFile\fR menu has the following entries:
 .TP 8
 .in 4
 .I PSF <Ctrl+F>
-This will export the current BDF font to a PSF font if the BDF font is less
-than 8 pixels wide and is a character cell font.
+This will export the current BDF font or the currently selected glyphs to a
+PSF2 font.  Glyphs in PSF fonts are usually arranged in a specific way to make
+them work properly with the basic display driver.  Many of these fonts come
+with mapping tables attached that indicate which Unicode characters a glyph
+can be used for.  The mapping table allows the console to attempt to display
+Unicode text.
 .sp
-Only the first 512 or 256 glyphs will be exported depending on how many glyphs
-are in the font.  A mapping table will be appended to the end of the font if
-there is any break in the encodings of the glyphs.
+During the export, an option menu will let you select whether to:
+.TP 10
+.in 10
+Export Font with Mapping Table
+.br
+Export Font Only
+.br
+Export Mapping Table Only
+.TP 8
+.in 8
+Only the first 512 glyphs will be exported to the font.
 .PP
 .TP 8
 .in 4
@@ -647,7 +660,7 @@ Sets both default horizontal and vertical resolutions.
 Sets the default font spacing ("p", "m", or "c")
 
 .SH "SEE ALSO"
-xfed(1), bdftopcf(1), bdftosnf(1)
+xfed(1), bdftopcf(1), bdftosnf(1), psfaddtable(1), psfgettable(1), pfaedit(1)
 .br
 \fIGlyph Bitmap Distribution Format (BDF) Specification\fP, Application
 Note 5005, Adobe System Inc, 1993
@@ -711,6 +724,14 @@ Humphrey Clerx <humphrey.clerx@eurocontrol.be> for a bug report.
 Rudolf Cejka <cejkar@dcse.fee.vutbr.cz> for bug fixes and a suggestion.
 .br
 Baruch Even <baruch@ev-en.org> for a bug fix.
+.br
+Sergey Vlasov <vsu@mivlgu.murom.ru> for bug fixes.
+.br
+Daniel Neuburger <daniel.neuburger@lmco.com> for bug fixes.
+.br
+Pierre HANSER <Pierre.Hanser@sxb.bsf.alcatel.fr> for a bug fix.
+.br
+Patrick Hagglund <patrik.hagglund@bredband.net> for FreeType 2 support.
 
 .SH AUTHOR
 Mark Leisher

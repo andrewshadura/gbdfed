@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: help.c,v 1.10 2001/11/09 22:01:42 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: help.c,v 1.12 2004/02/02 05:11:05 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: help.c,v 1.10 2001/11/09 22:01:42 mleisher Exp $";
+static char rcsid[] = "$Id: help.c,v 1.12 2004/02/02 05:11:05 mleisher Exp $";
 #endif
 #endif
 
@@ -66,7 +66,7 @@ static MXFEditorHelpMap topics[] = {
     {'C', "Configuration File", 0},
     {'S', "Setup Dialog", 0},
     {'W', "Windows Font Notes", 0},
-    {'T', "TrueType Font Notes", 0},
+    {'T', "OpenType Font Notes", 0},
     {'P', "PSF Font Notes", 0},
     {'H', "HEX Font Notes", 0},
     {'o', "Color Notes", 0},
@@ -118,7 +118,7 @@ XtPointer client_data, call_data;
         topics[4].help_text = conf_text;
         topics[5].help_text = setup_text;
         topics[6].help_text = fnt_text;
-        topics[7].help_text = ttf_text;
+        topics[7].help_text = otf_text;
         topics[8].help_text = psf_text;
         topics[9].help_text = hex_text;
         topics[10].help_text = color_text;

@@ -1,8 +1,8 @@
 #
-# $Id: README,v 1.24 2001/11/09 22:00:18 mleisher Exp $
+# $Id: README,v 1.27 2004/02/17 04:32:21 mleisher Exp $
 #
 
-XmBDFEditor 4.5
+XmBDFEditor 4.7
 
 INTRO
 -----
@@ -89,7 +89,8 @@ To compile XmBDFEditor, you will need the following:
 
   Compiler     : ISO, Traditional C, or C++ compiler
   Window System: X11R5 or X11R6
-  Toolkit      : Motif 1.2.* or 2.*
+  Toolkit      : OpenMotif <http://www.openmotif.org> or
+                 LessTif <http://www.lesstif.org>
 
 Optional:
   The FreeType and HBF import capabilities are optional.  To use them, you
@@ -125,7 +126,7 @@ Step 2:
 WARNINGS
 --------
 
-1. When compiling on HP/UX, the htext.h file has long catenated strings that
+1. When compiling on HP/UX, the htext.h file has long concatenated strings that
    require the -H option (noted by W. Chao).
 
 ACKNOWLEDGEMENTS
@@ -213,7 +214,21 @@ Thanks go to the following people:
   Baruch Even <baruch@ev-en.org> for providing a fix for a bug that should
   have shown up long ago dealing with font properties.
 
+  Sergey Vlasov <vsu@mivlgu.murom.ru> for pointing out a serious problem with
+  naming glyphs from the Unicode Character Database and for providing a fix
+  for a potential buffer overflow problem.
+
+  Daniel Neuburger <daniel.neuburger@lmco.com> for providing a patch that
+  fixes a display problem in the Font Grid.
+
+  Pierre HANSER <Pierre.Hanser@sxb.bsf.alcatel.fr> for a patch to fix a
+  problem loading font names that are not NULL terminated from the end of
+  FON/FNT files.
+
+  Patrick Hagglund <patrik.hagglund@bredband.net> for providing the patches to
+  use FreeType 2.
+
 AUTHOR
 ------
-  mleisher@crl.nmsu.edu (Mark Leisher)
-  09 November 2001
+  Mark Leisher <mleisher@crl.nmsu.edu>
+  17 February 2004

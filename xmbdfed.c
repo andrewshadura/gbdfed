@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: xmbdfed.c,v 1.27 2001/09/19 21:00:44 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: xmbdfed.c,v 1.35 2004/02/08 23:59:00 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: xmbdfed.c,v 1.27 2001/09/19 21:00:44 mleisher Exp $";
+static char rcsid[] = "$Id: xmbdfed.c,v 1.35 2004/02/08 23:59:00 mleisher Exp $";
 #endif
 #endif
 
@@ -57,7 +57,7 @@ static char rcsid[] = "$Id: xmbdfed.c,v 1.27 2001/09/19 21:00:44 mleisher Exp $"
  *
  **************************************************************************/
 
-Widget top = 0, questd = 0, errd = 0, saved = 0, opend = 0, exportd = 0;
+Widget top = 0, questd = 0, errd = 0, saved = 0, opend = 0;
 XtAppContext app = 0;
 Boolean yes_no_answer = False;
 Boolean yes_no_done = False;
@@ -77,6 +77,8 @@ MXFEditorOptions xmbdfed_opts;
  * Local variables.
  *
  **************************************************************************/
+
+static Widget exportd = 0, psf_frame = 0;
 
 /*
  * The watch cursor.
@@ -101,7 +103,7 @@ static Boolean exiting = False;
 #define HGINFO "\"%s\" %04lX (%02X,%02X)\nascent %d descent %d right %d left %d"
 
 static String fallback_resources[] = {
-    "*fontList: -adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1",
+    "*fontList: -adobe-new century schoolbook-medium-r-normal--14-140-75-75-p-82-iso8859-1",
     (String) NULL,
 };
 
@@ -543,7 +545,7 @@ XtPointer client_data, call_data;
 
     suff = 0;
     switch (ed->filemenu.export_type) {
-      case XMBDFED_EXPORT_PSF: suff = ".psf"; break;
+      case XMBDFED_EXPORT_PSF: suff = ".psfu"; break;
       case XMBDFED_EXPORT_HEX: suff = ".hex"; break;
     }
 
@@ -592,10 +594,14 @@ XtPointer client_data, call_data;
 {
     FILE *out;
     char *path, *file, *fp;
+    bdf_font_t *font;
     MXFEditor *ed;
     XmFileSelectionBoxCallbackStruct *cb;
+    XmuttFontGridSelectionStruct sinfo;
 
     ed = &editors[active_editor];
+
+    sinfo.start = sinfo.end = -1;
 
     path = fp = 0;
 
@@ -628,17 +634,25 @@ XtPointer client_data, call_data;
          * Unbuffer the output and write the font.
          */
         setbuf(out, 0);
+        font = XmuttFontGridFont(ed->fgrid);
         switch (ed->filemenu.export_type) {
           case XMBDFED_EXPORT_PSF:
-            bdf_export_psf(out, XmuttFontGridFont(ed->fgrid));
+            if (XmuttFontGridHasSelection(ed->fgrid))
+              XmuttFontGridSelectionInfo(ed->fgrid, &sinfo);
+            if (sinfo.start == sinfo.end) {
+                sinfo.start = font->glyphs[0].encoding;
+                sinfo.end = font->glyphs[font->glyphs_used - 1].encoding;
+            }
+            bdf_export_psf(out, font, &xmbdfed_opts.font_opts, sinfo.start,
+                           sinfo.end);
             break;
           case XMBDFED_EXPORT_HEX:
             if (xmbdfed_opts.progbar)
-              bdf_export_hex(out, XmuttFontGridFont(ed->fgrid),
+              bdf_export_hex(out, font, &xmbdfed_opts.font_opts,
                              UpdateProgressBar, (void *) fp);
             else {
                 WatchCursor(ed->fgrid, True);
-                bdf_export_hex(out, XmuttFontGridFont(ed->fgrid), 0, 0);
+                bdf_export_hex(out, font, &xmbdfed_opts.font_opts, 0, 0);
                 WatchCursor(ed->fgrid, False);
             }
             break;
@@ -897,6 +911,116 @@ XtPointer client_data, call_data;
 
 static void
 #ifndef _NO_PROTO
+SetPSFOptions(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+SetPSFOptions(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    Widget fstext;
+    int flags = (int) client_data;
+    int pos1, pos2;
+    XmString s;
+    char *suff, *sp, *ep;
+    Arg av[2];
+
+    fstext = XmFileSelectionBoxGetChild(exportd, XmDIALOG_TEXT);
+    suff = 0;
+
+    if (flags == BDF_PSF_UNIMAP) {
+        /*
+         * If the option to export only the Unicode map is set, then
+         * force the export dialog to refilter for .uni files.
+         */
+        s = XmStringCreateSimple("*.[Uu][Nn][Ii]");
+        suff = ".uni";
+    } else if (xmbdfed_opts.font_opts.psf_flags == BDF_PSF_UNIMAP) {
+        /*
+         * If the last option was to export only the Unicode map, force the
+         * export dialog to refilter for \.psfu? files again.
+         */
+        s = XmStringCreateSimple("*.[Pp][Ss][Ff]*");
+        /*
+         * NOTE: This will change back to ".psf" in the future once
+         * distributions ship only PSF2 fonts.
+         */
+        suff = ".psfu";
+    }
+
+    /*
+     * Update the export flags.
+     */
+    xmbdfed_opts.font_opts.psf_flags = flags;
+
+    if (suff != 0) {
+        /*
+         * Get the contents of the text field before updating the
+         * filter pattern to avoid losing the file name.
+         */
+        sp = XmTextFieldGetString(fstext);
+
+        /*
+         * Update the filter pattern.
+         */
+        XtSetArg(av[0], XmNpattern, s);
+        XtSetValues(exportd, av, 1);
+        XmStringFree(s);
+
+        /*
+         * Now update the text field.
+         */
+        if ((ep = strrchr(sp, '.')))
+          /*
+           * Chop off the current suffix, whatever it was.
+           */
+          *ep = 0;
+
+        (void) strcpy(name, sp);
+
+        if (ep) {
+          /*
+           * Append the new suffix.
+           */
+            ep = name + (ep - sp);
+            (void) strcpy(ep, suff);
+        }
+
+        XtFree(sp);
+
+        /*
+         * Get the positions for the highlight and cursor.
+         */
+        if ((sp = strrchr(name, '/')) == 0)
+          sp = name;
+        else
+          /*
+           * Skip the slash.
+           */
+          sp++;
+
+        pos1 = sp - name;
+        pos2 = ep - name;
+        XmTextFieldSetString(fstext, name);
+
+        /*
+         * This is to force the whole filename to display in
+         * the text field, which it isn't doing for some reason.
+         */
+        XmTextFieldSetCursorPosition(fstext, pos2 + strlen(suff));
+        XmTextFieldSetCursorPosition(fstext, pos2);
+        if (pos2 > pos1)
+          XmTextFieldSetSelection(fstext, pos1, pos2, CurrentTime);
+
+        /*
+         * Force the focus back to the text field.
+         */
+        (void) XmProcessTraversal(fstext, XmTRAVERSE_CURRENT);
+    }
+}
+
+static void
+#ifndef _NO_PROTO
 OpenExportDialog(Widget w, MXFEditor *ed)
 #else
 OpenExportDialog(w, ed)
@@ -905,7 +1029,7 @@ MXFEditor *ed;
 #endif
 {
     Boolean free_dir;
-    Widget fstext;
+    Widget fstext, pdown, tmp, opts;
     int pos1, pos2;
     char *dir, *dp, *ep, *suff;
     bdf_font_t *font;
@@ -922,24 +1046,21 @@ MXFEditor *ed;
         /*
          * Do some error checking before even starting up the dialog.
          */
-        if (font->spacing != BDF_CHARCELL || font->bbx.width > 8) {
-            dp = name;
-            sprintf(dp, "Unable to export as PSF.");
-            dp += strlen(dp);
-            if (font->bbx.width > 8) {
-                sprintf(dp, "\nFont width should be <= 8 but is %d.",
-                        font->bbx.width);
-                dp += strlen(dp);
-            }
-            if (font->spacing != BDF_CHARCELL)
-              sprintf(dp, "\nFont is not a character cell font.");
+        if (font->spacing == BDF_PROPORTIONAL) {
+            sprintf(name, "Unable to export as PSF. %s. %s.",
+                    "\nFont is not a proportional width font",
+                    "\nFont should be character cell or monowidth");
             ErrorDialog(name);
             return;
         }
 
         sprintf(title, "%s: Export PSF Font", app_name);
-        s = XmStringCreateSimple("*.[Pp][Ss][Ff]");
-        suff = ".psf";
+        s = XmStringCreateSimple("*.[Pp][Ss][Ff]*");
+        /*
+         * NOTE: This will change back to ".psf" in the future once
+         * distributions ship only PSF2 fonts.
+         */
+        suff = ".psfu";
         break;
       case XMBDFED_EXPORT_HEX:
         sprintf(title, "%s: Export HEX Font", app_name);
@@ -960,6 +1081,38 @@ MXFEditor *ed;
                       (XtPointer) exportd);
         XtAddCallback(exportd, XmNcancelCallback, DoClose,
                       (XtPointer) XtParent(exportd));
+
+        /*
+         * Create the option menu for PSF fonts.
+         */
+        psf_frame = XtCreateManagedWidget("xmbdfed_export_psf_frame",
+                                          xmFrameWidgetClass, exportd,
+                                          0, 0);
+        XtSetArg(av[0], XmNchildType, XmFRAME_TITLE_CHILD);
+        tmp = XtCreateManagedWidget("PSF Export Options", xmLabelWidgetClass,
+                                    psf_frame, av, 1);
+        opts = XmCreateOptionMenu(psf_frame,
+                                  "xmbdfed_psf_export_options_menu", 0, 0);
+
+        pdown = XmCreatePulldownMenu(opts, "xmbdfed_psf_export_options",
+                                     0, 0);
+        XtSetArg(av[0], XmNsubMenuId, pdown);
+        XtSetValues(opts, av, 1);
+
+        tmp = XtCreateManagedWidget("Font with Unicode Map",
+                                    xmPushButtonWidgetClass, pdown, 0, 0);
+        XtAddCallback(tmp, XmNactivateCallback, SetPSFOptions,
+                      (XtPointer) (BDF_PSF_FONT|BDF_PSF_UNIMAP));
+        tmp = XtCreateManagedWidget("Font Only",
+                                    xmPushButtonWidgetClass, pdown, 0, 0);
+        XtAddCallback(tmp, XmNactivateCallback, SetPSFOptions,
+                      (XtPointer) BDF_PSF_FONT);
+        tmp = XtCreateManagedWidget("Unicode Map Only (plain text)",
+                                    xmPushButtonWidgetClass, pdown, 0, 0);
+        XtAddCallback(tmp, XmNactivateCallback, SetPSFOptions,
+                      (XtPointer) BDF_PSF_UNIMAP);
+
+        XtManageChild(opts);
         XtManageChild(exportd);
     } else {
         XtSetArg(av[0], XmNtitle, title);
@@ -969,6 +1122,17 @@ MXFEditor *ed;
         XtSetValues(exportd, av, 1);
         XmStringFree(s);
     }
+
+    /*
+     * Show or hide the PSF options depending on the export type and if
+     * the font actually has a Unicode mapping table or not.  If it does not,
+     * then there is no point in offering to export the font with a table or
+     * to export the table by itself.
+     */
+    if (ed->filemenu.export_type == XMBDFED_EXPORT_PSF)
+      XtManageChild(psf_frame);
+    else
+      XtUnmanageChild(psf_frame);
 
     free_dir = False;
     dir = 0;
@@ -981,7 +1145,7 @@ MXFEditor *ed;
         if ((dp = strrchr(name, '.')))
           (void) strcpy(dp, suff);
         else
-          (void) strcat(dp, suff);
+          (void) strcat(name, suff);
     } else
       sprintf(name, "unnamed%ld%s", ed->id, suff);
 
@@ -1005,8 +1169,7 @@ MXFEditor *ed;
      * Set the filename in the file selection box.
      */
     fstext = XmFileSelectionBoxGetChild(exportd, XmDIALOG_TEXT);
-    if ((ep = strchr(name, '.')) == name)
-      ep = 0;
+    ep = strrchr(name, '.');
     sprintf(title, "%s/%s", dir, name);
     XmTextFieldSetString(fstext, title);
     pos1 = strlen(dir) + 1;
@@ -1247,11 +1410,19 @@ MXFEditor *ed;
     }
 
     if (xmbdfed_opts.progbar) {
-        if (bdf_load_console_font(in, &xmbdfed_opts.font_opts,
-                                  UpdateProgressBar, (void *) file,
-                                  fonts, &nfonts)) {
+        len = bdf_load_console_font(in, &xmbdfed_opts.font_opts,
+                                    UpdateProgressBar, (void *) file,
+                                    fonts, &nfonts);
+        if (len == BDF_PSF_UNSUPPORTED)
+          sprintf(name, "Combined PSF fonts not yet supported.  %s",
+                  "Edit them individually.");
+        else if (len == BDF_NOT_CONSOLE_FONT)
+          sprintf(name, "File %s is not a recognized format.", file);
+        else if (len != BDF_OK)
+          sprintf(name, "Problem loading console font '%s'.", file);
+
+        if (len != BDF_OK) {
             fclose(in);
-            sprintf(name, "Problem loading console font '%s'.", file);
             ErrorDialog(name);
             return 0;
         }
@@ -1825,8 +1996,8 @@ MXFEditor *ed;
         break;
 #if HAVE_FREETYPE
       case XMBDFED_OPEN_TTF:
-        sprintf(title, "%s: Import TrueType Font", app_name);
-        s = XmStringCreateSimple("*.[Tt][Tt][FfCcEe]");
+        sprintf(title, "%s: Import OpenType Font", app_name);
+        s = XmStringCreateSimple("*.[OoTt][Tt][FfCcEe]");
         break;
 #endif /* HAVE_FREETYPE */
       case XMBDFED_OPEN_FNT:

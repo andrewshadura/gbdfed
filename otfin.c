@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,9 +27,9 @@
 
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: ttfin.c,v 1.5 2001/09/19 21:00:44 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: otfin.c,v 1.9 2004/02/23 14:08:08 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: ttfin.c,v 1.5 2001/09/19 21:00:44 mleisher Exp $";
+static char rcsid[] = "$Id: otfin.c,v 1.9 2004/02/23 14:08:08 mleisher Exp $";
 #endif
 #endif
 
@@ -55,12 +55,12 @@ typedef struct {
     Widget platforms;
     Widget encodings;
     Widget ok;
-} MXFTTFDialog;
+} MXFOTFDialog;
 
 /*
  * Structure used to hold the dialog.
  */
-static MXFTTFDialog ttfd;
+static MXFOTFDialog otfd;
 
 /*
  * Flag used to track interaction with the TrueType selection dialog and
@@ -77,9 +77,8 @@ static int ftinit = 0;
 /*
  * Globals used for FreeType.
  */
-static TT_Engine engine;
-static TT_Face face;
-static TT_Face_Properties properties;
+static FT_Library library;
+static FT_Face face;
 
 /*
  * The path of the file being used.  This is needed because the file is opened
@@ -135,20 +134,21 @@ XtPointer client_data, call_data;
     /*
      * Erase the encoding list and reset the OK button.
      */
-    XmListDeleteAllItems(ttfd.encodings);
-    XtSetSensitive(ttfd.ok, False);
+    XmListDeleteAllItems(otfd.encodings);
+    XtSetSensitive(otfd.ok, False);
 
     /*
      * Collect the list of encoding IDs and put their names in the encoding
      * list.
      */
     nencodings = 0;
-    ncmaps = TT_Get_CharMap_Count(face);
+    ncmaps = face->num_charmaps;
     for (lasteid = -1, i = 0; i < ncmaps; i++) {
-        TT_Get_CharMap_ID(face, i, &pid, &eid);
+        pid = face->charmaps[i]->platform_id;
+        eid = face->charmaps[i]->encoding_id;
         if (pid == platforms[cb->item_position - 1] && eid != lasteid) {
-            s = XmStringCreateSimple(bdfttf_encoding_name(pid, eid));
-            XmListAddItemUnselected(ttfd.encodings, s, 0);
+            s = XmStringCreateSimple(bdfotf_encoding_name(pid, eid));
+            XmListAddItemUnselected(otfd.encodings, s, 0);
             XmStringFree(s);
 
             encodings[nencodings++] = eid;
@@ -161,7 +161,7 @@ XtPointer client_data, call_data;
      * so the user does not have to.
      */
     if (nencodings == 1)
-      XmListSelectPos(ttfd.encodings, 1, True);
+      XmListSelectPos(otfd.encodings, 1, True);
 }
 
 static void
@@ -182,16 +182,15 @@ XtPointer client_data, call_data;
     /*
      * Clear both the platform and encoding lists.
      */
-    XmListDeleteAllItems(ttfd.platforms);
-    XmListDeleteAllItems(ttfd.encodings);
+    XmListDeleteAllItems(otfd.platforms);
+    XmListDeleteAllItems(otfd.encodings);
 
     cb = (XmListCallbackStruct *) call_data;
 
     if (iscoll > 1) {
         if (face_open)
-          TT_Close_Face(face);
-        if (TT_Open_Collection(engine, filepath, cb->item_position - 1,
-                               &face)) {
+          FT_Done_Face(face);
+        if (FT_New_Face(library, filepath, cb->item_position - 1, &face)) {
             face_open = 0;
             XmStringGetLtoR(cb->item, XmFONTLIST_DEFAULT_TAG, &fname);
             sprintf(name, "Unable to open font \"%s\"", fname);
@@ -200,12 +199,6 @@ XtPointer client_data, call_data;
             return;
         } else
           face_open = 1;
-
-        /*
-         * Get the properties for the face so it is current if the
-         * font is selected to be opened.
-         */
-        (void) TT_Get_Face_Properties(face, &properties);
     }
 
     /*
@@ -213,15 +206,16 @@ XtPointer client_data, call_data;
      * list.
      */
     nplatforms = 0;
-    ncmaps = TT_Get_CharMap_Count(face);
+    ncmaps = face->num_charmaps;
     for (lastpid = -1, i = 0; i < ncmaps; i++) {
-        TT_Get_CharMap_ID(face, i, &pid, &eid);
+        pid = face->charmaps[i]->platform_id;
+        eid = face->charmaps[i]->encoding_id;
         if (pid != lastpid) {
             /*
              * Choose a platform name.
              */
-            s = XmStringCreateSimple(bdfttf_platform_name(pid));
-            XmListAddItemUnselected(ttfd.platforms, s, 0);
+            s = XmStringCreateSimple(bdfotf_platform_name(pid));
+            XmListAddItemUnselected(otfd.platforms, s, 0);
             XmStringFree(s);
             platforms[nplatforms++] = pid;
             lastpid = pid;
@@ -238,7 +232,7 @@ Widget w;
 XtPointer client_data, call_data;
 #endif
 {
-    XtSetSensitive(ttfd.ok, True);
+    XtSetSensitive(otfd.ok, True);
 }
 
 static void
@@ -256,21 +250,21 @@ XtPointer client_data, call_data;
 
 static void
 #ifdef __STDC__
-BuildTTFDialog(void)
+BuildOTFDialog(void)
 #else
-BuildTTFDialog()
+BuildOTFDialog()
 #endif
 {
     Widget pb, form, frame, framel, framer, label;
     Cardinal ac;
     Arg av[10];
 
-    sprintf(title, "%s: TrueType Select", app_name);
+    sprintf(title, "%s: OpenType Select", app_name);
 
     ac = 0;
     XtSetArg(av[ac], XmNtitle, title); ac++;
     XtSetArg(av[ac], XmNdeleteResponse, XmUNMAP); ac++;
-    ttfd.shell = XtCreatePopupShell("xmbdfed_ttfd_shell",
+    otfd.shell = XtCreatePopupShell("xmbdfed_otfd_shell",
                                     xmDialogShellWidgetClass, top, av, ac);
 
     ac = 0;
@@ -278,15 +272,15 @@ BuildTTFDialog()
     XtSetArg(av[ac], XmNmarginWidth, 2); ac++;
     XtSetArg(av[ac], XmNmarginHeight, 2); ac++;
     XtSetArg(av[ac], XmNfractionBase, 2); ac++;
-    ttfd.form = XtCreateWidget("xmbdfed_ttfd_form", xmFormWidgetClass,
-                               ttfd.shell, av, ac);
+    otfd.form = XtCreateWidget("xmbdfed_otfd_form", xmFormWidgetClass,
+                               otfd.shell, av, ac);
 
     ac = 0;
     XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
     XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
     XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
-    frame = XtCreateManagedWidget("xmbdfed_ttfd_name_frame",
-                                  xmFrameWidgetClass, ttfd.form, av, ac);
+    frame = XtCreateManagedWidget("xmbdfed_otfd_name_frame",
+                                  xmFrameWidgetClass, otfd.form, av, ac);
 
     ac = 0;
     XtSetArg(av[ac], XmNchildType, XmFRAME_TITLE_CHILD); ac++;
@@ -296,10 +290,10 @@ BuildTTFDialog()
     ac = 0;
     XtSetArg(av[ac], XmNvisibleItemCount, 4); ac++;
     XtSetArg(av[ac], XmNlistSizePolicy, XmRESIZE_IF_POSSIBLE); ac++;
-    ttfd.names = XmCreateScrolledList(frame, "xmbdfed_ttfd_fontlist",
+    otfd.names = XmCreateScrolledList(frame, "xmbdfed_otfd_fontlist",
                                       av, ac);
-    XtManageChild(ttfd.names);
-    XtAddCallback(ttfd.names, XmNbrowseSelectionCallback, SelectFont, 0);
+    XtManageChild(otfd.names);
+    XtAddCallback(otfd.names, XmNbrowseSelectionCallback, SelectFont, 0);
 
     ac = 0;
     XtSetArg(av[ac], XmNtopAttachment, XmATTACH_WIDGET); ac++;
@@ -308,8 +302,8 @@ BuildTTFDialog()
     XtSetArg(av[ac], XmNleftPosition, 0); ac++;
     XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
     XtSetArg(av[ac], XmNrightPosition, 1); ac++;
-    framel = XtCreateManagedWidget("xmbdfed_ttfd_platform_frame",
-                                   xmFrameWidgetClass, ttfd.form, av, ac);
+    framel = XtCreateManagedWidget("xmbdfed_otfd_platform_frame",
+                                   xmFrameWidgetClass, otfd.form, av, ac);
 
     ac = 0;
     XtSetArg(av[ac], XmNchildType, XmFRAME_TITLE_CHILD); ac++;
@@ -319,10 +313,10 @@ BuildTTFDialog()
     ac = 0;
     XtSetArg(av[ac], XmNvisibleItemCount, 4); ac++;
     XtSetArg(av[ac], XmNlistSizePolicy, XmRESIZE_IF_POSSIBLE); ac++;
-    ttfd.platforms = XmCreateScrolledList(framel, "xmbdfed_ttfd_platformlist",
+    otfd.platforms = XmCreateScrolledList(framel, "xmbdfed_otfd_platformlist",
                                           av, ac);
-    XtManageChild(ttfd.platforms);
-    XtAddCallback(ttfd.platforms, XmNbrowseSelectionCallback,
+    XtManageChild(otfd.platforms);
+    XtAddCallback(otfd.platforms, XmNbrowseSelectionCallback,
                   SelectPlatform, 0);
 
     ac = 0;
@@ -332,8 +326,8 @@ BuildTTFDialog()
     XtSetArg(av[ac], XmNleftPosition, 1); ac++;
     XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
     XtSetArg(av[ac], XmNrightPosition, 2); ac++;
-    framer = XtCreateManagedWidget("xmbdfed_ttfd_encoding_frame",
-                                   xmFrameWidgetClass, ttfd.form, av, ac);
+    framer = XtCreateManagedWidget("xmbdfed_otfd_encoding_frame",
+                                   xmFrameWidgetClass, otfd.form, av, ac);
 
     ac = 0;
     XtSetArg(av[ac], XmNchildType, XmFRAME_TITLE_CHILD); ac++;
@@ -343,10 +337,10 @@ BuildTTFDialog()
     ac = 0;
     XtSetArg(av[ac], XmNvisibleItemCount, 4); ac++;
     XtSetArg(av[ac], XmNlistSizePolicy, XmRESIZE_IF_POSSIBLE); ac++;
-    ttfd.encodings = XmCreateScrolledList(framer, "xmbdfed_ttfd_encodinglist",
+    otfd.encodings = XmCreateScrolledList(framer, "xmbdfed_otfd_encodinglist",
                                           av, ac);
-    XtManageChild(ttfd.encodings);
-    XtAddCallback(ttfd.encodings, XmNbrowseSelectionCallback, EnableOKButton,
+    XtManageChild(otfd.encodings);
+    XtAddCallback(otfd.encodings, XmNbrowseSelectionCallback, EnableOKButton,
                   0);
 
     ac = 0;
@@ -355,12 +349,12 @@ BuildTTFDialog()
     XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
     XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
     XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
-    frame = XtCreateManagedWidget("xmbdfed_ttfd_button_frame",
-                                  xmFrameWidgetClass, ttfd.form, av, ac);
+    frame = XtCreateManagedWidget("xmbdfed_otfd_button_frame",
+                                  xmFrameWidgetClass, otfd.form, av, ac);
 
     ac = 0;
     XtSetArg(av[ac], XmNfractionBase, 5); ac++;
-    form = XtCreateManagedWidget("xmbdfed_ttfd_button_form",
+    form = XtCreateManagedWidget("xmbdfed_otfd_button_form",
                                  xmFormWidgetClass, frame, av, ac);
 
     ac = 0;
@@ -370,9 +364,9 @@ BuildTTFDialog()
     XtSetArg(av[ac], XmNleftPosition, 1); ac++;
     XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
     XtSetArg(av[ac], XmNrightPosition, 2); ac++;
-    ttfd.ok = XtCreateManagedWidget("Ok", xmPushButtonWidgetClass, form,
+    otfd.ok = XtCreateManagedWidget("Ok", xmPushButtonWidgetClass, form,
                                     av, ac);
-    XtAddCallback(ttfd.ok, XmNactivateCallback, SetAction, (XtPointer) 1);
+    XtAddCallback(otfd.ok, XmNactivateCallback, SetAction, (XtPointer) 1);
 
     ac = 0;
     XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
@@ -434,9 +428,8 @@ bdf_font_t **font;
      * Initialize the FreeType engine once per session.
      */
     if (!ftinit) {
-        if (TT_Init_FreeType(&engine) != 0 ||
-            TT_Init_SBit_Extension(engine) != 0) {
-            ErrorDialog("Unable to initialize the FreeType engine.");
+        if (FT_Init_FreeType(&library) != 0) {
+            ErrorDialog("Unable to initialize the FreeType library.");
             return 0;
         }
         ftinit = 1;
@@ -445,7 +438,7 @@ bdf_font_t **font;
     /*
      * Attempt to open the font or collection.
      */
-    if (TT_Open_Face(engine, pp, &face)) {
+    if (FT_New_Face(library, pp, 0, &face)) {
         if (!iscoll)
           sprintf(name, "Unable to open TrueType font '%s'.", file);
         else
@@ -455,57 +448,47 @@ bdf_font_t **font;
     }
 
     /*
-     * Get the properties for the font.
-     */
-    if (TT_Get_Face_Properties(face, &properties)) {
-        TT_Close_Face(face);
-        sprintf(name, "Unable to get properties for '%s'.", file);
-        ErrorDialog(name);
-        return 0;
-    }
-
-    /*
      * Create the dialog that lets the user choose the fonts from a
      * collection, the platform, and encoding.
      */
-    if (ttfd.shell == 0)
-      BuildTTFDialog();
+    if (otfd.shell == 0)
+      BuildOTFDialog();
 
     /*
      * Clear the lists and reset the OK button.
      */
-    XmListDeleteAllItems(ttfd.names);
-    XmListDeleteAllItems(ttfd.platforms);
-    XmListDeleteAllItems(ttfd.encodings);
-    XtSetSensitive(ttfd.ok, False);
+    XmListDeleteAllItems(otfd.names);
+    XmListDeleteAllItems(otfd.platforms);
+    XmListDeleteAllItems(otfd.encodings);
+    XtSetSensitive(otfd.ok, False);
 
     /*
      * Collect the names from the fonts and set them in the font list.
      */
     face_open = 1;
-    iscoll = properties.num_Faces + 1;
+    iscoll = face->num_faces + 1;
     if (iscoll == 1) {
-        if (bdfttf_get_english_string(face, BDFTTF_FULLNAME_STRING,
+        if (bdfotf_get_english_string(face, BDFOTF_FULLNAME_STRING,
                                       0, name) == 0)
           (void) strcpy(name, "Unknown");
         s = XmStringCreateSimple(name);
-        XmListAddItemUnselected(ttfd.names, s, 0);
+        XmListAddItemUnselected(otfd.names, s, 0);
         XmStringFree(s);
     } else {
         /*
          * Get the names from each of the fonts in a collection.
          */
         face_open = 0;
-        TT_Close_Face(face);
+        FT_Done_Face(face);
         for (i = 0; i < iscoll; i++) {
-            if (!TT_Open_Collection(engine, pp, i, &face)) {
-                if (bdfttf_get_english_string(face, BDFTTF_FULLNAME_STRING,
+            if (!FT_New_Face(library, pp, i, &face)) {
+                if (bdfotf_get_english_string(face, BDFOTF_FULLNAME_STRING,
                                               0, name) == 0)
                   sprintf(name, "Unknown%d", i);
                 s = XmStringCreateSimple(name);
-                XmListAddItemUnselected(ttfd.names, s, 0);
+                XmListAddItemUnselected(otfd.names, s, 0);
                 XmStringFree(s);
-                TT_Close_Face(face);
+                FT_Done_Face(face);
             }
         }
     }
@@ -522,10 +505,10 @@ bdf_font_t **font;
      * Force the first item in the name list to be selected so the platforms
      * and encodings will be loaded.
      */
-    XmListSelectPos(ttfd.names, 1, True);
+    XmListSelectPos(otfd.names, 1, True);
 
-    XtManageChild(ttfd.form);
-    XtPopup(ttfd.shell, XtGrabNone);
+    XtManageChild(otfd.form);
+    XtPopup(otfd.shell, XtGrabNone);
 
     /*
      * Wait for the user to select the font or cancel.
@@ -542,9 +525,9 @@ bdf_font_t **font;
 
     if (open_font == False) {
         if (face_open)
-          TT_Close_Face(face);
+          FT_Done_Face(face);
         face_open = 0;
-        XtPopdown(ttfd.shell);
+        XtPopdown(otfd.shell);
         return 0;
     }
 
@@ -552,32 +535,31 @@ bdf_font_t **font;
      * Determine which platform and encoding IDs have been selected.
      */
     for (i = 0; i < nplatforms; i++) {
-        if (XmListPosSelected(ttfd.platforms, i + 1)) {
+        if (XmListPosSelected(otfd.platforms, i + 1)) {
             pid = platforms[i];
             break;
         }
     }
     for (i = 0; i < nencodings; i++) {
-        if (XmListPosSelected(ttfd.encodings, i + 1)) {
+        if (XmListPosSelected(otfd.encodings, i + 1)) {
             eid = encodings[i];
             break;
         }
     }
     if (xmbdfed_opts.progbar)
-      res = bdfttf_load_font(face, &properties, pid, eid,
-                             &xmbdfed_opts.font_opts, UpdateProgressBar,
-                             (void *) file, font);
+      res = bdfotf_load_font(face, pid, eid, &xmbdfed_opts.font_opts,
+                             UpdateProgressBar, (void *) file, font);
     else {
         WatchCursor(ed->fgrid, True);
-        res = bdfttf_load_font(face, &properties, pid, eid,
-                               &xmbdfed_opts.font_opts, 0, 0, font);
+        res = bdfotf_load_font(face, pid, eid, &xmbdfed_opts.font_opts,
+                               0, 0, font);
         WatchCursor(ed->fgrid, False);
     }
 
     /*
      * Close the typeface.
      */
-    TT_Close_Face(face);
+    FT_Done_Face(face);
     face_open = 0;
 
     if (res) {
@@ -606,7 +588,7 @@ bdf_font_t **font;
         (void) strcpy(ext, ".bdf");
     }
 
-    XtPopdown(ttfd.shell);
+    XtPopdown(otfd.shell);
 
     return res;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfcons.c,v 1.6 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfcons.c,v 1.10 2004/02/03 00:03:18 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfcons.c,v 1.6 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] = "$Id: bdfcons.c,v 1.10 2004/02/03 00:03:18 mleisher Exp $";
 #endif
 #endif
 
@@ -34,32 +34,12 @@ static char rcsid[] = "$Id: bdfcons.c,v 1.6 2001/09/19 21:00:42 mleisher Exp $";
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef BDF_NO_X11
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#endif
-
 #include "bdfP.h"
 
 #undef MAX
 #undef MIN
 #define MAX(h,i) ((h) > (i) ? (h) : (i))
 #define MIN(l,o) ((l) < (o) ? (l) : (o))
-
-#define _BDF_PSF256 0x00
-#define _BDF_PSF512 0x01
-#define _BDF_PSFMAP 0x02
-#define _BDF_PSFSEP 0xffff
-
-/*
- * Header for Linux PSF fonts.
- */
-typedef struct {
-    unsigned short mag;
-    unsigned char mode;
-    unsigned char height;
-} psfhdr_t;
 
 /*
  * Header for Sun VF fonts.
@@ -90,28 +70,6 @@ typedef struct {
  * Support functions.
  *
  **************************************************************************/
-
-/*
- * Routine to compare two glyphs by encoding so they can be sorted.
- */
-static int
-#ifdef __STDC__
-by_encoding(const void *a, const void *b)
-#else
-by_encoding(a, b)
-char *a, *b;
-#endif
-{
-    bdf_glyph_t *c1, *c2;
-
-    c1 = (bdf_glyph_t *) a;
-    c2 = (bdf_glyph_t *) b;
-    if (c1->encoding < c2->encoding)
-      return -1;
-    else if (c1->encoding > c2->encoding)
-      return 1;
-    return 0;
-}
 
 static bdf_font_t *
 #ifdef __STDC__
@@ -310,197 +268,6 @@ int *awidth;
 
     /*
      * Return the font.
-     */
-    return fp;
-}
-
-/*
- * Load a PSF font that may have a mapping table associated.
- */
-static bdf_font_t *
-#ifdef __STDC__
-_bdf_load_psf(FILE *in, psfhdr_t *hdr, bdf_callback_t callback, void *data,
-              int *awidth)
-#else
-_bdf_load_psf(in, hdr, callback, data, awidth)
-FILE *in;
-psfhdr_t *hdr;
-bdf_callback_t callback;
-void *data;
-int *awidth;
-#endif
-{
-    long i, cnt;
-    unsigned short dwidth, swidth, code, initial;
-    bdf_font_t *fp;
-    bdf_glyph_t *gp;
-    bdf_callback_struct_t cb;
-
-    /*
-     * The point size of the font will be the height, the resolution will
-     * default to 72dpi, and the spacing will default to character cell.
-     */
-    fp = bdf_new_font(0, (long) hdr->height, 72, 72, BDF_CHARCELL, 1);
-
-    /*
-     * Force the bits per pixel to be 1.
-     */
-    fp->bpp = 1;
-
-    /*
-     * Make sure the width is always set to 8 no matter what.  This may
-     * change in the future, but probably not anytime soon.
-     */
-    *awidth = fp->bbx.width = 8;
-
-    /*
-     * Adjust the ascent and descent by hand for point sizes other than 16.
-     */
-    if (hdr->height != 16) {
-        fp->bbx.ascent++;
-        fp->bbx.descent--;
-    }
-
-    /*
-     * Default the font ascent and descent to that of the bounding box.
-     */
-    fp->font_ascent = fp->bbx.ascent;
-    fp->font_descent = fp->bbx.descent;
-
-    /*
-     * Allocate the expected number of glyphs.
-     */
-    fp->glyphs_size = ((hdr->mode & _BDF_PSF512) + 1) << 8;
-    fp->glyphs = (bdf_glyph_t *) malloc(sizeof(bdf_glyph_t) * fp->glyphs_size);
-    (void) memset((char *) fp->glyphs, 0,
-                  sizeof(bdf_glyph_t) * fp->glyphs_size);
-
-    /*
-     * Determine the default scalable and device width for each character.
-     */
-    dwidth = fp->bbx.width;
-    swidth = (unsigned short)
-        (((double) dwidth) * 72000.0) /
-        ((double) fp->point_size * fp->resolution_x);
-
-    /*
-     * Set up to call the callback.
-     */
-    if (callback != 0) {
-        cb.reason = BDF_LOAD_START;
-        cb.current = 0;
-        cb.total = fp->glyphs_size;
-        (*callback)(&cb, data);
-    }
-
-    /*
-     * Now load the glyphs, assigning a default encoding.
-     */
-    for (i = 0, gp = fp->glyphs; i < fp->glyphs_size; i++, gp++) {
-        gp->encoding = i;
-        gp->dwidth = dwidth;
-        gp->swidth = swidth;
-        (void) memcpy((char *) &gp->bbx, (char *) &fp->bbx, sizeof(bdf_bbx_t));
-
-        gp->bytes = hdr->height;
-        gp->bitmap = (unsigned char *) malloc(hdr->height);
-        fread((char *) gp->bitmap, hdr->height, 1, in);
-        fp->glyphs_used++;
-
-        /*
-         * Call the callback if indicated.
-         */
-        if (callback != 0) {
-            cb.reason = BDF_LOADING;
-            cb.total = fp->glyphs_size;
-            cb.current = fp->glyphs_used;
-            (*callback)(&cb, data);
-        }
-    }
-
-    if (hdr->mode & _BDF_PSFMAP) {
-        /*
-         * The font contains a mapping table.  Preserve the original size so
-         * glyphs added won't affect things.
-         */
-        for (i = 0, cnt = fp->glyphs_size; i < cnt; i++) {
-            initial = 1;
-            while (fread((char *) &code, sizeof(unsigned short), 1, in) == 1 &&
-                   code != _BDF_PSFSEP) {
-                /*
-                 * If this is a big-endian machine, make sure the code
-                 * point is swapped from little to big endian.
-                 */
-                if (!bdf_little_endian())
-                  code = ((code & 0xff) << 8) | ((code >> 8) & 0xff);
-
-                if (initial) {
-                    fp->glyphs[i].encoding = (long) code;
-                    initial = 0;
-                } else {
-                    /*
-                     * A single glyph maps to multiple locations.  Duplicate
-                     * the current glyph and assign it the new encoding.
-                     */
-                    if (fp->glyphs_used == fp->glyphs_size) {
-                        fp->glyphs = (bdf_glyph_t *)
-                            realloc((char *) fp->glyphs,
-                                    sizeof(bdf_glyph_t) *
-                                    (fp->glyphs_size + 8));
-                        gp = fp->glyphs + fp->glyphs_size;
-                        (void) memset((char *) gp, 0,
-                                      sizeof(bdf_glyph_t) << 3);
-                        fp->glyphs_size += 8;
-                    }
-
-                    /*
-                     * Duplicate the source glyph info.
-                     */
-                    gp = fp->glyphs + fp->glyphs_used++;
-                    (void) memcpy((char *) gp, (char *) (fp->glyphs + i),
-                                  sizeof(bdf_glyph_t));
-
-                    /*
-                     * Duplicate the source glyph bitmap.
-                     */
-                    gp->bitmap = (unsigned char *) malloc(gp->bytes);
-                    (void) memcpy((char *) gp->bitmap,
-                                  (char *) fp->glyphs[i].bitmap, gp->bytes);
-
-                    /*
-                     * Assign the new encoding to it.
-                     */
-                    gp->encoding = (long) code;
-                }
-            }
-
-            if (initial) {
-                /*
-                 * The code was the separator, so delete the current bitmap
-                 * and reset the current glyph.
-                 */
-                free((char *) fp->glyphs[i].bitmap);
-                (void) memset((char *) &fp->glyphs[i], 0, sizeof(bdf_glyph_t));
-                fp->glyphs_used--;
-            }
-        }
-
-        /*
-         * Make sure the font is sorted by encoding.  This is only necessary
-         * for PSF fonts with their own mapping tables.
-         */
-        qsort((char *) fp->glyphs, fp->glyphs_used, sizeof(bdf_glyph_t),
-              by_encoding);
-    }
-
-    /*
-     * Add a message indicating the font was converted.
-     */
-    _bdf_add_comment(fp, "Font converted from PSF to BDF.", 31);
-    _bdf_add_acmsg(fp, "Font converted from PSF to BDF.", 31);
-
-    /*
-     * Return the new font.
      */
     return fp;
 }
@@ -739,7 +506,7 @@ int awidth[3];
     /*
      * All the fonts loaded OK.
      */
-    return 0;
+    return BDF_OK;
 }
 
 /**************************************************************************
@@ -747,6 +514,8 @@ int awidth[3];
  * API.
  *
  **************************************************************************/
+
+static unsigned char vfmagic[] = {0x01, 0x1e};
 
 int
 #ifdef __STDC__
@@ -762,34 +531,36 @@ bdf_font_t *fonts[3];
 int *nfonts;
 #endif
 {
-    unsigned short psfmag, vfmag;
+    unsigned char hdr[4];
     int res, awidth[3];
     double dp, dr;
     bdf_property_t prop;
-    psfhdr_t hdr;
     vfhdr_t vhdr;
     struct stat st;
 
-    vfmag = (!bdf_little_endian()) ? 0x011e : 0x1e01;
-    psfmag = (!bdf_little_endian()) ? 0x3604 : 0x0436;
     (void) fstat(fileno(in), &st);
 
     *nfonts = 1;
     awidth[0] = awidth[1] = awidth[2] = 0;
     (void) memset((char *) fonts, 0, sizeof(bdf_font_t *) * 3);
 
-    fread((char *) &hdr, sizeof(psfhdr_t), 1, in);
-    if (hdr.mag == psfmag)
+    fread((char *) hdr, sizeof(unsigned char), 4, in);
+
+    if (memcmp((char *) hdr, _bdf_psfcombined, 4) == 0)
+      return BDF_PSF_UNSUPPORTED;
+
+    if (memcmp((char *) hdr, (char *) _bdf_psf1magic, 2) == 0 ||
+        memcmp((char *) hdr, (char *) _bdf_psf2magic, 4) == 0)
       /*
        * Have a PSF font that may contain a mapping table.
        */
-      fonts[0] = _bdf_load_psf(in, &hdr, callback, data, awidth);
+      fonts[0] = bdf_load_psf(in, hdr, opts, callback, data, awidth);
     else {
         /*
          * Reset to the beginning of the file.
          */
         fseek(in, 0, 0L);
-        if (hdr.mag == vfmag) {
+        if (memcmp((char *) hdr, (char *) vfmagic, 2) == 0) {
             /*
              * Have a Sun vfont.  Need to reload the header.
              */
@@ -867,111 +638,6 @@ int *nfonts;
           case BDF_CHARCELL: prop.value.atom = "C"; break;
         }
         bdf_add_font_property(fonts[res], &prop);
-    }
-
-    return BDF_OK;
-}
-
-int
-#ifdef __STDC__
-bdf_export_psf(FILE *out, bdf_font_t *font)
-#else
-bdf_export_psf(out, font)
-FILE *out;
-bdf_font_t *font;
-#endif
-{
-    unsigned short enc[2];
-    char *blank;
-    long i, le, top;
-    bdf_glyph_t *gp;
-    psfhdr_t hdr;
-
-    if (font->glyphs_used == 0)
-      return BDF_EMPTY_FONT;
-
-    /*
-     * If the width is larger than 8 or it is not a character cell font,
-     * then the font cannot be saved as PSF.
-     */
-    if (font->bbx.width > 8 || font->spacing != BDF_CHARCELL)
-      return BDF_NOT_PSF_FONT;
-
-    /*
-     * Set the little endian PSF identifier.
-     */
-    hdr.mag = (!bdf_little_endian()) ? 0x3604 : 0x0436;
-
-    /*
-     * Initialize the flags and height.
-     */
-    hdr.mode = (font->glyphs_used <= 256) ? _BDF_PSF256 : _BDF_PSF512;
-    hdr.height = font->bbx.height;
-
-    top = (hdr.mode & _BDF_PSF512) ? 512 : 256;
-
-    /*
-     * Allocate a blank bitmap for the empties.
-     */
-    blank = (char *) malloc(hdr.height);
-    (void) memset(blank, 0, hdr.height);
-
-    /*
-     * Write the header.
-     */
-    fwrite((char *) &hdr, sizeof(psfhdr_t), 1, out);
-
-    /*
-     * Generate the glyphs.
-     */
-    for (le = _BDF_PSFSEP, i = 0, gp = font->glyphs; i < top; i++) {
-        if (i >= font->glyphs_used)
-          /*
-           * Write out the blank bitmap.
-           */
-          fwrite(blank, sizeof(unsigned char), hdr.height, out);
-        else {
-            /*
-             * If the encoding of the current glyph is greater than the last
-             * glyph plus one, then a mapping table needs to be written after
-             * the glyphs.
-             */
-            if (!(hdr.mode & _BDF_PSFMAP) && gp->encoding > le + 1)
-              hdr.mode |= _BDF_PSFMAP;
-            fwrite((char *) gp->bitmap, sizeof(unsigned char), hdr.height,
-                   out);
-            le = gp->encoding;
-            gp++;
-        }
-    }
-
-    /*
-     * If a mapping table must be written, write it out and then rewrite the
-     * header to include the flag.
-     */
-    if (hdr.mode & _BDF_PSFMAP) {
-        enc[1] = _BDF_PSFSEP;
-        for (i = 0, gp = font->glyphs; i < top; i++) {
-            if (i >= font->glyphs_used) {
-                enc[0] = _BDF_PSFSEP;
-                fwrite((char *) enc, sizeof(unsigned short), 1, out);
-            } else {
-                /*
-                 * Make sure the encoding is in little endian order.
-                 */
-                enc[0] = (bdf_little_endian()) ? gp->encoding :
-                    ((gp->encoding & 0xff) << 8) |
-                    ((gp->encoding >> 8) & 0xff);
-                fwrite((char *) enc, sizeof(unsigned short), 2, out);
-                gp++;
-            }
-        }
-
-        /*
-         * Return to the beginning of the file and rewrite the header.
-         */
-        fseek(out, 0, 0L);
-        fwrite((char *) &hdr, sizeof(psfhdr_t), 1, out);
     }
 
     return BDF_OK;
