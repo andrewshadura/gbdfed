@@ -1,0 +1,1053 @@
+#
+# $Id: CHANGES,v 1.20 2000/03/16 21:21:40 mleisher Exp $
+#
+                               XMBDFED CHANGES
+
+Version: 4.4
+Date   : 16 March 2000
+========================
+  1. Fixed a bug when opening the file selection dialog more than once.
+
+  2. Added .tte as an extension when opening TT fonts.
+
+  3. Fixed a problem with the callback when loading TT fonts.
+
+  4. Added some missing \n\ to the on-line help text.
+
+  5. Fixed some problems compiling with a Traditional C compiler.
+
+  6. Changed bdf.h to only include unistd.h on non-DEC platforms.
+
+  7. Fixed a problem with choosing multiple bits-per-pixel greater than 1.
+
+  8. Changed the color names in the GlyphEditToolbox.
+
+  9. Updated TTF support to use embedded bitmaps when they are available.
+
+  10. Fixed a problem with calculating the SWIDTH field when grabbing a font
+      from the server and another problem with non-existent font properties.
+
+  11. Changed the auto bold-facing so it will widen the glyphs if the font is
+      proportional or monowidth.
+
+  12. Fixed up some uninitialized variables.
+
+  13. The code base used to display the glyph codes can be set in the config
+      file or from the command line now.
+
+Version: 4.3
+Date   : 16 November 1999
+========================
+  1. Fixed a problem with highlight thicknesses of width 0.
+
+  2. Fixed a problem loading fonts with an incorrect number of glyphs
+     specified in the CHARS line.
+
+  3. Changed things so glyphs are sent to the glyph test dialog only at the
+     end of selection.
+
+  4. Fixed a problem with the count for keyboard operations not being reset in
+     the FontGrids.
+
+  5. Changed keyboard navigation in the FontGrids to support selection when
+     the Shift key is used with a page movement key.
+
+  6. Added the Ctrl+Return key binding to send a glyph to the glyph test
+     dialog.
+
+  7. Cleaned up the on-line documentation for the FontGrids.
+
+  8. Fixed a code order problem causing a crash when a code is provided to
+     select a page.
+
+  9. Fixed a problem with 1 pixel wide glyphs being marked as modified when
+     they shouldn't.
+
+  10. Changed the open and save file selection dialogs so the path used is the
+      same path as the original file.
+
+  11. Fixed a bug loading glyphs with too many rows.
+
+Version: 4.2
+Date   : 23 October 1999
+========================
+  1. Added an error message when trying to export a PSF font with a font that
+     does not have character cell spacing or has a width > 8.
+
+  2. Fixed it so that moving/copying a selection in the GlyphEditors by
+     grabbing it with the mouse after it has been selected now works as
+     expected.
+
+  3. Made it clearer in the GlyphEditors that "Resize" means to resize the
+     glyph bounding box, and not the glyph.  Also updated the documentation
+     to indicate that this can change the font bounding box when the glyph
+     is saved.
+
+  4. Changed the FontGrid so clicking the mouse outside the actual bounds of
+     the drawn area does nothing.
+
+  5. The glyph name is now updated immediately when a non-merging paste is
+     done in the FontGrid.
+
+  6. Changed things so that the last chosen operation in a GlyphEditor will
+     remain the same operation even after it has been closed and opened
+     again.
+
+  7. Fixed a problem with merging glyphs.  Only the first glyph was being
+     merged.
+
+  8. Changed the GlyphEditors so the glyph name input field is the width of
+     the editor.
+
+  9. Added menu options to the FontGrids so glyphs can be merged (overlayed)
+     or inserted instead of replacing glyphs when pasting.
+
+  10. Added the ability to specify the initial glyph using the "-g" command
+      line option.
+
+  11. Changed so that when the program first comes up, an initial glyph is
+      selected.  This was done to make keyboard navigation easier.
+
+  12. Changed page navigation for empty fonts so all pages are available from
+      the First, Last, Next, and Previous page buttons.
+
+  13. Added the arrow keys to allow keyboard based navigation through the
+      FontGrid pages.
+
+  14. Added the Return key to be equivalent to double clicking on a cell in
+      the FontGrid.
+
+  15. Added ability to select glyphs using the keyboard using the Shift key
+      combined with the arrow keys.
+
+  16. Added the ability to turn the progress bar off and use a watch cursor
+      instead for potentially long operations.
+
+  17. Changed the page traversal code to move the cursor as well as the arrow
+      buttons.
+
+  18. Added the Ctrl+Shift+Return toggle to the GlyphEditors for drawing using
+      the keyboard.
+
+  19. Fixed a problem with setting the initial glyph when later fonts are
+      loaded.
+
+  20. Added code to make backups at save time which can be turned on or off
+      from the Setup dialog or the .xmbdfedrc file.
+
+  21. Improved the documentation.
+
+  22. Fixed a problem with selecting a cell after a cut.
+
+  23. Removed everything related to the _XFREE86_GLYPH_RANGES property.
+
+  24. Fixed a problem with duplicate glyphs in the GlyphTest dialog.
+
+  25. Fixed a bug in deleting glyphs when the range specified is in reverse.
+
+  26. Some minor code cleanup.
+
+Version: 4.1
+Date   : 23 September 1999
+=======================
+  1. Reduced the line length of _XFREE86_GLYPH_RANGES properties to 256
+     instead of 512.
+
+  2. Fixed a parent problem with the help dialog.
+
+  3. Added the ability to embolden glyphs.
+
+  4. Added error checking for glyph height which was causing crashes if the
+     bitmap was larger than indicated in the bounding box.
+
+  5. Fixed the initial toggle button values for the "Other Options" dialog.
+
+  6. Added an option to inhibit the generation of the _XFREE86_GLYPH_RANGES
+     properties.
+
+  7. Updated the Help text.
+
+Version: 4.0
+Date   : 30 July 1999
+=====================
+  1. Fixed a problem with loading fonts that contain duplicate encodings.
+     Duplicates are now moved to the unencoded area.
+
+  2. Added the ability to rename glyphs from an Adobe glyph name file.
+
+  3. Use symbolic constants rather than hex values for the GF and PK opcode
+     bytes and added comments in bdfpkgf.c.
+
+  4. When importing GF or PK fonts, recognise the "title " specials that
+     gives a glyph's name, and save the name with the glyph, rather than
+     adding it as a comment to the font as a whole.
+
+  5. Fixed x_offset's sign when interpreting GF_boc1 data in a GF file.
+
+  6. Fixed x_offset's sign when interpreting long glyph info in a PK file.
+
+  7. Fixed an endian problem with importing .FON fonts.
+
+  8. Some minor cleanup in the bdf.h file.
+
+  9. Removed bad code for cutting and pasting between two different endian
+     architectures.
+
+
+Version: 3.9 (never officially released)
+Date   : 06 July 1999
+======================
+  1. Fixed a problem writing comments that appear in the properties list.
+
+  2. Added automatic generation of the _XFREE86_GLYPH_RANGES properties.
+
+Version: 3.8
+Date   : 10 March 1999
+=========================
+  1. Fixed a size problem with initial height values in the GlyphEditors.
+
+  2. Added IRIX 6.5.2 variables to the Makefile.
+
+  3. Changed the XBM export function to use "static char" instead of "static
+     unsigned char".
+
+  4. Specifying a code to go to in the FontGrid now selects the cell
+     specified in the "Code" field.
+
+  5. Added a mnemonic to the menu item that switches between the unencoded and
+     encoded displays.
+
+  6. Added a mnemonic to the menu item that switches between the vertical and
+     horizontal displays.
+
+  7. Page and code numbers are cached when they are entered in the "Page" and
+     "Code" fields so they can be accessed by the arrow keys.
+
+  8. Fixed a problem with properties existing with no value when an XLFD name
+     is generated.
+
+Version: 3.7
+Date   : 15 January 1999
+========================
+  1. Fixed a problem with loading fonts with everything except glyphs.
+
+  2. Fixed a problem with TrueType names containing line separators.
+
+  3. Fixed a minor problem when limiting columns to powers of two.
+
+  4. Fixed a minor drawing problem when testing one and two bits per pixel
+     glyphs.
+
+  5. Fixed a problem with the size of the encoding labels that caused minor
+     drawing problems when smaller fonts were used.
+
+Version: 3.6
+Date   : 15 December 1998
+=========================
+  1. Changed the way pixels are drawn in the GlyphEditor to use the selection
+     color better for selected pixels.
+
+  2. Fixed a problem with setting multiple resource values in the
+     GlyphEditors.
+
+  3. Fixed a problem with pixel sizes being set when they shouldn't in the
+     setup dialog.
+
+  4. Fixed a minor formatting glitch when bdf options are saved.
+
+  5. Added support for font with 2 and 4 bits per pixel by extending the SIZE
+     line in a BDF font.
+
+  6. Changed all references to MONOSPACE to MONOWIDTH to be more accurate.
+
+  7. Fixed problems when compiling with K&R compilers.
+
+  8. Separated the changes from the README file into the CHANGES file.
+
+  9. Added support for Unix, DOS, and Mac end-of-line characters when writing
+     fonts.
+
+  10. Added support for merging glyphs being pasted into FontGrids instead of
+      replacing or inserting.
+
+  11. Fixed a minor positioning problem in the Color editing dialog.
+
+  12. Fixed a color problem when redisplaying in the Glyph Editors.
+
+  13. Fixed a problem with setting the bits-per-pixel when new fonts are
+      loaded.
+
+  14. Fixed a memory copying problem that almost never occured.
+
+  15. Fixed a problem with restoring original colors when the changes are not
+      updated.
+
+  16. Added the ability to reset the colors to their original settings.
+
+  17. Fixed a problem with writing colors.
+
+  18. Fixed a problem with setting initial options on the Other Options
+      dialog.
+
+  19. Added the "generate_sbit_metrics" configuration option.
+
+  20. Added code to generate an SBIT metrics file with ".met" on the end if
+      the option has been set.
+
+Version 3.5
+===========
+  1. Added SCO variables to Makefile.
+
+  2. Fixed metrics calculations for testing glyphs so the spacing is done
+     the same as the X server.
+
+  3. Fixed a problem with setting the selection color in the GlyphEditors.
+
+  4. Removed an extra word in an error message.
+
+  5. Added the ability to automatically rename all the glyphs from a file in
+     the Unicode Character Database format.
+
+  6. Added "name_file" parameter to the xmbdfedrc file.
+
+  7. Added field to set the "name_file" parameter from the
+     "Setup->Other Options" dialog.
+
+  8. The cursor is always positioned at the end of the glyph name and device
+     width fields in the GlyphEditors.
+
+  9. Added "percent_only" to the xmbdfedrc file to toggle display of only the
+     percentage on the progress bar.
+
+  10. Added an option to turn off the progress bar updating except for the
+      percentage numbers.  Added to the "Setup->Other Options" dialog.
+
+  11. Changed some file dialogs to avoid the extensions of the filename when
+      the name is being selected for saving or exporting.
+
+  12. Added another HP/UX setup to the Makefile.
+
+  13. Fixed a problem with the setup dialog crashing.
+
+  14. Fixed a problem with the filter button not working.
+
+Version 3.4
+===========
+  1. Fixed some compiler warnings.
+
+  2. Fixed a problem with specifying a page number in certain circumstances.
+
+  3. Added preprocessor and compiler flag changes for HP/UX 10.20.
+
+  4. Improved resizing behavior for the Help, Properties, and Comments
+     dialogs.
+
+  5. Fixed a problem with property changes not marking the font as being
+     modified.
+
+  6. Added two new configuration options that toggle the display of the cap
+     height and x height in the glyph editors.
+
+  7. Changed the FontGrid so the threshold size is 7/8 of the display size.
+     One some notebook computers it truncates the rows by one cell.
+
+  8. Changed the FontGrid so it centers the glyph grid in the window.
+
+  9. Added support for viewing the FontGrids vertically as well as
+     horizontally.
+
+  10. Changed the FontGrid to default to adjusting the row and column counts
+      to the nearest power of 2.
+
+  11. Widened the help dialog a little bit.
+
+Version 3.3
+===========
+  1. Fixed a problem with setting pixels that was causing the bounding box
+     to be set incorrectly.
+
+  2. Changed the Device Width field in the Glyph Editors so the cursor is
+     alway put at the end.
+
+  3. Fixed a problem with drawing when the FontGrid tries to display past
+     0xffff.
+
+  4. Removed things causing warnings from gcc 2.8.1.
+
+  5. Added Ctrl+U to the glyph editors to save the glyph and move to the
+     next one.
+
+  6. Added Ctrl+B to the glyph editors to save the glyph and move to the
+     previous one.
+
+  7. Added code to make sure glyph editors call the update routine if the
+     window manager close function is used instead of the glyph editor
+     close button or accelerator.
+
+  8. Added new paging behavior when the Shift key is used with the "Next"
+     and "Previous" page buttons above the font grid.  The Shift key causes
+     the paging behavior opposite to the current paging behavior.
+
+Version 3.2
+===========
+  1. Fixed a bug with importing Windows fonts.
+
+  2. Changed the TTF import code to cycle through all 65536 possibilities
+     because the num_Glyphs property is not always right.
+
+  3. Fixed a bug with filenames and importing TT fonts.
+
+  4. Changed the Unicode-2.0 XLFD ending to ISO10646-1.
+
+  5. Added an IRIX entry to the Makefile.
+
+  6. Fixed a problem with fonts that load successfully but have no glyphs.
+
+  7. Changed the file selection dialogs for saving so they preserve the
+     suggested filename during filtering.
+
+  8. Fixed a problem when a file can't be opened for write when saving
+     BDF fonts.
+
+  9. A dialog was added for cases when saving a font to a file that already
+     exists.
+
+  10. Added the ability to export PSF fonts.
+
+  11. Added some notes about exporting PSF fonts to the help system.
+
+Version 3.1
+===========
+  1. Added a check for a missing configuration parameter.
+
+  2. Fixed an update of the modified status of a font when properties are
+     updated or deleted.
+
+  3. Fixed some minor compilation warnings.
+
+  4. Fixed a problem with glyph metrics when Octal encoding is chosen.
+
+  5. Added glyph counts to the font info dialog.
+
+  6. Fixed a problem with pathnames not being copied at the right time when
+     opening fonts.
+
+Version 3.0
+===========
+  1. Fixed a problem with comments appearing after the properties.
+
+  2. Fixed a problem with writing NULL comments that appear in the
+     font properties.
+
+  3. Fixed a problem related to the latest FreeType library.
+
+  4. Changed things so that when importing TrueType fonts, selecting a
+     platform with a single encoding will automatically select the the
+     encoding.
+
+  5. Updated the copyrights on all files.
+
+Version 2.9
+===========
+  1. Fixed the incorrect version number in htext.h.
+
+  2. Added compile lines for HP (donated by W. Chao).
+
+  3. Changed things so HBF support is optional at compile time.
+
+Version 2.8
+===========
+  1. Fixed the missing pixel size handling in the GlyphEditor widgets.
+
+  2. Changed the exit routine to exit immediately instead of allowing Motif
+     to go through the real exit routine, which causes crashes on some
+     platforms.
+
+  3. Updated the Lesstif Imakefile from Werner Lemberg's version.
+
+  4. Initializes the Hint Glyphs flag correctly in the setup dialog.
+
+  5. Added a Project.tmpl for Lesstif.
+
+  6. Brought up-to-date with the latest FreeType.
+
+  7. Fixed a problem when bad BDF fonts are specified on the command line.
+
+Version 2.7
+===========
+  1. Fixed compilation warning messages in hbf.c.
+
+  2. Changed the GlyphEditToolbox context help to erase the message
+     after leaving the button.
+
+  3. Fixed a bad margin spacing on the GlyphEdit widgets.
+
+  4. Fixed it so the GlyphEdit widgets don't report coordinates if they
+     are outside of the drawn grid.
+
+  5. Changed the GlyphEdit widgets so they attempt to make the dot size
+     as large as possible and remain within the bounds of 1/2 the screen
+     size.  This ranges from 10x10 as the largest and 2x2 as the
+     smallest.
+
+  6. Fixed the XmFormWidget resize problem with the FontGrid's.
+
+  7. Made the _MULE_BASELINE_OFFSET and _MULE_RELATIVE_COMPOSE properties
+     built in.
+
+  8. Added a new config option to set the default pixel size in the
+     GlyphEditors.
+
+  9. Fixed a problem with missing options when the setup is saved.
+
+  10. Added a config option to turn TTF glyph hinting on or off.
+
+  11. Added an additional setup dialog for the new options.
+
+Version 2.6
+===========
+  1. Made compatible with the latest FreeType API.
+
+  2. Changed the options file to contain two new options to set the
+     Close/Exit accelerators on the FontGrids and GlyphEditors.
+
+  3. Dramatically speeded up paging and some drawing in the FontGrids.
+
+  4. Fixed a minor redraw problem on resizes.
+
+  5. Removed the crop button from the GlyphEditToolbox because it is not
+     needed any more.
+
+  6. When the spacing in the font name is changed from Proportional to
+     Monowidth or Character cell, the font's monowidth value is set to
+     be the width of the font BBX.
+
+  7. Fixed a problem with loading gzipped HBF fonts.
+
+  8. Added the ability to repeat on the GlyphEditToolbox shift buttons by
+     holding the mouse button down.
+
+  9. Changed things so rotations and shears in the GlyphEditors will
+     resize if necessary.
+
+  10. Added a menu to the FontGrids to translate (Ctrl+D), rotate (Ctrl+R),
+      and shear (Ctrl+J) the selected glyphs or all glyphs.
+
+  11. Modified the GlyphEditors a bit to use the common rotate and shear
+      dialogs.
+
+  12. Fixed an allocation bug in the glyph grid resize function.
+
+  13. Rotations and shears in the GlyphEditors now resize if the operation
+      causes the glyph to get larger.
+
+Version 2.5
+===========
+  1. Fixed some of the rounding errors with glyph rotations.
+
+  2. Fixed a problem with updating the average width in the font name.
+
+  3. Added a new user-defined property of _ORIGINAL_FONT_NAME to use when
+     XLFD names are generated.  The old way of storing the original font
+     name in the FONT property causes some versions of "mkfontdir" to use
+     that property value as the font name instead of the expected value.
+
+  4. Changed the FontGrid so generating XLFD names saves the original name
+     in the _ORIGINAL_FONT_NAME property.
+
+  5. Removed support for loading HBF fonts from the command line because
+     they can be imported instead.
+
+  6. Changed includes around so bdf.h includes all the needed headers.
+
+  7. Added the ability to import TrueType fonts using the FreeType renderer
+     if it is available on the system.  The accelerator for this is Ctrl+Y.
+
+  8. Changed all the "rcsid" variables a bit so no compilation warnings are
+     issued.
+
+  9. Updated the help text a bit with a short section on the TT fonts and
+     updated the man page.
+
+  10. Fixed a memory leak in the TT open dialog.
+
+  11. Update the Lesstif Imakefile.  Do not know if it works yet.
+
+  12. Fixed a simple problem with padding glyph cells.
+
+  13. Fixed an old problem with importing "codepage" console fonts and
+      changed the progress bar so it does not show up 3 times.
+
+Version 2.4
+===========
+  1. Fixed a rare problem when selecting cells in the FontGrid.
+
+  2. Fixed a redraw problem in the glyph editors that would sometimes
+     not allow glyphs to be redrawn.
+
+  3. Fixed an accelerator in the glyph editors that was conflicting with
+     exporting XBMs.
+
+  4. Fixed a problem with selecting empty FontGrid cells that was causing
+     core dumps.
+
+  5. Changed the glyph editors to use a top level shell instead of a dialog
+     shell so they remain visible when the first FontGrid is iconified.
+
+  6. Changed things so glyph editors will be closed when their associated
+     FontGrids are closed.  If the glyph is modified, a save dialog is
+     presented first.
+
+  7. When a FontGrid other than the first FontGrid is being closed, a
+     save dialog will be presented if the FontGrid was modified.
+
+  8. Changed the test dialog so it will not be iconified with the first
+     FontGrid.
+
+  9. Changed the test dialog to make the Baseline a toggle button and
+     added a Right To Left toggle button.
+
+  10. Modified the GlyphTest widget to allow display of glyphs from right
+      to left as well as left to right.
+
+  12. All open glyph editors area closed before exiting now so the chance
+      to update glyphs before exiting is given.
+
+  13. Changed the GlyphEditToolbar so it does not gain or lose focus.  This
+      allows the glyph bitmap widget to keep the focus.
+
+  14. Fixed a focus problem when a GlyphEditor is popped up.  The glyph
+      bitmap widget was not getting the focus when the GlyphEditors are
+      popped up.
+
+  15. Changed the resize dialog to be a child of the GlyphEditor it was
+      created from so it gets iconified when the GlyphEditor is iconified.
+
+  16. Generalized the glyph rotation function so glyphs can be rotated to
+      any angle.
+
+  17. Added a function to shear (oblique or slant) glyphs to bdfgrid.c.
+
+  18. Added a dialog to the GlyphEditors to specify the number of degrees
+      to rotate or shear.
+
+  19. Modified the GlyphEditToolbox to include buttons for shearing and
+      general rotating.
+
+  20. Added an Edit menu option to reload the current glyph if the changes
+      are not what is wanted.
+
+Version 2.3
+===========
+  1. Fixed a problem with the progress bar not popping down when a
+     mismatch occurs between the reported and actual number of
+     characters.
+
+  2. Fixed a problem with padding character cell fonts.
+
+  3. Fixed a problem with the test widget using the device width of the
+     glyphs instead of the actual width, which is what the X11 drawing
+     routines use.
+
+  4. Changed the progress bar to work more like people expect.
+
+  5. Changed the FontGrids so they report Button1Down always so the test
+     widget will get a selected glyph report.
+
+  6. Changed the shortcut key for copying in the Glyph Editors to Ctrl+Y
+     to get rid of the conflict with exporting XBMs from the Glyph
+     Editors.
+
+  7. Changed the glyph test dialog so it allows testing glyphs from
+     different fonts together.  The glph test dialog will now expand to
+     allow as many glyphs as are wanted.
+
+  8. Fixed a problem that caused the font grid to be redrawn
+     incorrectly when a Glyph Editor updated the font metrics.
+
+  9. Fixed a problem with the Font Grids attempting to draw glyphs off
+     the current page when they are updated from a Glyph Editor.
+
+  10. Fixed a problem with a certain set of button clicks in the Font
+      Grid causing a crash.
+
+  11. Fixed a problem with the Glyph Editor not redrawing when a glyph
+      changes.
+
+  12. Generalized the glyph rotation routine so any angle can be used.
+
+Version 2.2
+===========
+  1. Fixed a minor memory leak when importing XBM files.
+
+  2. Added XBM export capability from the glyph editors.
+
+  3. Added code to update font fields when the RESOLUTION_* and POINT_SIZE
+     properties are set.
+
+  4. Added a "Font Info" menu option to the "Edit" menu on the font grids to
+     allow users to modify certain values in one place instead of modifying
+     the properties and then updating the font name.
+
+  5. The bdf_add_font_property() function now marks the font modified when
+     a property is added or changed.
+
+  6. Fixed a nasty bug with padding glyph cells when writing fonts.
+
+  7. Fixed a problem with pixel size calculations when creating new fonts.
+
+  8. Loading console fonts now causes many of the XLFD properties to be
+     defined.
+
+  9. Fixed a metrics calculation problem with Sun VF fonts.
+
+  10. Loading Sun VF fonts now defaults to proportional and is changed to
+      monospace if all the glyph metrics are the same.
+
+  11. Fixed the progress bar so it displays for fonts of any size.
+
+  12. Changed things around so the save question dialog is called before
+      instead of after, the dialog for grabbing a server font is shown.
+
+  13. Fixed a display problem with the glyph encoding when the base of the
+      glyph encoding values was changed.
+
+  14. Importing console fonts now adds a font comment about being converted
+      into BDF format.
+
+  15. Added import capability for Metafont PK and GF fonts.
+
+  16. Fixed a minor problem with a missing config option when the setup is
+      written out after being changed.
+
+  17. Fixed a problem with crashes caused by invalid page numbers entered in
+      the "Page:" field.
+
+  18. Fixed a minor selection problem when pasting glyphs into the unencoded
+      area.
+
+  19. Fixed things so any glyphs pasted into a font grid that would be
+      encoded after 0xffff now get moved into the unencoded area so the
+      overflow glyphs are not lost.
+
+  20. Added a new binding (Shift+Button2) to the font grids to allow pastes
+      that insert glyphs instead of overwriting.  Glyphs that get moved off
+      the end of the font are put in the unencoded area.
+
+  21. Added the ability to toggle insert/overwrite mode to the Setup dialog.
+      This toggle only affects the font grid where the Setup dialog was
+      started.
+
+Version 2.1
+===========
+  1. Added a callback to the grab font selection text field so hitting return
+     in it will cause the font to be loaded.
+
+  2. Fixed a minor problem with HBF font names that would leak old names and
+     sometimes overwrite new names.
+
+  3. Changed the font grids to use NorthWest bit gravity and save under to
+     speed up the grid refreshing, particularly on slow machines and fonts
+     with large glyphs.
+
+  4. Changed the font grid to add extra highlighting to the encoding label box
+     to indicate which glyphs are actually defined.  This lets the user know
+     that a glyph cell that might look empty, actually has a blank glyph.
+
+  5. Fixed a problem with fonts grabbed from the X server missing the
+     DEFAULT_CHAR field in some cases.
+
+  6. Changed things a little in the font name pattern to avoid extra entries
+     being added by the call the XListFonts().
+
+  7. Fixed a problem with monospace fonts changed to character cell fonts with
+     negative X or Y offset glyphs.
+
+  8. Greatly improved the speed of writing character cell fonts and fixed a
+     related malloc/free problem that would crash systems with buggy heap
+     memory management.
+
+  9. Fixed a geometry problem with the ProgressBar widget that would show up
+     with long labels.
+
+  10. Changed so importing console fonts adds an edit message about the
+      conversion.
+
+  11. Added Ctrl+I to the glyph editors to allow inserting X Bitmaps
+      (XBM files).
+
+  12. Fixed the glyph editors so they resize to fit bitmaps larger than the
+      grid when bitmaps are pasted or inserted.
+
+  13. Some very minor improvements in the on-line help text and the manual
+      page.
+
+Version 2.0
+===========
+  1. Fixed a problem with the "Encoded/Unencoded" View menu item not being
+     reset to "Unencoded" when a new font is loaded into a Font Grid.
+
+  2. Fixed a long-standing problem with the Ctrl+A Select All option in the
+     Glyph Editors.  The selection would work, but copying or cutting to the
+     clipboard would not.
+
+  3. Fixed a problem with the Font Grid selection mechanism that was not
+     allowing a reset when the mouse was clicked in two different cells within
+     the time limit allowed for double clicks.
+
+  4. Added "RAW_PIXELSIZE" and "RAW_POINTSIZE" back in because some versions
+     of X11R6.1 seem to produce them at random from calls to XGetAtomName().
+
+  5. Fixed things so that FONT_ASCENT and FONT_DESCENT are defined for
+     all imported fonts.  Pointed out by Michal Szymanski.
+
+  6. Fixed a problem with character cell and monowidth fonts imported from the
+     X server not having their overall width set.  Pointed out by Michal
+     Szymanski.
+
+  7. Fixed a problem with the first field of the SIZE line not being divided
+     by 10 before being saved.  Pointed out by Michal Szymanski.
+
+  8. Fixed the routine that generates the initial XLFD name so it pays
+     attention to existing font properties.
+
+  9. Changed the HBF import code to generate an XLFD name as the initial
+     name.
+
+Version 1.9
+===========
+  1. Fixed a bug with the GC used for clearing when grabbing a font from
+     the server.  Pointed out by Mike Stroyan.
+
+  2. Fixed invalid RAW_POINTSIZE and RAW_PIXELSIZE property names.  Pointed
+     out by Mike Stroyan.
+
+  3. Fixed a bug with rotating glyph bitmaps that filled up most of the grid.
+     Pointed out by Werner Lemberg.
+
+  4. Fixed a bug with the progress bar not popping down when loading/saving
+     fonts with less than about 256 small glyphs.
+
+  5. Changed things so little endian architectures are automatically
+     detected.
+
+  6. Fixed a minor assignment bug that did not really affect anything.
+
+  7. Added an "Import" menu for importing fonts in various formats. The "Grab"
+     menu item has been replaced with an entry on the Import menu, but still
+     has the same accelerator.
+
+  8. Support for importing console fonts from Linux and Sun added.
+
+  9. Fixed a save problem for fonts that have no character names.
+
+Version 1.8
+===========
+  1. The Ctrl+Z accelerator now toggles the glyph test dialog on or off.
+
+  2. Fixed a bug with certain config file options not being set.
+
+  3. Changing the Device Width for character cell and monospace fonts was not
+     updating the font modified flag or the glyph test dialog if it was up.
+
+  4. The glyph test widget was using the wrong width for non-proportional
+     fonts.
+
+  5. Comments in HBF fonts that appeared before the HBF_START_FONT line were
+     causing crashes.
+
+  6. Added a feature to the glyph test dialog to toggle the baseline on and
+     off.
+
+  7. Updated Imakefile.lesstif provided by Werner Lemberg.
+
+Version 1.7
+===========
+  1. Fix for a font name list deallocation bug and a memory leak in grab.c
+     provided by Mike Stroyan.
+
+  2. Imakefile for LessTif provided by Danny Backx.
+
+  3. Added progress bar when loading and saving fonts.
+
+  4. Fix for some missing backslashes in htext.h provided by Donald Page.
+
+  5. Removed the code that made the unencoded area unavailable when a font is
+     grabbed from the server.
+
+  6. Added better error checking when loading fonts.
+
+  7. Added a progress bar to indicate the progress of a load or save.
+
+  8. Fixed a problem in hbf.c that caused a file open on every HBF_CODE_RANGE
+     line.  Pointed out by Werner Lemberg.
+
+  9. Changed the MainWindow manager widget from a RowColumn to a Form to avoid
+     RowColumn wierdness.
+
+  10. Added much better error handling for corrupted fonts, but still needs
+      some improvement.
+
+  11. Fixed up the glyph info label so it is two lines.  This was done for
+      glyphs with very long names.
+
+  12. Fixed a selection problem that only occured when switching between the
+      unencoded area and the encoded area and an attempt was made to select a
+      cell already selected in the other area.
+
+  13. Fixed the glyph editors so the grid always comes up as a square which is
+      the maximum of the width and height.
+
+  14. Added a new command line and config file option to inhibit the "Really
+      Exit?" dialog when exiting.
+
+  15. Improved the help system a bit and added a bit more documentation.
+
+  16. Added a glyph test dialog.
+
+  17. Added a new field that will go to a page containing a particular code.
+
+Version 1.6
+===========
+  1. Fixed a bug with the '-' characters being removed when the average width
+     is updated.
+
+  2. Added a convenience routine to select the whole glyph bitmap in the
+     GlyphEditors (Ctrl+A).
+
+  3. Added the XmNmultiClickTime resource to the FontGrid and have it at a
+     default of 475 milliseconds (allows more time between clicks than the
+     Intrinsics default).
+
+  4. Added some convenience functions to the FontGrid: Button3 copies the
+     selection and Button2 pastes the selection starting from the cell where
+     the button was pressed.
+
+  5. Changed the "Ctrl+P" accelerator to "Ctrl+O" for switching the glyph
+     editor into bitmap copy mode.  The "Ctrl+P" was needed for something
+     else.
+
+  6. Added some convenience functions to the Glyph Editor: Ctrl+N will move
+     the glyph editor to the next glyph and Ctrl+P will move the Glyph Editor
+     to the previous glyph.
+
+  7. The unencoded page is always available now, even if the font has no
+     unencoded glyphs.  This allows the unencoded area to be used as a holding
+     area.
+
+  8. Fixed things so the glyph editors come up with whatever operation was
+     current before they were given a new glyph.  This means they don't force
+     Draw mode when they come up any more.
+
+  9. Fixed the annoying behavior of the occasional disappearing selection when
+     Copy is being done in the Glyph Editor.
+
+Version 1.5
+===========
+  1. Added HBF support.
+
+  2. Fixed the filter pattern in the file dialogs to handle any case variation
+     in BDF or HBF file extensions.
+
+  3. Added code to change ".hbf" extensions to ".bdf" to avoid overwriting the
+     HBF fonts.  Fonts converted from HBF are automatically tagged as being
+     modified so they have a better chance of being saved.
+
+  4. Fixed a bug in updating the font name from the properties.
+
+  5. Added support for fonts containing DOS CRLF or Mac CR end-of-line
+     characters instead of Unix LF end-of-line.
+
+  6. Fixed a bug with moving selections in the glyph editor.  The descent
+     was not being calculated properly.
+
+  7. Fixed a bug with deleting properties that caused the property hash table
+     to get out of synchronization with the actual list of font properties.
+
+  8. Added code to get fonts from the X server.
+
+  9. Added the X11R6 "RAW_*" properties so they are at least recognized.
+
+  10. Changed things so that fonts without a filename now have a ".bdf" on the
+      end of the generated filename when the "Save Font" dialog comes up.
+
+  11. Fixed a problem that was causing the save dialog to be popped up but
+      be ignored when exiting.
+
+  12. Added another font name menu option to update the average width.
+
+  13. Changed things so fonts with lines before the "STARTFONT 2.1" line are
+      handled correctly (reported by: <robert@physiol.med.tu-muenchen.de>
+      Robert Wilhelm).
+
+Version 1.4
+===========
+  1. Fixed a bug with COMMENT fields that are immediately followed by a
+     newline.
+
+  2. Fixed a bug with checking for the STARTPROPERTIES field too soon.
+
+  3. Fixed things so spaces are now preserved in font properties that are
+     of type BDF_ATOM.
+
+  4. Added an item to the View menu to show the changes made when metrics are
+     corrected.
+
+  5. Added items to the Edit menu to allow the font XLFD name to be updated
+     from the properties and the properties to be updated from the font name.
+
+  6. Added a new dialog that allows editing and saving of the xmbdfed options.
+     An Edit menu item was added to bring this dialog up.
+
+  7. Xmbdfed now checks for the ~/.xmbdfedrc file for configuration info
+     (see the "xmbdfedrc" file in the distribution).
+
+  8. Fixed a problem with fonts that have glyphs on the last possible page.
+
+  9. Fixed a problem with a previous page calculation from the last page.
+
+  10. Fixed a problem when unencoded glyphs were turned off from the command
+      line or from the config file.
+
+  11. Changed the command line parameters around a bit.
+
+  12. Added a dialog to set the Device Width once for Monospace and
+      Character-cell spacing fonts.
+
+  13. Changed the glyph editor so the Device Width can only be changed
+      directly for Proportional spacing fonts.
+
+  14. Changed the glyph editor resize dialog so the left bearing can only be
+      set for Monospace and Proportional spacing fonts.
+
+  15. Fixed a problem with the pathnames for Save As operations.
+
+  16. All Monospace and Proportional fonts are now saved with their glyph
+      bitmaps cropped to the minimum rectangle needed to hold the bitmap.
+
+  17. Changed things so Character-cell fonts are padded to the dimensions of
+      the font bbx by default, but this can be turned off from the command
+      line or the Setup dialog.
+
+Version 1.3
+===========
+  1. Fixed serious bug with fonts getting corrupted when they are written to a
+     file.
+
+  2. Fixed a problem with making XLFD names.
+
+  3. Added a font comment editor.
+
+Version 1.2
+===========
+  1. Fixed a bug with replacing glyphs.
+
+  2. Added font spacing support to handle character cell fonts better.
+
+Version 1.1
+===========
+  1. Fixed a number of bugs found in 1.0.
+
+Version 1.0
+===========
+  1. Initial release.
