@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: glyphed.c,v 1.11 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: glyphed.c,v 1.18 2004/02/08 23:59:00 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: glyphed.c,v 1.11 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] = "$Id: glyphed.c,v 1.18 2004/02/08 23:59:00 mleisher Exp $";
 #endif
 #endif
 
@@ -38,6 +38,7 @@ static char rcsid[] = "$Id: glyphed.c,v 1.11 2001/09/19 21:00:43 mleisher Exp $"
 #include <Xm/ToggleB.h>
 #include <Xm/PushB.h>
 #include <Xm/Label.h>
+#include <Xm/List.h>
 #include <Xm/Separator.h>
 #include <Xm/Frame.h>
 #include <Xm/Form.h>
@@ -190,46 +191,64 @@ XtPointer client_data, call_data;
     ed = &editors[ge->owner];
 
     /*
-     * If the glyph editor has a selection, change back to the drawing
-     * operation so the selection will be bound before saving.
+     * Only do this if the glyph was actually modified.
      */
-    if (XmuttGlyphEditHasSelection(ge->gedit) == True) {
-        toggle = XmuttGlyphEditToolboxQueryToggle(ge->tbox);
-        if (toggle != XmuttGLYPHEDIT_DRAW) {
-            XmuttGlyphEditToolboxSetToggle(ge->tbox, XmuttGLYPHEDIT_DRAW,
-                                           True);
-            XmuttGlyphEditToolboxSetToggle(ge->tbox, toggle, True);
+    if (XmuttGlyphEditModified(ge->gedit)) {
+        /*
+         * If the glyph editor has a selection, change back to the drawing
+         * operation so the selection will be bound before saving.
+         */
+        if (XmuttGlyphEditHasSelection(ge->gedit) == True) {
+            toggle = XmuttGlyphEditToolboxQueryToggle(ge->tbox);
+            if (toggle != XmuttGLYPHEDIT_DRAW) {
+                XmuttGlyphEditToolboxSetToggle(ge->tbox, XmuttGLYPHEDIT_DRAW,
+                                               True);
+                XmuttGlyphEditToolboxSetToggle(ge->tbox, toggle, True);
+            }
         }
-    }
 
-    glyph = XmuttGlyphEditGlyph(ge->gedit, &unencoded);
+        glyph = XmuttGlyphEditGlyph(ge->gedit, &unencoded);
+
+        /*
+         * Set the new name and device width for the glyph.
+         */
+        if (glyph->name != 0)
+          free(glyph->name);
+        glyph->name = XmTextFieldGetString(ge->name);
+
+        s = XmTextFieldGetString(ge->dwidth);
+        glyph->dwidth = (unsigned short) _bdf_atos(s, 0, 10);
+        XtFree(s);
+
+        XmuttGlyphEditMetrics(ge->gedit, &metrics, True);
+        XmuttFontGridUpdateMetrics(ed->fgrid, &metrics);
+
+        XmuttFontGridUpdateFont(ed->fgrid, glyph, unencoded);
+
+        if (glyph->name != 0)
+          XtFree(glyph->name);
+        if (glyph->bytes > 0)
+          free((char *) glyph->bitmap);
+        free((char *) glyph);
+
+        /*
+         * Mark everything as being updated and fix up the update button.
+         */
+        XmuttGlyphEditSetModified(ge->gedit, False);
+    } else if (ge->psf.modified == True)
+      /*
+       * The only thing that changed was the PSF Unicode mappings.
+       */
+      XmuttFontGridUpdatePSFMappings(ed->fgrid,
+                                     XmuttGlyphEditEncoding(ge->gedit),
+                                     XmuttGlyphEditPSFMappings(ge->gedit));
 
     /*
-     * Set the new name and device width for the glyph.
+     * The mappings get updated if they changed, even if nothing else
+     * about this glyph changed.
      */
-    if (glyph->name != 0)
-      free(glyph->name);
-    glyph->name = XmTextFieldGetString(ge->name);
+    ge->psf.modified = False;
 
-    s = XmTextFieldGetString(ge->dwidth);
-    glyph->dwidth = (unsigned short) _bdf_atos(s, 0, 10);
-    XtFree(s);
-
-    XmuttGlyphEditMetrics(ge->gedit, &metrics, True);
-    XmuttFontGridUpdateMetrics(ed->fgrid, &metrics);
-
-    XmuttFontGridUpdateFont(ed->fgrid, glyph, unencoded);
-
-    if (glyph->name != 0)
-      XtFree(glyph->name);
-    if (glyph->bytes > 0)
-      free((char *) glyph->bitmap);
-    free((char *) glyph);
-
-    /*
-     * Mark everything as being updated and fix up the update button.
-     */
-    XmuttGlyphEditSetModified(ge->gedit, False);
     XtSetSensitive(ge->update, False);
     XtSetSensitive(ge->update_next, False);
     XtSetSensitive(ge->update_prev, False);
@@ -1137,6 +1156,601 @@ XtPointer client_data, call_data;
 
 static void
 #ifndef _NO_PROTO
+EnablePSFButtons(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+EnablePSFButtons(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+
+    XtSetSensitive(ge->psf.del, True);
+    XtSetSensitive(ge->psf.edit, True);
+}
+
+static void
+#ifndef _NO_PROTO
+UpdatePSFMappings(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+UpdatePSFMappings(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+    char *txt;
+    XmString s;
+    int *posns, nitems, pos;
+    Arg av[2];
+
+    txt = XmTextFieldGetString(ge->psf.editsel);
+
+    s = XmStringCreateSimple(txt);
+    XtFree(txt);
+
+    XtSetArg(av[0], XmNitemCount, &nitems);
+    XtSetArg(av[1], XmNselectedPositions, &posns);
+    XtGetValues(ge->psf.mappings, av, 2);
+
+    if (ge->psf.editing == False)
+      /*
+       * Mapping is being added.  Append to the end.
+       */
+      XmListAddItemUnselected(ge->psf.mappings, s, nitems + 1);
+    else {
+        /*
+         * Mapping is being edited.
+         */
+        pos = posns[0];
+        XmListReplacePositions(ge->psf.mappings, posns, &s, 1);
+        XmListSelectPos(ge->psf.mappings, pos, False);
+    }
+
+    XmStringFree(s);
+
+    XtSetSensitive(ge->psf.editapply, False);
+    XtSetSensitive(ge->psf.apply, True);
+}
+
+static void
+#ifndef _NO_PROTO
+DeletePSFMapping(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+DeletePSFMapping(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+    int *pos;
+    Arg av[1];
+
+    XtSetArg(av[0], XmNselectedPositions, &pos);
+    XtGetValues(ge->psf.mappings, av, 1);
+
+    XmListDeletePos(ge->psf.mappings, pos[0]);
+    XtSetSensitive(ge->psf.apply, True);
+
+    ge->psf.modified = True;
+}
+
+static void
+#ifndef _NO_PROTO
+SetSensitive(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+SetSensitive(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    XtSetSensitive((Widget) client_data, True);
+}
+
+static void
+#ifndef _NO_PROTO
+CreatePSFMapEdit(MXFEditorGlyphEdit *ge)
+#else
+CreatePSFMapEdit(ge)
+MXFEditorGlyphEdit *ge;
+#endif
+{
+    Widget frame, form, cancel, label;
+    Cardinal ac;
+    Arg av[8];
+
+    if (ge->psf.editshell == 0) {
+        ac = 0;
+        sprintf(title, "Edit PSF Unicode Mapping");
+        XtSetArg(av[ac], XmNtitle, title); ac++;
+        XtSetArg(av[ac], XmNallowShellResize, True); ac++;
+        XtSetArg(av[ac], XmNdeleteResponse, XmUNMAP); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_edit", ge->id);
+        ge->psf.editshell = XtCreatePopupShell(name, xmDialogShellWidgetClass,
+                                               ge->psf.shell, av, ac);
+
+        ac = 0;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_edit_dialog", ge->id);
+        ge->psf.editdialog = XtCreateWidget(name, xmFormWidgetClass,
+                                            ge->psf.editshell, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_edit_frame1", ge->id);
+        frame = XtCreateManagedWidget(name, xmFrameWidgetClass,
+                                      ge->psf.editdialog, av, ac);
+        ac = 0;
+        XtSetArg(av[ac], XmNchildType, XmFRAME_TITLE_CHILD); ac++;
+        label = XtCreateManagedWidget("Unicode Mapping", xmLabelWidgetClass,
+                                      frame, av, ac);
+
+        ac = 0;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_edit_text", ge->id);
+        ge->psf.editsel = XtCreateManagedWidget(name, xmTextFieldWidgetClass,
+                                                frame, av, ac);
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_WIDGET); ac++;
+        XtSetArg(av[ac], XmNtopWidget, frame); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_edit_frame2", ge->id);
+        frame = XtCreateManagedWidget(name, xmFrameWidgetClass,
+                                      ge->psf.editdialog, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNfractionBase, 5); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_edit_form",
+                ge->id);
+        form = XtCreateManagedWidget(name, xmFormWidgetClass, frame, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 1); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 2); ac++;
+        ge->psf.editapply = XtCreateManagedWidget("Apply",
+                                                  xmPushButtonWidgetClass,
+                                                  form, av, ac);
+        XtAddCallback(ge->psf.editapply, XmNactivateCallback,
+                      UpdatePSFMappings, (XtPointer) ge->id);
+
+        XtAddCallback(ge->psf.editsel, XmNactivateCallback,
+                      UpdatePSFMappings, (XtPointer) ge->id);
+
+        /*
+         * Add a callback to the text field to enable this button
+         * when the user types something.
+         */
+        XtAddCallback(ge->psf.editsel, XmNvalueChangedCallback,
+                      SetSensitive, (XtPointer) ge->psf.editapply);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 3); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 4); ac++;
+        cancel = XtCreateManagedWidget("Cancel", xmPushButtonWidgetClass, form,
+                                       av, ac);
+        XtAddCallback(cancel, XmNactivateCallback, DoClose,
+                      (XtPointer) ge->psf.editshell);
+    }
+}
+
+static void
+#ifndef _NO_PROTO
+EditPSFMapping(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+EditPSFMapping(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+    XmStringTable items;
+    char *mapping;
+    Arg av[1];
+
+    /*
+     * Create the editor.
+     */
+    if (ge->psf.editshell == 0)
+      CreatePSFMapEdit(ge);
+
+    sprintf(title, "Edit PSF Unicode Mapping");
+    XtSetArg(av[0], XmNtitle, title);
+    XtSetValues(ge->psf.editshell, av, 1);
+
+    /*
+     * Get the selected item from the list.
+     */
+    XtSetArg(av[0], XmNselectedItems, &items);
+    XtGetValues(ge->psf.mappings, av, 1);
+
+    XmStringGetLtoR(items[0], XmSTRING_DEFAULT_CHARSET, &mapping);
+    XmTextFieldSetString(ge->psf.editsel, mapping);
+    XtFree(mapping);
+
+    /*
+     * Desensitize the Apply button until user makes changes.
+     */
+    XtSetSensitive(ge->psf.editapply, False);
+    ge->psf.editing = True;
+
+    XtManageChild(ge->psf.editdialog);
+    XtPopup(ge->psf.editshell, XtGrabNone);
+}
+
+static void
+#ifndef _NO_PROTO
+AddPSFMapping(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+AddPSFMapping(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+    Arg av[1];
+
+    /*
+     * Create the editor.
+     */
+    if (ge->psf.editshell == 0)
+      CreatePSFMapEdit(ge);
+
+    sprintf(title, "Add PSF Unicode Mapping");
+    XtSetArg(av[0], XmNtitle, title);
+    XtSetValues(ge->psf.editshell, av, 1);
+
+    XmTextFieldSetString(ge->psf.editsel, "");
+
+    /*
+     * Desensitize the Apply button until user makes changes.
+     */
+    XtSetSensitive(ge->psf.editapply, False);
+    ge->psf.editing = False;
+
+    XtManageChild(ge->psf.editdialog);
+    XtPopup(ge->psf.editshell, XtGrabNone);
+}
+
+static void
+#ifndef _NO_PROTO
+ClosePSFMapEdit(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+ClosePSFMapEdit(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+
+    /*
+     * Make sure the editing dialog is closed if it has been created.
+     */
+    if (ge->psf.editshell != 0)
+      XtPopdown(ge->psf.editshell);
+
+    ge->psf.visible = False;
+    XtPopdown(ge->psf.shell);
+}
+
+static void
+#ifndef _NO_PROTO
+UpdateGlyphGridPSFMap(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+UpdateGlyphGridPSFMap(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    MXFEditorGlyphEdit *ge = &glyph_editors[(unsigned long) client_data];
+    bdf_glyph_grid_t *grid;
+    XmStringTable m;
+    int i, nm;
+    char **list;
+    Arg av[2];
+
+    /*
+     * Get the mappings from the list.
+     */
+    XtSetArg(av[0], XmNitems, &m);
+    XtSetArg(av[1], XmNitemCount, &nm);
+    XtGetValues(ge->psf.mappings, av, 2);
+
+    list = (char **) XtMalloc(sizeof(char *) * nm);
+
+    for (i = 0; i < nm; i++)
+      XmStringGetLtoR(m[i], XmSTRING_DEFAULT_CHARSET, &list[i]);
+
+    grid = XmuttGlyphEditGrid(ge->gedit);
+
+    _bdf_psf_pack_mapping(list, nm, grid->encoding, &grid->unicode);
+
+    for (i = 0; i < nm; i++)
+      XtFree(list[i]);
+    XtFree((char *) list);
+
+    ge->psf.modified = True;
+
+    XtSetSensitive(ge->psf.apply, False);
+    XtSetSensitive(ge->update, True);
+
+    ClosePSFMapEdit(w, (XtPointer) ge->id, 0);
+}
+
+static void
+#ifndef _NO_PROTO
+ShowPSFMapEditor(MXFEditorGlyphEdit *ge, char **mappings, int nmappings)
+#else
+ShowPSFMapEditor(ge, mappings, nmappings)
+MXFEditorGlyphEdit *ge;
+char **mappings;
+int nmappings;
+#endif
+{
+    MXFEditor *ed;
+    bdf_glyph_grid_t *grid;
+    Widget frame, form;
+    int i, base;
+    XmString s;
+    XmStringTable list;
+    Cardinal ac;
+    Arg av[8];
+
+    ed = &editors[ge->owner];
+    base = XmuttFontGridCodeBase(ed->fgrid);
+    grid = XmuttGlyphEditGrid(ge->gedit);
+
+    if (ge->psf.shell == 0) {
+        ac = 0;
+        sprintf(title, "%s - Glyph Edit PSF Unicode Mappings", app_name);
+        XtSetArg(av[ac], XmNtitle, title); ac++;
+        XtSetArg(av[ac], XmNallowShellResize, True); ac++;
+        XtSetArg(av[ac], XmNdeleteResponse, XmUNMAP); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_shell", ge->id);
+        ge->psf.shell = XtCreatePopupShell(name, xmDialogShellWidgetClass,
+                                           ge->shell, av, ac);
+
+        ac = 0;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_dialog", ge->id);
+        ge->psf.dialog = XtCreateWidget(name, xmFormWidgetClass,
+                                        ge->psf.shell, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_frame1", ge->id);
+        frame = XtCreateManagedWidget(name, xmFrameWidgetClass,
+                                      ge->psf.dialog, av, ac);
+        ac = 0;
+        XtSetArg(av[ac], XmNchildType, XmFRAME_TITLE_CHILD); ac++;
+        ge->psf.mlabel = XtCreateManagedWidget("Unicode Mappings",
+                                               xmLabelWidgetClass, frame,
+                                               av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNvisibleItemCount, 5); ac++;
+        XtSetArg(av[ac], XmNscrollBarDisplayPolicy, XmSTATIC); ac++;
+        XtSetArg(av[ac], XmNlistSizePolicy, XmRESIZE_IF_POSSIBLE); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list", ge->id);
+        ge->psf.mappings = XmCreateScrolledList(frame, name, av, ac);
+        XtAddCallback(ge->psf.mappings, XmNbrowseSelectionCallback,
+                      EnablePSFButtons, (XtPointer) ge->id);
+        XtAddCallback(ge->psf.mappings, XmNdefaultActionCallback,
+                      EditPSFMapping, (XtPointer) ge->id);
+        XtManageChild(ge->psf.mappings);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_WIDGET); ac++;
+        XtSetArg(av[ac], XmNtopWidget, frame); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_frame2", ge->id);
+        frame = XtCreateManagedWidget(name, xmFrameWidgetClass,
+                                      ge->psf.dialog, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNfractionBase, 3); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_form1",
+                ge->id);
+        form = XtCreateManagedWidget(name, xmFormWidgetClass, frame, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 0); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 1); ac++;
+        ge->psf.edit = XtCreateManagedWidget("Edit", xmPushButtonWidgetClass,
+                                             form, av, ac);
+        XtAddCallback(ge->psf.edit, XmNactivateCallback, EditPSFMapping,
+                      (XtPointer) ge->id);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 1); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 2); ac++;
+        ge->psf.add = XtCreateManagedWidget("New", xmPushButtonWidgetClass,
+                                            form, av, ac);
+        XtAddCallback(ge->psf.add, XmNactivateCallback, AddPSFMapping,
+                      (XtPointer) ge->id);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 2); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 3); ac++;
+        ge->psf.del = XtCreateManagedWidget("Delete", xmPushButtonWidgetClass,
+                                            form, av, ac);
+        XtAddCallback(ge->psf.del, XmNactivateCallback, DeletePSFMapping,
+                      (XtPointer) ge->id);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_WIDGET); ac++;
+        XtSetArg(av[ac], XmNtopWidget, frame); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_frame3", ge->id);
+        frame = XtCreateManagedWidget(name, xmFrameWidgetClass,
+                                      ge->psf.dialog, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNfractionBase, 3); ac++;
+        sprintf(name, "xmbdfed_glyphedit%ld_psf_map_list_form2",
+                ge->id);
+        form = XtCreateManagedWidget(name, xmFormWidgetClass, frame, av, ac);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 0); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 1); ac++;
+        ge->psf.apply = XtCreateManagedWidget("Apply", xmPushButtonWidgetClass,
+                                              form, av, ac);
+        XtAddCallback(ge->psf.apply, XmNactivateCallback,
+                      UpdateGlyphGridPSFMap, (XtPointer) ge->id);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 1); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 2); ac++;
+        ge->psf.cancel = XtCreateManagedWidget("Cancel",
+                                               xmPushButtonWidgetClass, form,
+                                               av, ac);
+        XtAddCallback(ge->psf.cancel, XmNactivateCallback, ClosePSFMapEdit,
+                      (XtPointer) ge->id);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+        XtSetArg(av[ac], XmNleftAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNleftPosition, 2); ac++;
+        XtSetArg(av[ac], XmNrightAttachment, XmATTACH_POSITION); ac++;
+        XtSetArg(av[ac], XmNrightPosition, 3); ac++;
+        ge->psf.help =
+            XtCreateManagedWidget("Help", xmPushButtonWidgetClass, form,
+                                  av, ac);
+    }
+
+    /*
+     * Update the dialog title.
+     */
+    switch (base) {
+      case 8:
+        sprintf(title, "%lo: Edit PSF Unicode Mappings", grid->encoding);
+        break;
+      case 10:
+        sprintf(title, "%ld: Edit PSF Unicode Mappings", grid->encoding);
+        break;
+      case 16:
+        sprintf(title, "%04lX: Edit PSF Unicode Mappings", grid->encoding);
+        break;
+    }
+    XtSetArg(av[0], XmNtitle, title);
+    XtSetValues(ge->psf.shell, av, 1);
+
+    /*
+     * Update the list frame label.
+     */
+    switch (base) {
+      case 8:
+        sprintf(title, "%lo: Unicode Mappings", grid->encoding);
+        break;
+      case 10:
+        sprintf(title, "%ld: Unicode Mappings", grid->encoding);
+        break;
+      case 16:
+        sprintf(title, "%04lX: Unicode Mappings", grid->encoding);
+        break;
+    }
+    s = XmStringCreateSimple(title);
+    XtSetArg(av[0], XmNlabelString, s);
+    XtSetValues(ge->psf.mlabel, av, 1);
+    XmStringFree(s);
+
+    /*
+     * Add the mappings to the list.
+     */
+    if (nmappings > 0) {
+        list = (XmStringTable) XtMalloc(sizeof(XmString) * nmappings);
+
+        for (i = 0; i < nmappings; i++)
+          list[i] = XmStringCreateSimple(mappings[i]);
+
+        ac = 0;
+        XtSetArg(av[ac], XmNitems, list); ac++;
+        XtSetArg(av[ac], XmNitemCount, nmappings); ac++;
+        XtSetValues(ge->psf.mappings, av, ac);
+
+        for (i = 0; i < nmappings; i++)
+          XmStringFree(list[i]);
+        XtFree((char *) list);
+    } else
+      /*
+       * Make sure the list is cleared out.
+       */
+      XmListDeleteAllItems(ge->psf.mappings);
+
+    XtSetSensitive(ge->psf.edit, False);
+    XtSetSensitive(ge->psf.del, False);
+    XtSetSensitive(ge->psf.apply, False);
+
+    ge->psf.modified = False;
+
+    XtManageChild(ge->psf.dialog);
+    ge->psf.visible = True;
+    XtPopup(ge->psf.shell, XtGrabNone);
+}
+
+static void
+#ifndef _NO_PROTO
+EditPSFUnicodeMap(Widget w, XtPointer client_data, XtPointer call_data)
+#else
+EditPSFUnicodeMap(w, client_data, call_data)
+Widget w;
+XtPointer client_data, call_data;
+#endif
+{
+    int n;
+    char **mappings;
+    MXFEditor *ed;
+    MXFEditorGlyphEdit *ge;
+    bdf_glyph_grid_t *grid;
+    bdf_font_t *font;
+
+    ge = &glyph_editors[(unsigned long) client_data];
+    ed = &editors[ge->owner];
+    grid = XmuttGlyphEditGrid(ge->gedit);
+    font = XmuttFontGridFont(ed->fgrid);
+
+    mappings = _bdf_psf_unpack_mapping(&grid->unicode, &n);
+    ShowPSFMapEditor(ge, mappings, n);
+    free((char *) mappings);
+}
+
+static void
+#ifndef _NO_PROTO
 DoToolboxImageUpdate(Widget w, XtPointer client_data, XtPointer call_data)
 #else
 DoToolboxImageUpdate(w, client_data, call_data)
@@ -1392,6 +2006,11 @@ XtPointer client_data, call_data;
       XtSetSensitive(ge->reload, True);
     else
       XtSetSensitive(ge->reload, False);
+
+    if (grid->spacing != BDF_PROPORTIONAL)
+      XtSetSensitive(ge->unimap, True);
+    else
+      XtSetSensitive(ge->unimap, False);
 }
 
 static void
@@ -1412,6 +2031,7 @@ XtPointer client_data, call_data;
     XtSetSensitive(ge->cut, True);
     XtSetSensitive(ge->next, True);
     XtSetSensitive(ge->prev, True);
+    XtSetSensitive(ge->unimap, True);
 }
 
 static void
@@ -1772,6 +2392,21 @@ MXFEditorGlyphEdit *ge;
                                      pdown, av, ac);
     XmStringFree(s);
     XtAddCallback(ge->prev, XmNactivateCallback, DoPrevGlyph,
+                  (XtPointer) ge->id);
+
+    sprintf(name, "xmbdfed_glyphedit%ld_edit_menu_sep4", ge->id);
+    sep = XtCreateManagedWidget(name, xmSeparatorWidgetClass, pdown, 0, 0);
+
+    s = XmStringCreateSimple("Ctrl+F");
+    ac = 0;
+    XtSetArg(av[ac], XmNmnemonic, 'M'); ac++;
+    XtSetArg(av[ac], XmNaccelerator, "Ctrl<Key>f"); ac++;
+    XtSetArg(av[ac], XmNacceleratorText, s); ac++;
+    ge->unimap = XtCreateManagedWidget("Edit PSF Unicode Mappings",
+                                       xmPushButtonWidgetClass,
+                                       pdown, av, ac);
+    XmStringFree(s);
+    XtAddCallback(ge->unimap, XmNactivateCallback, EditPSFUnicodeMap,
                   (XtPointer) ge->id);
 
     sprintf(name, "xmbdfed_glyphedit%ld_operation_menu", ge->id);

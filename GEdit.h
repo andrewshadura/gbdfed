@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_XmuttGEdit
 
 /*
- * $Id: GEdit.h,v 1.7 2001/09/19 21:00:41 mleisher Exp $
+ * $Id: GEdit.h,v 1.9 2004/02/07 21:20:10 mleisher Exp $
  */
 
 #include <Xm/Xm.h>
@@ -149,6 +149,11 @@ extern long XmuttGlyphEditEncoding __((Widget w));
  */
 extern void XmuttGlyphEditMetrics __((Widget w, bdf_metrics_t *metrics,
                                       Boolean font));
+
+/*
+ * Get the current PSF Unicode mappings.
+ */
+extern bdf_psf_unimap_t *XmuttGlyphEditPSFMappings __((Widget w));
 
 /*
  * Changes the device width, width, and height values from the metrics

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrab.c,v 1.6 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrab.c,v 1.11 2004/02/20 05:10:05 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfgrab.c,v 1.6 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] = "$Id: bdfgrab.c,v 1.11 2004/02/20 05:10:05 mleisher Exp $";
 #endif
 #endif
 
@@ -183,6 +183,11 @@ void *data;
                 gp->bytes = bpr * gp->bbx.height;
                 gp->bitmap = (unsigned char *) malloc(gp->bytes);
                 (void) memset((char *) gp->bitmap, 0, gp->bytes);
+
+                /*
+                 * Clear the PSF Unicode mappings.
+                 */
+                gp->unicode.map_size = gp->unicode.map_used = 0;
 
                 /*
                  * Clear the canvas.
@@ -493,6 +498,7 @@ void *data;
      * Add a message to the font to indicate it was loaded
      * from the server.
      */
+    _bdf_add_comment(font, "Font grabbed from the X server.", 31);
     _bdf_add_acmsg(font, "Font grabbed from the X server.", 31);
 
     /*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgname.c,v 1.7 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgname.c,v 1.8 2004/01/29 17:15:37 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdfgname.c,v 1.7 2001/09/19 21:00:43 mleisher Exp $";
+static char rcsid[] = "$Id: bdfgname.c,v 1.8 2004/01/29 17:15:37 mleisher Exp $";
 #endif
 #endif
 
@@ -40,6 +40,50 @@ static _bdf_adobe_name_t *adobe_names;
 static unsigned long adobe_names_size;
 static unsigned long adobe_names_used;
 
+/*
+ * Provide a maximum length for glyph names just to make things clearer.
+ */
+#define MAX_GLYPH_NAME_LEN 127
+
+static int
+#ifdef __STDC__
+getline(FILE *in, char *buf, int limit)
+#else
+getline(in, buf, limit)
+FILE *in;
+char *buf;
+int limit;
+#endif
+{
+    int c, i;
+
+    c = EOF;
+
+    for (i = 0; i < limit - 1; i++) {
+        if ((c = getc(in)) == EOF || (c == '\n' || c == '\r'))
+          break;
+        buf[i] = c;
+    }
+    buf[i] = 0;
+
+    /*
+     * Discard the rest of the line which did not fit into the buffer.
+     */
+    while (c != EOF && c != '\n' && c != '\r')
+      c = getc(in);
+
+    if (c == '\r') {
+        /*
+         * Check for a trailing newline.
+         */
+        c = getc(in);
+        if (c != '\n')
+          ungetc(c, in);
+    }
+
+    return i;
+}
+
 static long
 #ifdef __STDC__
 _bdf_find_name(long code, char *name, FILE *in)
@@ -51,15 +95,15 @@ FILE *in;
 #endif
 {
     long c, i, pos;
-    char *sp, buf[128];
+    char *sp, buf[256];
 
     while (!feof(in)) {
         pos = ftell(in);
-        fscanf(in, "%[^\n]\n", buf);
+        (void) getline(in, buf, 256);
         while (!feof(in) && (buf[0] == 0 || buf[0] == '#')) {
             buf[0] = 0;
             pos = ftell(in);
-            fscanf(in, "%[^\n]\n", buf);
+            (void) getline(in, buf, 256);
         }
 
         if (buf[0] == 0)
@@ -79,7 +123,7 @@ FILE *in;
         if (c == code) {
             for (sp = buf; *sp != ';'; sp++) ;
             sp++;
-            for (i = 0; *sp != ';'; sp++, i++)
+            for (i = 0; *sp != ';' && i < MAX_GLYPH_NAME_LEN; sp++, i++)
               name[i] = *sp;
             name[i] = 0;
             return i;
@@ -116,7 +160,7 @@ FILE *in;
 #endif
 {
     long c, pos;
-    char *sp, buf[128];
+    char *sp, buf[256];
 
     /*
      * Go back to the beginning of the file to look for the code because the
@@ -126,11 +170,11 @@ FILE *in;
 
     while (!feof(in)) {
         pos = ftell(in);
-        fscanf(in, "%[^\n]\n", buf);
+        (void) getline(in, buf, 256);
         while (!feof(in) && (buf[0] == 0 || buf[0] == '#')) {
             buf[0] = 0;
             pos = ftell(in);
-            fscanf(in, "%[^\n]\n", buf);
+            (void) getline(in, buf, 256);
         }
 
         c = _bdf_atol(buf, 0, 16);
@@ -209,6 +253,8 @@ FILE *in;
         else {
             fseek(in, adobe_names[m].start, 0);
             len = adobe_names[m].end - adobe_names[m].start;
+            if (len > MAX_GLYPH_NAME_LEN)
+              len = MAX_GLYPH_NAME_LEN;
             len = (long) fread(name, sizeof(char), len, in);
             name[len] = 0;
             return len;
@@ -235,7 +281,7 @@ int adobe;
     long i, size, len;
     bdf_glyph_t *gp;
     bdf_callback_struct_t cb;
-    char name[128];
+    char name[MAX_GLYPH_NAME_LEN + 1];
 
     if (callback != 0) {
         cb.reason = BDF_GLYPH_NAME_START;
@@ -249,7 +295,7 @@ int adobe;
             _bdf_find_adobe_name(gp->encoding, name, in) :
             _bdf_find_name(gp->encoding, name, in);
         if (size < 0)
-          break;
+          continue;
 
         len = (gp->name) ? strlen(gp->name) : 0;
         if (len == 0) {

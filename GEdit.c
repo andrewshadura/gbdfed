@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: GEdit.c,v 1.13 2001/09/19 21:00:41 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: GEdit.c,v 1.16 2004/02/07 21:20:09 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: GEdit.c,v 1.13 2001/09/19 21:00:41 mleisher Exp $";
+static char rcsid[] = "$Id: GEdit.c,v 1.16 2004/02/07 21:20:09 mleisher Exp $";
 #endif
 #endif
 
@@ -1257,6 +1257,23 @@ Boolean font;
     }
 }
 
+bdf_psf_unimap_t *
+#ifndef _NO_PROTO
+XmuttGlyphEditPSFMappings(Widget w)
+#else
+XmuttGlyphEditPSFMappings(w)
+Widget w;
+#endif
+{
+    XmuttGlyphEditWidget gw;
+
+    _XmuttGlyphEditCheckClass(w);
+
+    gw = (XmuttGlyphEditWidget) w;
+
+    return &gw->gedit.grid->unicode;
+}
+
 void
 #ifndef _NO_PROTO
 XmuttGlyphEditSetMetrics(Widget w, bdf_metrics_t *metrics)
@@ -2478,6 +2495,26 @@ Widget w;
         gw->gedit.pending_op = -1;
     }
 }
+
+#if 0
+Boolean
+#ifndef _NO_PROTO
+XmuttGlyphEditGetUnicodeMappings(Widget w, XmString *mappings,
+                                 int *num_mappings)
+#else
+XmuttGlyphEditGetUnicodeMappings(w, mappings, num_mappings)
+Widget w;
+XmString *mappings;
+int *num_mappings;
+#endif
+{
+    XmuttGlyphEditWidget gw = (XmuttGlyphEditWidget) w;
+
+    _bdf_psf_unpack_mappings(&gw->grid.unicode);
+
+    return False;
+}
+#endif
 
 /**************************************************************************
  *

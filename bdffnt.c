@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdffnt.c,v 1.8 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdffnt.c,v 1.14 2004/02/23 18:07:09 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdffnt.c,v 1.8 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] = "$Id: bdffnt.c,v 1.14 2004/02/23 18:07:09 mleisher Exp $";
 #endif
 #endif
 
@@ -302,11 +302,6 @@ unsigned char *field;
 {
     int a = 0, b = 1;
 
-    if (bdf_little_endian()) {
-        a = 1;
-        b = 0;
-    }
-
     return (field[a] & 0xff) | ((field[b] & 0xff) << 8);
 }
 
@@ -319,13 +314,6 @@ unsigned char *field;
 #endif
 {
     int a = 0, b = 1, c = 2, d = 3;
-
-    if (bdf_little_endian()) {
-        a = 3;
-        b = 2;
-        c = 1;
-        d = 0;
-    }
 
     return (field[a] & 0xff) | ((field[b] & 0xff) << 8) |
         ((field[c] & 0xff) << 16) | ((field[d] & 0xff) << 24);
@@ -499,8 +487,7 @@ bdffnt_font_t *fnt;
     }
 
     /*
-     * Fonts seem to have data stored in little endian order, so convert data
-     * to big endian if necessary.
+     * Endian everything if on a big-endian machine.
      */
     if (!bdf_little_endian())
       _bdffnt_endian_shorts((unsigned short *) &dos,
@@ -542,7 +529,8 @@ bdffnt_font_t *fnt;
         off = dos.e_lfanew + win.resource_tab_offset;
         fseek(in, off, 0L);
         fread((char *) &sshift, 1, sizeof(unsigned short), in);
-        _bdffnt_endian_shorts(&sshift, 1);
+        if (!bdf_little_endian())
+          _bdffnt_endian_shorts(&sshift, 1);
 
         /*
          * Search the resources for all the font resources.
@@ -602,7 +590,8 @@ bdffnt_font_t *fnt;
                 fseek(in, (ninfo.offset << sshift), 0L);
                 fread((char *) &version, sizeof(unsigned short), 1, in);
                 fseek(in, off, 0L);
-                _bdffnt_endian_shorts(&version, 1);
+                if (!bdf_little_endian())
+                  _bdffnt_endian_shorts(&version, 1);
                 if (version != 0x200 && version != 0x300)
                   continue;
 
@@ -714,7 +703,7 @@ int for_xlfd;
 unsigned char *string;
 #endif
 {
-    int wlen;
+    int wlen, c;
     long off;
     unsigned char *sp, *wname;
     fishadow_t fi;
@@ -739,13 +728,18 @@ unsigned char *string;
 
     /*
      * Copy the typeface name into the parameter.
+     *
+     * stops when: -  == 0  -> end of string
+     *             -  <  0  -> end of file
      */
     sp = string;
-    while ((*sp = getc(font->in)) != 0) {
+    while ((c = getc(font->in)) > 0) {
+        *sp = c;
         if (for_xlfd && *sp == '-')
           *sp = ' ';
         sp++;
     }
+    *sp = 0;
 
     /*
      * If the typeface name is not for an XLFD name, then append the style,
@@ -885,14 +879,17 @@ bdf_font_t **out;
     cp = font->cinfo;
     for (i = 0, font->cinfo_used = 0; i < nchars; i++, cp++) {
         fread((char *) &tmp, sizeof(unsigned short), 1, font->in);
-        _bdffnt_endian_shorts(&tmp, 1);
+        if (!bdf_little_endian())
+          _bdffnt_endian_shorts(&tmp, 1);
         cp->width = tmp;
         if (font->info.dfVersion == 0x300) {
             fread((char *) &cp->offset, sizeof(unsigned long), 1, font->in);
-            _bdffnt_endian_longs(&cp->offset, 1);
+            if (!bdf_little_endian())
+              _bdffnt_endian_longs(&cp->offset, 1);
         } else {
             fread((char *) &tmp, sizeof(unsigned short), 1, font->in);
-            _bdffnt_endian_shorts(&tmp, 1);
+            if (!bdf_little_endian())
+              _bdffnt_endian_shorts(&tmp, 1);
             cp->offset = tmp;
         }
     }
@@ -1124,6 +1121,12 @@ bdf_font_t **out;
      * Generate the XLFD name.
      */
     f->name = bdf_make_xlfd_name(f, 0, 0);
+
+    /*
+     * Add messages indicating the font was converted.
+     */
+    _bdf_add_comment(f, "Font converted from FNT/FON to BDF.", 35);
+    _bdf_add_acmsg(f, "Font converted from FNT/FON to BDF.", 35);
 
     /*
      * Mark the font as being modified.

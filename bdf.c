@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdf.c,v 1.23 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: bdf.c,v 1.33 2004/02/23 14:08:07 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: bdf.c,v 1.23 2001/09/19 21:00:42 mleisher Exp $";
+static char rcsid[] = "$Id: bdf.c,v 1.33 2004/02/23 14:08:07 mleisher Exp $";
 #endif
 #endif
 
@@ -57,17 +57,18 @@ unsigned char eightbpp[] = { 0xff };
  **************************************************************************/
 
 static bdf_options_t _bdf_opts = {
-    1,                /* Hint TTF glyphs.               */
-    1,                /* Correct metrics.               */
-    1,                /* Preserve unencoded glyphs.     */
-    1,                /* Preserve comments.             */
-    1,                /* Pad character-cells.           */
-    BDF_PROPORTIONAL, /* Default spacing.               */
-    12,               /* Default point size.            */
-    0,                /* Default horizontal resolution. */
-    0,                /* Default vertical resolution.   */
-    1,                /* Bits per pixel.                */
-    BDF_UNIX_EOL,     /* Line separator.                */
+    FT_LOAD_DEFAULT,     /* OTF flags - hinting on.        */
+    1,                   /* Correct metrics.               */
+    1,                   /* Preserve unencoded glyphs.     */
+    1,                   /* Preserve comments.             */
+    1,                   /* Pad character-cells.           */
+    BDF_PROPORTIONAL,    /* Default spacing.               */
+    12,                  /* Default point size.            */
+    0,                   /* Default horizontal resolution. */
+    0,                   /* Default vertical resolution.   */
+    1,                   /* Bits per pixel.                */
+    BDF_UNIX_EOL,        /* Line separator.                */
+    BDF_PSF_ALL,         /* PSF font export options.       */
 };
 
 /**************************************************************************
@@ -78,7 +79,7 @@ static bdf_options_t _bdf_opts = {
 
 /*
  * List of most properties that might appear in a font.  Doesn't include the
- * RAW_* and AXIS_* properties in X11R6 polymorphic fonts.
+ * AXIS_* properties in X11R6 polymorphic fonts.
  */
 static bdf_property_t _bdf_properties[] = {
     {"ADD_STYLE_NAME",          BDF_ATOM,     1},
@@ -840,9 +841,10 @@ int base;
     }
 
     /*
-     * Check for the special hex prefix.
+     * Check for the special hex prefixes of 0[xX] or [Uu][+-].
      */
-    if (*s == '0' && (*(s + 1) == 'x' || *(s + 1) == 'X')) {
+    if ((*s == '0' && (*(s + 1) == 'x' || *(s + 1) == 'X')) ||
+        ((*s == 'U' || *s == 'u') && (*(s + 1) == '+' || *(s + 1) == '-'))) {
         base = 16;
         dmap = hdigits;
         s += 2;
@@ -896,7 +898,8 @@ int base;
     /*
      * Check for the special hex prefix.
      */
-    if (*s == '0' && (*(s + 1) == 'x' || *(s + 1) == 'X')) {
+    if ((*s == '0' && (*(s + 1) == 'x' || *(s + 1) == 'X')) ||
+        ((*s == 'U' || *s == 'u') && (*(s + 1) == '+' || *(s + 1) == '-'))) {
         base = 16;
         dmap = hdigits;
         s += 2;
@@ -1056,15 +1059,16 @@ unsigned long len;
     char *cp;
 
     if (font->acmsgs_len == 0)
-      font->acmsgs = (char *) malloc(len + 1);
+      font->acmsgs = (char *) malloc(len + 2);
     else
       font->acmsgs = (char *) realloc(font->acmsgs,
-                                      font->acmsgs_len + len + 1);
+                                      font->acmsgs_len + len + 2);
 
     cp = font->acmsgs + font->acmsgs_len;
     (void) memcpy(cp, msg, len);
     cp += len;
     *cp++ = '\n';
+    *cp = 0;
     font->acmsgs_len += len + 1;
 }
 
@@ -1081,15 +1085,16 @@ unsigned long len;
     char *cp;
 
     if (font->comments_len == 0)
-      font->comments = (char *) malloc(len + 1);
+      font->comments = (char *) malloc(len + 2);
     else
       font->comments = (char *) realloc(font->comments,
-                                        font->comments_len + len + 1);
+                                        font->comments_len + len + 2);
 
     cp = font->comments + font->comments_len;
     (void) memcpy(cp, comment, len);
     cp += len;
     *cp++ = '\n';
+    *cp = 0;
     font->comments_len += len + 1;
 }
 
@@ -1415,6 +1420,11 @@ void *call_data, *client_data;
 
         font->glyphs = (bdf_glyph_t *) malloc(sizeof(bdf_glyph_t) *
                                               font->glyphs_size);
+        /*
+         * Make sure the glyph structures are initialized.
+         */
+        (void) memset((char *) font->glyphs, 0,
+                      sizeof(bdf_glyph_t) * font->glyphs_size);
 
         /*
          * Set up the callback to indicate the glyph loading is about to
@@ -2684,7 +2694,7 @@ void *data;
  * Crop the glyph bitmap to the minimum rectangle needed to hold the bits that
  * are set.  Adjust the metrics based on the provided bounding box.
  */
-static void
+void
 #ifdef __STDC__
 _bdf_crop_glyph(bdf_font_t *font, bdf_glyph_t *glyph)
 #else
@@ -2808,7 +2818,7 @@ bdf_glyph_t *glyph;
  * Pad a character-cell font glyph to match the bounds specified in the
  * provided bounding box.
  */
-static void
+void
 #ifdef __STDC__
 _bdf_pad_cell(bdf_font_t *font, bdf_glyph_t *glyph, bdf_glyph_t *cell)
 #else
@@ -2916,6 +2926,8 @@ void *data;
         bpr = ((font->bbx.width * font->bpp) + 7) >> 3;
         cell.bytes = bpr * font->bbx.height;
         cell.bitmap = (unsigned char *) malloc(cell.bytes);
+        (void) memcpy((char *) &cell.bbx, (char *) &font->bbx,
+                      sizeof(bdf_bbx_t));
     }
 
     /*
@@ -3016,8 +3028,6 @@ void *data;
             c->encoding = cp->encoding;
             c->swidth = cp->swidth;
             c->dwidth = cp->dwidth;
-            (void) memcpy((char *) &c->bbx, (char *) &font->bbx,
-                          sizeof(bdf_bbx_t));
             _bdf_pad_cell(font, cp, c);
         } else {
             c = cp;
@@ -3088,8 +3098,6 @@ void *data;
             c->encoding = cp->encoding;
             c->swidth = cp->swidth;
             c->dwidth = cp->dwidth;
-            (void) memcpy((char *) &c->bbx, (char *) &font->bbx,
-                          sizeof(bdf_bbx_t));
             _bdf_pad_cell(font, cp, c);
         } else {
             c = cp;
@@ -3256,12 +3264,13 @@ char *appname;
  */
 void
 #ifdef __STDC__
-bdf_export_hex(FILE *out, bdf_font_t *font, bdf_callback_t callback,
-               void *data)
+bdf_export_hex(FILE *out, bdf_font_t *font, bdf_options_t *opts,
+               bdf_callback_t callback, void *data)
 #else
-bdf_export_hex(out, font, callback, data)
+bdf_export_hex(out, font, opts, callback, data)
 FILE *out;
 bdf_font_t *font;
+bdf_options_t *opts;
 bdf_callback_t callback;
 void *data;
 #endif
@@ -3395,6 +3404,8 @@ bdf_font_t *font;
           free(glyphs->name);
         if (glyphs->bytes > 0)
           free((char *) glyphs->bitmap);
+        if (glyphs->unicode.map_size > 0)
+          free((char *) glyphs->unicode.map);
     }
 
     if (font->glyphs_size > 0)
@@ -3412,6 +3423,8 @@ bdf_font_t *font;
           free(glyphs->name);
         if (glyphs->bytes > 0)
           free((char *) glyphs->bitmap);;
+        if (glyphs->unicode.map_size > 0)
+          free((char *) glyphs->unicode.map);
     }
     if (font->overflow.glyphs_size > 0)
       free((char *) font->overflow.glyphs);
@@ -4136,16 +4149,21 @@ void *call_data, *client_data;
     }
 
     if (lp->field[0][0] == 'h' &&
-        memcmp(lp->field[0], "hint_truetype_glyphs", 20) == 0) {
+        (memcmp(lp->field[0], "hint_truetype_glyphs", 20) == 0 ||
+         memcmp(lp->field[0], "hint_opentype_glyphs", 20) == 0)) {
         if (lp->used < 2) {
             fprintf(stderr,
                     "bdf: warning: %ld: incorrect number of fields %ld.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: hint_truetype_glyphs <boolean>.\n",
+                    "bdf: warning: %ld: hint_opentype_glyphs <boolean>.\n",
                     lineno);
-        } else
-          p->opts->ttf_hint = _bdf_get_boolean(lp->field[1]);
+        } else {
+            if (_bdf_get_boolean(lp->field[1]))
+              p->opts->otf_flags &= ~FT_LOAD_NO_HINTING;
+            else
+              p->opts->otf_flags |= FT_LOAD_NO_HINTING;
+        }
 
         return 0;
     }
@@ -4265,11 +4283,11 @@ bdf_options_t *opts;
             "#\n# Bits per pixel.\n#\nbits_per_pixel %d\n\n",
             opts->bits_per_pixel);
 
-    fprintf(out, "#\n# Hint TrueType glyphs.\n#\nhint_truetype_glyphs ");
-    if (opts->ttf_hint)
-      fprintf(out, "true\n\n");
-    else
+    fprintf(out, "#\n# Hint OpenType glyphs.\n#\nhint_opentype_glyphs ");
+    if (opts->otf_flags & FT_LOAD_NO_HINTING)
       fprintf(out, "false\n\n");
+    else
+      fprintf(out, "true\n\n");
 
     fprintf(out, "#\n# Set the EOL used when writing BDF fonts.\n#\neol ");
     switch (opts->eol) {
@@ -4544,7 +4562,8 @@ int unencoded;
     }
 
     /*
-     * Clear out bitmaps and names in the existing entries.
+     * Clear out bitmaps, names and any PSF Unicode mappings in the existing
+     * entries.
      */
     for (cp = glyphs->glyphs, i = 0; i < glyphs->glyphs_size; i++, cp++) {
         if (cp->name != 0)
@@ -4616,6 +4635,61 @@ int unencoded;
     glyphs->bbx.ascent = maxas;
     glyphs->bbx.descent = maxds;
     glyphs->bbx.y_offset = -maxds;
+}
+
+bdf_glyph_t *
+#ifdef __STDC__
+_bdf_locate_glyph(bdf_font_t *font, long code, int unencoded)
+#else
+_bdf_locate_glyph(font, code, unencoded)
+bdf_font_t *font;
+long code;
+int unencoded;
+#endif
+{
+    long l, r, m, nc;
+    bdf_glyph_t *gl;
+
+    if (code < 0 || font == 0)
+      return 0;
+
+    if ((unencoded && font->unencoded_used == 0) ||
+        font->glyphs_used == 0)
+      return 0;
+
+    if (unencoded) {
+        gl = font->unencoded;
+        nc = font->unencoded_used;
+    } else {
+        gl = font->glyphs;
+        nc = font->glyphs_used;
+    }
+    for (l = m = 0, r = nc - 1; l < r; ) {
+        m = (l + r) >> 1;
+        if (gl[m].encoding < code)
+          l = m + 1;
+        else if (gl[m].encoding > code)
+          r = m - 1;
+        else
+          break;
+    }
+
+    /*
+     * Go back until we hit the beginning of the glyphs or until
+     * we find the glyph with a code less than the specified code.
+     */
+    l = m;
+    while (m > 0 && gl[m].encoding > code)
+      m--;
+
+    /*
+     * Look forward if necessary.
+     */
+    m = l;
+    while (m < nc && gl[m].encoding < code)
+      m++;
+
+    return (m < nc) ? &gl[m] : &gl[nc - 1];
 }
 
 void
@@ -4945,6 +5019,54 @@ bdf_glyphlist_t *gl;
     }
 }
 
+/*
+ * This only works on glyphs that exist.
+ */
+int
+#ifdef __STDC__
+bdf_replace_mappings(bdf_font_t *font, long encoding, bdf_psf_unimap_t *map,
+                     int unencoded)
+#else
+bdf_replace_mappings(font, encoding, map, unencoded)
+bdf_font_t *font;
+long encoding;
+bdf_psf_unimap_t *map;
+int unencoded;
+#endif
+{
+    bdf_glyph_t *gp;
+
+    if ((gp = _bdf_locate_glyph(font, encoding, unencoded)) == 0 ||
+        gp->encoding != encoding)
+      return 0;
+
+    if (map->map_size > gp->unicode.map_size) {
+        if (gp->unicode.map_size == 0)
+          gp->unicode.map = (unsigned char *)
+              malloc(sizeof(unsigned char) * map->map_size);
+        else
+          gp->unicode.map =(unsigned char *)
+              realloc((char *) gp->unicode.map,
+                      sizeof(unsigned char) * map->map_size);
+        gp->unicode.map_size = map->map_size;
+    }
+    gp->unicode.map_used = map->map_used;
+    (void) memcpy((char *) gp->unicode.map, (char *) map->map,
+                  sizeof(unsigned char) * map->map_used);
+
+    /*
+     * Mark the glyph as modified.
+     */
+    if (unencoded)
+      _bdf_set_glyph_modified(font->umod, gp->encoding);
+    else
+      _bdf_set_glyph_modified(font->nmod, gp->encoding);
+
+    font->modified = 1;
+
+    return 1;
+}
+
 int
 #ifdef __STDC__
 bdf_replace_glyphs(bdf_font_t *font, long start, bdf_glyphlist_t *glyphs,
@@ -5079,6 +5201,8 @@ int unencoded;
               free(gp->name);
             if (gp->bytes > 0)
               free((char *) gp->bitmap);
+            if (gp->unicode.map_size > 0)
+              free((char *) gp->unicode.map);
             del++;
             gp++;
         }
@@ -5172,6 +5296,10 @@ int unencoded;
 
             if (dgp->bytes > 0)
               dgp->bitmap = _bdf_strdup(dgp->bitmap, dgp->bytes);
+
+            if (dgp->unicode.map_size > 0)
+              dgp->unicode.map = _bdf_strdup(dgp->unicode.map,
+                                             dgp->unicode.map_size);
 
             dgp->encoding = start + (dgp->encoding - glyphs->start);
 
@@ -5699,6 +5827,9 @@ int unencoded;
                                             strlen(gp->name) + 1);
             if (gp->bytes > 0)
               gp->bitmap = _bdf_strdup(gp->bitmap, gp->bytes);
+            if (gp->unicode.map_size > 0)
+              gp->unicode.map = _bdf_strdup(gp->unicode.map,
+                                            gp->unicode.map_size);
             gp->encoding = i;
             sgp++;
             dw = (double) gp->dwidth;
@@ -6253,59 +6384,6 @@ bdf_metrics_t *metrics;
     return resize;
 }
 
-static bdf_glyph_t *
-#ifdef __STDC__
-_bdf_locate_glyph(bdf_font_t *font, long code, int unencoded)
-#else
-_bdf_locate_glyph(font, code, unencoded)
-bdf_font_t *font;
-long code;
-int unencoded;
-#endif
-{
-    long l, r, m, nc;
-    bdf_glyph_t *gl;
-
-    if (code < 0 || font == 0)
-      return 0;
-
-    if ((unencoded && font->unencoded_used == 0) ||
-        font->glyphs_used == 0)
-      return 0;
-
-    if (unencoded) {
-        gl = font->unencoded;
-        nc = font->unencoded_used;
-    } else {
-        gl = font->glyphs;
-        nc = font->glyphs_used;
-    }
-    for (l = m = 0, r = nc - 1; l < r; ) {
-        m = (l + r) >> 1;
-        if (gl[m].encoding < code)
-          l = m + 1;
-        else if (gl[m].encoding > code)
-          r = m - 1;
-        else
-          break;
-    }
-
-    /*
-     * Go back until we hit the beginning of the glyphs or until
-     * we find the glyph with a code less than the specified code.
-     */
-    while (m > 0 && gl[m].encoding > code)
-      m--;
-
-    /*
-     * Look forward if necessary.
-     */
-    while (m < nc && gl[m].encoding < code)
-      m++;
-
-    return (m < nc) ? &gl[m] : &gl[nc - 1];
-}
-
 int
 #ifdef __STDC__
 bdf_translate_glyphs(bdf_font_t *font, short dx, short dy, long start,
@@ -6593,17 +6671,16 @@ int unencoded;
     bdf_bitmap_t scratch;
     bdf_callback_struct_t cb;
 
-    if (font == 0 || (unencoded && font->unencoded_used == 0) ||
-        font->glyphs_used == 0)
+    if (font == 0 ||
+        (unencoded && font->unencoded_used == 0) ||
+        font->glyphs_used == 0 ||
+        degrees == 0)
       return 0;
 
     while (degrees < 0)
       degrees += 360;
     while (degrees >= 360)
       degrees -= 360;
-
-    if (degrees == 0)
-      return 0;
 
     mul90 = ((degrees % 90) == 0) ? 1 : 0;
 

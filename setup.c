@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: setup.c,v 1.17 2001/09/19 21:00:44 mleisher Exp $";
+static char rcsid[] __attribute__ ((unused)) = "$Id: setup.c,v 1.20 2004/02/12 15:29:17 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: setup.c,v 1.17 2001/09/19 21:00:44 mleisher Exp $";
+static char rcsid[] = "$Id: setup.c,v 1.20 2004/02/12 15:29:17 mleisher Exp $";
 #endif
 #endif
 
@@ -164,6 +164,17 @@ XtPointer client_data, call_data;
 
     xmbdfed_opts.backups =
         (XmToggleButtonGetState(setup.make_backups) == True) ? 1 : 0;
+
+    if (other.hint) {
+        /*
+         * Only do this if the hint toggle has been created.
+         */
+        if (XmToggleButtonGetState(other.hint) == True)
+          xmbdfed_opts.font_opts.otf_flags &= ~FT_LOAD_NO_HINTING;
+        else
+          xmbdfed_opts.font_opts.otf_flags |= FT_LOAD_NO_HINTING;
+    }
+
     xmbdfed_opts.font_opts.correct_metrics =
         (XmToggleButtonGetState(setup.correct_metrics) == True) ? 1 : 0;
     xmbdfed_opts.font_opts.keep_unencoded =
@@ -839,10 +850,10 @@ XtPointer client_data, call_data;
     /*
      * Set the current toggle values in the other options.
      */
-    if (xmbdfed_opts.font_opts.ttf_hint)
-      XmToggleButtonSetState(other.hint, True, False);
-    else
+    if (xmbdfed_opts.font_opts.otf_flags & FT_LOAD_NO_HINTING)
       XmToggleButtonSetState(other.hint, False, False);
+    else
+      XmToggleButtonSetState(other.hint, True, False);
 
     if (xmbdfed_opts.show_cap_height)
       XmToggleButtonSetState(other.cheight, True, False);

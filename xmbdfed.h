@@ -1,5 +1,5 @@
 /*
- * Copyright 2001 Computing Research Labs, New Mexico State University
+ * Copyright 2004 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_xmbdfed
 
 /*
- * $Id: xmbdfed.h,v 1.26 2001/11/09 22:01:52 mleisher Exp $
+ * $Id: xmbdfed.h,v 1.31 2004/02/06 23:23:23 mleisher Exp $
  */
 
 #ifdef __cplusplus
@@ -40,7 +40,7 @@ extern "C" {
 #define __(x) ()
 #endif
 
-#define XMBDFED_VERSION "4.5"
+#define XMBDFED_VERSION "4.7"
 
 /**************************************************************************
  *
@@ -174,6 +174,26 @@ typedef struct {
 } MXFEditorGlyphEditResize;
 
 typedef struct {
+    Widget shell;
+    Widget dialog;
+    Widget mlabel;
+    Widget mappings;
+    Widget edit;
+    Widget add;
+    Widget del;
+    Widget apply;
+    Widget cancel;
+    Widget help;
+    Widget editshell;
+    Widget editdialog;
+    Widget editsel;
+    Widget editapply;
+    Boolean editing;
+    Boolean visible;
+    Boolean modified;
+} MXFEditorPSFMapEdit;
+
+typedef struct {
     unsigned long id;
     unsigned long owner;
     Widget shell;
@@ -184,6 +204,7 @@ typedef struct {
     Widget paste;
     Widget next;
     Widget prev;
+    Widget unimap;
     Widget update;
     Widget update_next;
     Widget update_prev;
@@ -196,6 +217,7 @@ typedef struct {
     Widget gedit;
     Widget tbox;
     MXFEditorGlyphEditResize resize;
+    MXFEditorPSFMapEdit psf;
 } MXFEditorGlyphEdit;
 
 typedef struct {
