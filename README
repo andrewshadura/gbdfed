@@ -1,0 +1,218 @@
+#
+# $Id: README,v 1.22 2000/03/16 20:08:50 mleisher Exp $
+#
+
+XmBDFEditor 4.4
+
+INTRO
+-----
+
+XmBDFEditor is a Motif-based BDF font editor with the following features:
+
+  o  Multiple fonts can be loaded from the command line.
+  o  Multiple fonts can be open at the same time.
+  o  Cutting and pasting glyphs between fonts.
+  o  Multiple glyph bitmap editors can be open at the same time.
+  o  Cutting and pasting between glyph bitmap editors.
+  o  Export of XBM files from glyph bitmap editors.
+  o  Automatic correction of certain metrics when a font is loaded.
+  o  Generation of XLFD font names for fonts without XLFD names.
+  o  Update an XLFD font name from the font properties.
+  o  Update the font properties from an XLFD font name.
+  o  Font property editor.
+  o  Font comment editor.
+  o  Supports unencoded glyphs (ENCODING of -1).
+  o  Display of glyph encodings in octal, decimal, or hex.
+  o  Builtin on-line help.
+  o  Imports PK/GF fonts.
+  o  Imports HBF (Han Bitmap Font) fonts.
+  o  Imports Linux console fonts (PSF, CP, and FNT).
+  o  Imports Sun console fonts (vfont format).
+  o  Imports fonts from the X server.
+  o  Imports Windows FON/FNT fonts.
+  o  Imports TrueType fonts and collections.
+  o  Exports PSF fonts.
+  o  Exports HEX fonts.
+  o  Edits two and four bits per pixel gray scale fonts.
+
+A few things missing from this font editor:
+
+  o  Selecting a non-console font when importing a console font should
+     autodetect by filename extension.
+  o  No support for scaling fonts.
+  o  No way to create space glyphs.
+  o  Fonts with right-to-left direction (negative widths) not supported.
+  o  Many more font properties could be automatically calculated.
+  o  No way to edit comments appearing in the properties list.
+
+Known problems:
+
+  o  Text fields do not have horizontal scrollbars.  Some machines running
+     X11R6 only have arrow keys on the keypad which earlier versions of Motif
+     don't recognize.
+  o  Does not handle double quotes correctly in values for properties of type
+     ATOM.
+  o  Deleting glyphs from or inserting glyphs into a font grid do not update
+     the glyph editors if they happen to be editing a deleted glyph or a glyph
+     that moved due to an insertion.
+
+COMMAND LINE OPTIONS
+--------------------
+  xmbdfed [options] [font1 font2 ...]
+
+  -nc     - do not preserve comments
+  -nu     - do not preserve unencoded glyphs
+  -nm     - do not make metrics corrections
+  -np     - do not pad character-cell bitmaps
+  -bp     - allow blank pages
+  -ed     - do not present the "Really Exit?" dialog
+  -ps n   - set default point size
+  -hres n - set default horizontal resolution
+  -vres n - set default vertical resolution
+  -res n  - set both default resolutions
+  -sp s   - set font spacing ("p" for proportional, "m" for monospace,
+            or "c" for charcell).
+  -bpp n  - set the font bits per pixel (1, 2, or 4).
+  -eol e  - set the default end-of-line char(s) ("u" for Unix, "d" for DOS,
+            or "m" for Mac).
+  -g code - set the initial glyph code (in decimal, hex or octal).
+  -pb     - turn off the progress bar.
+
+  By default, xmbdfed will set its point size to 12, the horizontal and
+  vertical resolution to that of the display (e.g. 90x90 dpi for Sun's), and
+  the font spacing to proportional.  Also by default, xmbdfed will preserve
+  comments, preserve unencoded glyphs, and make metrics corrections when
+  loading fonts.  One bit per pixel is the default.
+
+COMPILING
+---------
+
+To compile XmBDFEditor, you will need the following:
+
+  Compiler     : ISO, Traditional C, or C++ compiler
+  Window System: X11R5 or X11R6
+  Toolkit      : Motif 1.2.* or 2.*
+
+Optional:
+  The FreeType and HBF import capabilities are optional.  To use them, you
+  need to get copies from the following ftp sites:
+
+  ftp://ftp.ifcss.org/pub/software/fonts/utils/hbf.tar.gz [source code]
+  ftp://ftp.ifcss.org/pub/software/info/HBF-1.1.tar.gz    [docs optional]
+  http://www.freetype.org
+
+Step 0:
+  For HBF support, copy the hbf.h and hbf.c files from the original sources
+  into the current directory and apply the HBF.PATCH file using the patch
+  program.
+
+Step 1:
+  Edit the Makefile to set the INCS and LIBS variables to point at the header
+  file and library locations for X11 and Motif.
+
+  Uncomment the FTYPE_* variables and edit FTYPE_INCS and FTYPE_LIBS to point
+  to the locations of the FreeType header and library if FreeType is
+  available.
+
+  Uncomment the HBF_* variables if HBF support is available.
+
+  Edit the HBFDEFS variable to set the correct OS and correct directory for
+  the "gunzip" (GNU unzip) program.  If you do not have the "gunzip" program,
+  simply comment this variable out, which will remove the HBF support for
+  compressed glyph bitmap files.
+
+Step 2:
+  Build the program by typing "make".
+
+WARNINGS
+--------
+
+1. When compiling on HP/UX, the htext.h file has long catenated strings that
+   require the -H option (noted by W. Chao).
+
+ACKNOWLEDGEMENTS
+----------------
+
+Thanks go to the following people:
+
+  Ross Patterson for his HBF code.
+
+  der Mouse for his "getbdf" code.
+
+  K. Carothers and A. Korobka for their "fnt2bdf" code in Wine.
+
+  Mike Stroyan <mike_stroyan@fc.hp.com> for patches.
+
+  Primoz Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si> for the man page and
+  some changes for building on HP/UX.
+
+  Danny Backx <u27113@kb.be> for the LessTif Imakefile.
+
+  Donald Page <donaldp@sco.com> for patches.
+
+  Michal Szymanski <msz@sirius.astrouw.edu.pl> for problem reports.
+
+  Werner Lemberg <a7971428@unet.univie.ac.at> for pointing out a problem
+  with the HBF code and other problem reports.
+
+  William F. Maton <wmaton@enterprise.ic.gc.ca> for pointing out a
+  problem with padding character cell fonts.
+
+  Ivan Nejgebauer <ian@uns.ns.ac.yu> for reporting a problem with glyph
+  names on imported console fonts.
+
+  Solofo <solofo@mpi-sb.mpg.de> for reporting a problem when creating an
+  XLFD name.  The old name was saved in the FONT property and some
+  versions of "mkfontdir" use that instead of the first FONT field.  Also
+  for recommending that the Ctrl+F4 accelerator be configurable if
+  it does not suit the user.
+
+  Dave Bodenstab <imdave@mcs.net> for providing a patch for a problem
+  with the HBF code that was not allowing gzipped HBF files to be
+  loaded, and a patch to get rid of some extraneous code.  Also a patch to fix
+  some size problems with GlyphEditors.
+
+  W. Chao <wchao@HRZ.Uni-Bielefeld.DE> for providing the Makefile changes
+  needed to compile on HP/UX and pointing out a problem with the builtin
+  documentation.
+
+  Andreas Reuter <ar205@bonzo.geowiss.nat.tu-bs.de> for pointing out a problem
+  with importing TrueType fonts.
+
+  Leonard Dickens <leonard@saul.hipgraphics.com> for providing the Makefile
+  changes needed for IRIX 6.3.
+
+  Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk> for a handful of good suggestions.
+
+  Jim Knoble <jmknoble@pobox.com> for some geometry improvements in some
+  dialogs.
+
+  Darren Stuart Embry <dsembr01@ox.slug.louisville.edu> for the donation of
+  another HP/UX 10.20 X11R6 compilation setup.
+
+  Vladimir Volovich <vvv@vvv.vsu.ru> for pointing out something I forgot to
+  test.
+
+  Ben Fry <fry@media.mit.edu> for IRIX 6.5.2 variables for the Makefile.
+
+  J.H.M. Dassen (Ray) <jdassen@debian.org> for fixing bugs with the PK/GF
+  import feature.
+
+  Robert Brady <rwb197@ecs.soton.ac.uk> for pointing out a problem with the
+  length of _XFREE86_GLYPH_RANGES properties and an Exceed font compiler.
+
+  Stefan Monnier <monnier@cs.yale.edu> for a bug report on highlight thickness
+  of 0.
+
+  Humphrey Clerx <humphrey.clerx@eurocontrol.be> for pointing out some
+  compilation problem on Digit Unix 4.0 and some compilation problems with
+  Traditional C compilers.
+
+  Rudolf Cejka <cejkar@dcse.fee.vutbr.cz> for providing patches to fix
+  problems with grabbing fonts from the X server and alerting me to
+  uninitialized variable warnings.
+
+AUTHOR
+------
+  mleisher@crl.nmsu.edu (Mark Leisher)
+  06 March 2000
