@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrid.c,v 1.13 2004/02/08 23:58:59 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrid.c 40 2006-01-17 17:07:28Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfgrid.c,v 1.13 2004/02/08 23:58:59 mleisher Exp $";
+static char svnid[] = "$Id: bdfgrid.c 40 2006-01-17 17:07:28Z mleisher $";
 #endif
 #endif
 
@@ -187,14 +187,8 @@ double _bdf_tan_tbl[90] = {
  * Determine the actual ink bounds.
  */
 static int
-#ifdef __STDC__
 _bdf_grid_ink_bounds(bdf_glyph_grid_t *grid, short *x, short *y,
                      short *width, short *height)
-#else
-_bdf_grid_ink_bounds(grid, x, y, width, height)
-bdf_glyph_grid_t *grid;
-short *x, *y, *width, *height;
-#endif
 {
     short bx, by, bwd, bht, minx, maxx, miny, maxy, dx, dy;
     unsigned short bpr, ink, sel, col;
@@ -202,9 +196,10 @@ short *x, *y, *width, *height;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     if (grid->sel.width != 0 && grid->sel.height != 0) {
@@ -263,14 +258,7 @@ short *x, *y, *width, *height;
  * Make a glyph grid with the glyph bitmap set in the bitmap.
  */
 bdf_glyph_grid_t *
-#ifdef __STDC__
 bdf_make_glyph_grid(bdf_font_t *font, long code, int unencoded)
-#else
-bdf_make_glyph_grid(font, code, unencoded)
-bdf_font_t *font;
-long code;
-int unencoded;
-#endif
 {
     unsigned short si, di, col, colx, byte;
     short ht, as, ds, gsize, bpr, x, y, nx, ny;
@@ -281,8 +269,10 @@ int unencoded;
     unsigned char *masks;
     char name[24];
 
+#if 0
     if (font == 0)
       return 0;
+#endif
 
     /*
      * Allocate the grid and initialize it.
@@ -293,49 +283,71 @@ int unencoded;
     /*
      * Set the encoding and the unencoded flag.
      */
-    gr->bpp = font->bpp;
+    gr->bpp = (font) ? font->bpp : 1;
     gr->encoding = code;
     gr->unencoded = unencoded;
 
     /*
      * Set the glyph grid spacing.
      */
-    gr->spacing = font->spacing;
+    gr->spacing = (font) ? font->spacing : BDF_CHARCELL;
 
     /*
      * Set the point size and resolutions.
      */
-    gr->point_size = font->point_size;
-    gr->resolution_x = font->resolution_x;
-    gr->resolution_y = font->resolution_y;
+    if (font) {
+        gr->point_size = font->point_size;
+        gr->resolution_x = font->resolution_x;
+        gr->resolution_y = font->resolution_y;
+    } else {
+        gr->point_size = 12;
+        gr->resolution_x = gr->resolution_y = 100;
+    }
 
     /*
      * Set the CAP_HEIGHT and X_HEIGHT if they exist in the font.
      */
-    if ((p = bdf_get_font_property(font, "CAP_HEIGHT")) != 0)
-      gr->cap_height = (short) p->value.int32;
-    if ((p = bdf_get_font_property(font, "X_HEIGHT")) != 0)
-      gr->x_height = (short) p->value.int32;
+    if (font) {
+        if ((p = bdf_get_font_property(font, "CAP_HEIGHT")) != 0)
+          gr->cap_height = (short) p->value.int32;
+        if ((p = bdf_get_font_property(font, "X_HEIGHT")) != 0)
+          gr->x_height = (short) p->value.int32;
+    }
 
     masks = 0;
     switch (gr->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     /*
      * Copy the font bounding box into the grid.
      */
-    (void) memcpy((char *) &gr->font_bbx, (char *) &font->bbx,
-                  sizeof(bdf_bbx_t));
+    if (font)
+      (void) memcpy((char *) &gr->font_bbx, (char *) &font->bbx,
+                    sizeof(bdf_bbx_t));
+    else {
+        gr->font_bbx.height = 17;
+        gr->font_bbx.width = 8;
+        gr->font_bbx.descent = 8;
+        gr->font_bbx.ascent = 9;
+        gr->font_bbx.y_offset = -8;
+    }
 
-    if (unencoded) {
-        gl = font->unencoded;
-        r = font->unencoded_used;
+
+    if (font) {
+        if (unencoded) {
+            gl = font->unencoded;
+            r = font->unencoded_used;
+        } else {
+            gl = font->glyphs;
+            r = font->glyphs_used;
+        }
     } else {
-        gl = font->glyphs;
-        r = font->glyphs_used;
+        gl = 0;
+        r = 0;
     }
 
     /*
@@ -424,7 +436,7 @@ int unencoded;
      * device width is set to the width stored in the font.
      */
     if (gr->spacing != BDF_PROPORTIONAL)
-      gr->dwidth = font->monowidth;
+      gr->dwidth = (font) ? font->monowidth : 8;
 
     /*
      * Determine the vertical origin based on the font bounding box.
@@ -527,12 +539,7 @@ int unencoded;
 }
 
 void
-#ifdef __STDC__
 bdf_free_glyph_grid(bdf_glyph_grid_t *grid)
-#else
-bdf_free_glyph_grid(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     if (grid == 0)
       return;
@@ -558,14 +565,8 @@ bdf_glyph_grid_t *grid;
  * Enlarge the grid without affecting the font or glyph metrics.
  */
 int
-#ifdef __STDC__
 bdf_grid_enlarge(bdf_glyph_grid_t *grid, unsigned short width,
                  unsigned short height)
-#else
-bdf_grid_enlarge(grid, width, height)
-bdf_glyph_grid_t *grid;
-unsigned short width, height;
-#endif
 {
     unsigned short si, di, col, colx, byte;
     short ht, wd, as, ds, x, y, nx, ny;
@@ -577,9 +578,10 @@ unsigned short width, height;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     ht = height;
@@ -666,13 +668,7 @@ unsigned short width, height;
  * necessary.
  */
 int
-#ifdef __STDC__
 bdf_grid_resize(bdf_glyph_grid_t *grid, bdf_metrics_t *metrics)
-#else
-bdf_grid_resize(grid, metrics)
-bdf_glyph_grid_t *grid;
-bdf_metrics_t *metrics;
-#endif
 {
     int changed;
     unsigned short si, di, col, colx, byte;
@@ -687,9 +683,10 @@ bdf_metrics_t *metrics;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     /*
@@ -874,13 +871,7 @@ bdf_metrics_t *metrics;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_crop(bdf_glyph_grid_t *grid, int grid_modified)
-#else
-bdf_grid_crop(grid, grid_modified)
-bdf_glyph_grid_t *grid;
-int grid_modified;
-#endif
 {
     int cropped;
     short x, y, delta, maxx, minx, maxy, miny, col;
@@ -893,9 +884,10 @@ int grid_modified;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     bpr = ((grid->grid_width * grid->bpp) + 7) >> 3;
@@ -927,7 +919,7 @@ int grid_modified;
         (void) memset((char *) &grid->glyph_bbx, 0, sizeof(bdf_bbx_t));
         grid->glyph_x = grid->base_x;
         grid->glyph_y = grid->base_y;
-        if (cropped)
+        if (cropped && grid_modified)
           grid->modified = 1;
         return cropped;
     }
@@ -987,14 +979,7 @@ int grid_modified;
  **************************************************************************/
 
 int
-#ifdef __STDC__
 bdf_grid_set_pixel(bdf_glyph_grid_t *grid, short x, short y, int val)
-#else
-bdf_grid_set_pixel(grid, x, y, val)
-bdf_glyph_grid_t *grid;
-short x, y;
-int val;
-#endif
 {
     unsigned short si, di, dx;
     int set, bpr, delta;
@@ -1009,9 +994,10 @@ int val;
     si = 0;
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; si = 7; break;
-      case 2: masks = twobpp; si = 3; break;
-      case 4: masks = fourbpp; si = 1; break;
+      case 1: masks = bdf_onebpp; si = 7; break;
+      case 2: masks = bdf_twobpp; si = 3; break;
+      case 4: masks = bdf_fourbpp; si = 1; break;
+      case 8: masks = bdf_eightbpp; si = 0; break;
     }
 
     /*
@@ -1034,7 +1020,7 @@ int val;
     bpr = ((grid->grid_width * grid->bpp) + 7) >> 3;
 
     /*
-     * If the bit is already set, simply return with an indication that
+     * If the pixel is already set, simply return with an indication that
      * nothing changed.
      */
     if ((grid->bitmap[(y * bpr) + (dx >> 3)] & masks[di]) == val)
@@ -1088,13 +1074,7 @@ int val;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_clear_pixel(bdf_glyph_grid_t *grid, short x, short y)
-#else
-bdf_grid_clear_pixel(grid, x, y)
-bdf_glyph_grid_t *grid;
-short x, y;
-#endif
 {
     int cleared, bpr;
     short delta, maxx, minx, maxy, miny, wd, ht;
@@ -1109,9 +1089,10 @@ short x, y;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     /*
@@ -1209,14 +1190,7 @@ short x, y;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_invert_pixel(bdf_glyph_grid_t *grid, short x, short y, int val)
-#else
-bdf_grid_invert_pixel(grid, x, y, val)
-bdf_glyph_grid_t *grid;
-short x, y;
-int val;
-#endif
 {
     short bpr, di;
     unsigned char *masks;
@@ -1227,9 +1201,10 @@ int val;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     /*
@@ -1254,12 +1229,7 @@ int val;
  **************************************************************************/
 
 short
-#ifdef __STDC__
 _bdf_ceiling(double v)
-#else
-_bdf_ceiling(v)
-double v;
-#endif
 {
     short val, neg;
 
@@ -1282,14 +1252,7 @@ double v;
 }
 
 static int
-#ifdef __STDC__
 _bdf_rotate_selection(bdf_glyph_grid_t *grid, int mul90, short degrees)
-#else
-_bdf_rotate_selection(grid, mul90, degrees)
-bdf_glyph_grid_t *grid;
-int mul90;
-short degrees;
-#endif
 {
     int rotated, byte;
     short wd, ht, nx, ny, cx, cy, x, y, col;
@@ -1309,9 +1272,10 @@ short degrees;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     bytes = grid->sel.bytes >> 1;
@@ -1497,16 +1461,8 @@ short degrees;
 }
 
 static void
-#ifdef __STDC__
 _bdf_rotate_resize(bdf_glyph_grid_t *grid, int mul90, short degrees,
                   int *resize)
-#else
-_bdf_rotate_resize(grid, mul90, degrees, resize)
-bdf_glyph_grid_t *grid;
-int mul90;
-short degrees;
-int *resize;
-#endif
 {
     unsigned short wd, ht;
     short cx, cy, x1, y1, x2, y2;
@@ -1623,14 +1579,7 @@ int *resize;
 }
 
 static void
-#ifdef __STDC__
 _bdf_shear_resize(bdf_glyph_grid_t *grid, short degrees, int neg, int *resize)
-#else
-_bdf_shear_resize(grid, degrees, neg, resize)
-bdf_glyph_grid_t *grid;
-short degrees;
-int neg, *resize;
-#endif
 {
     unsigned short wd;
     short x1, y1, x2, y2;
@@ -1704,14 +1653,7 @@ int neg, *resize;
  * Rotate the bitmap in the grid by some number of degrees.
  */
 int
-#ifdef __STDC__
 bdf_grid_rotate(bdf_glyph_grid_t *grid, short degrees, int *resize)
-#else
-bdf_grid_rotate(grid, degrees, resize)
-bdf_glyph_grid_t *grid;
-short degrees;
-int *resize;
-#endif
 {
     int rotated, mul90;
     short nx, ny, cx, cy, x, y, wd, ht;
@@ -1738,9 +1680,10 @@ int *resize;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     mul90 = ((degrees % 90) == 0) ? 1 : 0;
@@ -1931,14 +1874,7 @@ int *resize;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_shear(bdf_glyph_grid_t *grid, short degrees, int *resize)
-#else
-bdf_grid_shear(grid, degrees, resize)
-bdf_glyph_grid_t *grid;
-short degrees;
-int *resize;
-#endif
 {
     int sheared, neg;
     short cx, cy, wd, ht, gx, gy, x, y;
@@ -1962,9 +1898,10 @@ int *resize;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     /*
@@ -2120,12 +2057,7 @@ int *resize;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_embolden(bdf_glyph_grid_t *grid)
-#else
-bdf_grid_embolden(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     int done;
     short wd, ht, gx, gy, x, y;
@@ -2140,9 +2072,10 @@ bdf_glyph_grid_t *grid;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     /*
@@ -2202,14 +2135,8 @@ bdf_glyph_grid_t *grid;
  **************************************************************************/
 
 int
-#ifdef __STDC__
 bdf_has_selection(bdf_glyph_grid_t *grid, short *x, short *y,
                   short *width, short *height)
-#else
-bdf_has_selection(grid, x, y, width, height)
-bdf_glyph_grid_t *grid;
-short *x, *y, *width, *height;
-#endif
 {
     if (grid == 0 || (grid->sel.width == 0 && grid->sel.height == 0))
       return 0;
@@ -2230,14 +2157,8 @@ short *x, *y, *width, *height;
  * Select a rectangle on the grid.
  */
 void
-#ifdef __STDC__
 bdf_set_selection(bdf_glyph_grid_t *grid, short x, short y,
                   short width, short height)
-#else
-bdf_set_selection(grid, x, y, width, height)
-bdf_glyph_grid_t *grid;
-short x, y, width, height;
-#endif
 {
     short nx, ny, wd, ht, ssize, dx, dy, col;
     unsigned short bytes, bpr, sbpr, si, di, byte;
@@ -2282,9 +2203,10 @@ short x, y, width, height;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     if (bytes > grid->sel.bytes) {
@@ -2327,17 +2249,12 @@ short x, y, width, height;
 }
 
 /*
- * Detach a selection in preparation for moving it.  What is does is clear the
+ * Detach a selection in preparation for moving it.  What it does is clear the
  * bits set in the selection from the main grid.  Again, this is only used for
  * move operations.
  */
 void
-#ifdef __STDC__
 bdf_detach_selection(bdf_glyph_grid_t *grid)
-#else
-bdf_detach_selection(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     short sx, sy, x, y, wd, ht, dx;
     unsigned short bpr, sbpr, si, di, byte;
@@ -2348,9 +2265,10 @@ bdf_glyph_grid_t *grid;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     bpr = ((grid->grid_width * grid->bpp) + 7) >> 3;
@@ -2378,12 +2296,7 @@ bdf_glyph_grid_t *grid;
 }
 
 void
-#ifdef __STDC__
 bdf_attach_selection(bdf_glyph_grid_t *grid)
-#else
-bdf_attach_selection(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     short sx, sy, x, y, wd, ht;
     unsigned short bpr, sbpr, dx, di, si, byte;
@@ -2394,9 +2307,10 @@ bdf_glyph_grid_t *grid;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     bpr = ((grid->grid_width * grid->bpp) + 7) >> 3;
@@ -2432,12 +2346,7 @@ bdf_glyph_grid_t *grid;
  * 0.
  */
 void
-#ifdef __STDC__
 bdf_lose_selection(bdf_glyph_grid_t *grid)
-#else
-bdf_lose_selection(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     if (grid == 0)
       return;
@@ -2449,12 +2358,7 @@ bdf_glyph_grid_t *grid;
  * on the grid and then losing the selection.
  */
 void
-#ifdef __STDC__
 bdf_delete_selection(bdf_glyph_grid_t *grid)
-#else
-bdf_delete_selection(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     bdf_detach_selection(grid);
     bdf_lose_selection(grid);
@@ -2464,13 +2368,7 @@ bdf_glyph_grid_t *grid;
  * Check to see if a coordinate pair is in the selected region.
  */
 int
-#ifdef __STDC__
 bdf_in_selection(bdf_glyph_grid_t *grid, short x, short y, short *set)
-#else
-bdf_in_selection(grid, x, y, set)
-bdf_glyph_grid_t *grid;
-short x, y, *set;
-#endif
 {
     short wd, ht;
     unsigned short bpr, si, di, byte;
@@ -2482,9 +2380,10 @@ short x, y, *set;
     di = 0;
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; di = 7; break;
-      case 2: masks = twobpp; di = 3; break;
-      case 4: masks = fourbpp; di = 1; break;
+      case 1: masks = bdf_onebpp; di = 7; break;
+      case 2: masks = bdf_twobpp; di = 3; break;
+      case 4: masks = bdf_fourbpp; di = 1; break;
+      case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
     bpr = ((grid->sel.width * grid->bpp) + 7) >> 3;
@@ -2511,13 +2410,7 @@ short x, y, *set;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_shift(bdf_glyph_grid_t *grid, short xcount, short ycount)
-#else
-bdf_grid_shift(grid, xcount, ycount)
-bdf_glyph_grid_t *grid;
-short xcount, ycount;
-#endif
 {
     int sel, delta;
     short xdir, ydir, x, y, wd, ht, dx, dy, nx, ny;
@@ -2641,9 +2534,10 @@ short xcount, ycount;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; di = 7; break;
-      case 2: masks = twobpp; di = 3; break;
-      case 4: masks = fourbpp; di = 1; break;
+      case 1: masks = bdf_onebpp; di = 7; break;
+      case 2: masks = bdf_twobpp; di = 3; break;
+      case 4: masks = bdf_fourbpp; di = 1; break;
+      case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
     /*
@@ -2713,13 +2607,7 @@ short xcount, ycount;
 
 
 int
-#ifdef __STDC__
 bdf_grid_flip(bdf_glyph_grid_t *grid, short dir)
-#else
-bdf_grid_flip(grid, dir)
-bdf_glyph_grid_t *grid;
-short dir;
-#endif
 {
     int flipped, sel, delta;
     short dx, dy, x, y, nx, ny, wd, ht;
@@ -2759,9 +2647,10 @@ short dir;
     nx = 0;
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; di = 7; break;
-      case 2: masks = twobpp; di = 3; break;
-      case 4: masks = fourbpp; di = 1; break;
+      case 1: masks = bdf_onebpp; di = 7; break;
+      case 2: masks = bdf_twobpp; di = 3; break;
+      case 4: masks = bdf_fourbpp; di = 1; break;
+      case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
     /*
@@ -2884,13 +2773,7 @@ short dir;
 }
 
 void
-#ifdef __STDC__
 bdf_grid_origin(bdf_glyph_grid_t *grid, short *x, short *y)
-#else
-bdf_grid_origin(grid, x, y)
-bdf_glyph_grid_t *grid;
-short *x, *y;
-#endif
 {
     if (grid == 0)
       return;
@@ -2900,12 +2783,7 @@ short *x, *y;
 }
 
 bdf_glyph_t *
-#ifdef __STDC__
 bdf_grid_glyph(bdf_glyph_grid_t *grid)
-#else
-bdf_grid_glyph(grid)
-bdf_glyph_grid_t *grid;
-#endif
 {
     int len;
     short x, y, nx, ny, wd, ht, gx, gy;
@@ -2919,9 +2797,10 @@ bdf_glyph_grid_t *grid;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; di = 7; break;
-      case 2: masks = twobpp; di = 3; break;
-      case 4: masks = fourbpp; di = 1; break;
+      case 1: masks = bdf_onebpp; di = 7; break;
+      case 2: masks = bdf_twobpp; di = 3; break;
+      case 4: masks = bdf_fourbpp; di = 1; break;
+      case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
     /*
@@ -3013,13 +2892,7 @@ bdf_glyph_grid_t *grid;
  * Create a bitmap with the glyph image as well as the selection.
  */
 void
-#ifdef __STDC__
 bdf_grid_image(bdf_glyph_grid_t *grid, bdf_bitmap_t *image)
-#else
-bdf_grid_image(grid, image)
-bdf_glyph_grid_t *grid;
-bdf_bitmap_t *image;
-#endif
 {
     short x, y, ix, iy;
     unsigned short bpr, ibpr, si, di, col, colx, byte;
@@ -3030,9 +2903,10 @@ bdf_bitmap_t *image;
 
     masks = 0;
     switch (grid->bpp) {
-      case 1: masks = onebpp; di = 7; break;
-      case 2: masks = twobpp; di = 3; break;
-      case 4: masks = fourbpp; di = 1; break;
+      case 1: masks = bdf_onebpp; di = 7; break;
+      case 2: masks = bdf_twobpp; di = 3; break;
+      case 4: masks = bdf_fourbpp; di = 1; break;
+      case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
     image->bpp = grid->bpp;
@@ -3069,28 +2943,30 @@ bdf_bitmap_t *image;
 }
 
 /*
+ * These values are intended to give pixels mapped from 1bpp to nbpp the
+ * darkest available index, which is 1.
+ */
+static unsigned char twobpp_ones[] = {0x40, 0x10, 0x04, 0x01};
+static unsigned char fourbpp_ones[] = {0x10, 0x01};
+static unsigned char eightbpp_ones[] = {0x01};
+
+/*
  * Routines for quick and dirty dithering.
  */
 static void
-#ifdef __STDC__
 _bdf_one_to_n(bdf_bitmap_t *bmap, int n)
-#else
-_bdf_one_to_n(bmap, n)
-bdf_bitmap_t *bmap;
-int n;
-#endif
 {
     unsigned short bpr, sbpr, bytes, col, sx, sy;
-    unsigned char *nbmap, *masks;
+    unsigned char *nbmap, *ones = 0;
 
     if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
       return;
 
-    masks = 0;
     switch (n) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: ones = bdf_onebpp; break;
+      case 2: ones = twobpp_ones; break;
+      case 4: ones = fourbpp_ones; break;
+      case 8: ones = eightbpp_ones; break;
     }
 
     sbpr = (bmap->width + 7) >> 3;
@@ -3102,7 +2978,7 @@ int n;
     for (sy = 0; sy < bmap->height; sy++) {
         for (col = sx = 0; sx < bmap->width; sx++, col += n) {
             if (bmap->bitmap[(sy * sbpr) + (sx >> 3)] & (0x80 >> (sx & 7)))
-              nbmap[(sy * bpr) + (col >> 3)] |= masks[(col & 7) / n];
+              nbmap[(sy * bpr) + (col >> 3)] |= ones[(col & 7) / n];
         }
     }
     free((char *) bmap->bitmap);
@@ -3112,12 +2988,7 @@ int n;
 }
 
 static void
-#ifdef __STDC__
 _bdf_n_to_one(bdf_bitmap_t *bmap)
-#else
-_bdf_n_to_one(bmap)
-bdf_bitmap_t *bmap;
-#endif
 {
     unsigned short bpr, sbpr, bytes, col, sx, sy;
     unsigned char *nbmap, *masks;
@@ -3127,9 +2998,10 @@ bdf_bitmap_t *bmap;
 
     masks = 0;
     switch (bmap->bpp) {
-      case 1: masks = onebpp; break;
-      case 2: masks = twobpp; break;
-      case 4: masks = fourbpp; break;
+      case 1: masks = bdf_onebpp; break;
+      case 2: masks = bdf_twobpp; break;
+      case 4: masks = bdf_fourbpp; break;
+      case 8: masks = bdf_eightbpp; break;
     }
 
     sbpr = ((bmap->width * bmap->bpp) + 7) >> 3;
@@ -3152,12 +3024,7 @@ bdf_bitmap_t *bmap;
 }
 
 static void
-#ifdef __STDC__
 _bdf_two_to_four(bdf_bitmap_t *bmap)
-#else
-_bdf_two_to_four(bmap)
-bdf_bitmap_t *bmap;
-#endif
 {
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
@@ -3165,7 +3032,7 @@ bdf_bitmap_t *bmap;
     if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
       return;
 
-    masks = twobpp;
+    masks = bdf_twobpp;
 
     sbpr = ((bmap->width << 1) + 7) >> 3;
     bpr = ((bmap->width << 2) + 7) >> 3;
@@ -3179,16 +3046,17 @@ bdf_bitmap_t *bmap;
             byte = bmap->bitmap[(sy * sbpr) + (col >> 3)] & masks[si];
             if (byte) {
                 /*
-                 * Shift the byte down to make an index.
+                 * Shift the byte down to leave the index in the lowest 2
+                 * bits.
                  */
                 if (si < 3)
                   byte >>= (3 - si) << 1;
 
                 /*
-                 * Scale the index to four bits per pixel and shift it into
-                 * place before adding it.
+                 * Break 16 into 4 groups of 4 and map the 2bpp index to one
+                 * of those 4.
                  */
-                byte = (byte << 2) + 3;
+                bytes <<= 2;
                 if ((sx & 1) == 0)
                   byte <<= 4;
                 nbmap[(sy * bpr) + ((sx << 2) >> 3)] |= byte;
@@ -3202,12 +3070,7 @@ bdf_bitmap_t *bmap;
 }
 
 static void
-#ifdef __STDC__
 _bdf_four_to_two(bdf_bitmap_t *bmap)
-#else
-_bdf_four_to_two(bmap)
-bdf_bitmap_t *bmap;
-#endif
 {
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
@@ -3215,7 +3078,7 @@ bdf_bitmap_t *bmap;
     if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
       return;
 
-    masks = fourbpp;
+    masks = bdf_fourbpp;
 
     sbpr = ((bmap->width << 2) + 7) >> 3;
     bpr = ((bmap->width << 1) + 7) >> 3;
@@ -3239,6 +3102,8 @@ bdf_bitmap_t *bmap;
                  * place if necessary.
                  */
                 byte >>= 2;
+                if (byte == 0)
+                  byte = 1;
 
                 si = ((sx << 1) & 7) >> 1;
                 if (si < 3)
@@ -3254,17 +3119,183 @@ bdf_bitmap_t *bmap;
     bmap->bitmap = nbmap;
 }
 
+static void
+_bdf_two_to_eight(bdf_bitmap_t *bmap)
+{
+    unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
+    unsigned char *nbmap, *masks;
+
+    if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
+      return;
+
+    masks = bdf_twobpp;
+
+    sbpr = ((bmap->width << 1) + 7) >> 3;
+    bpr = bmap->width;
+    bytes = bpr * bmap->height;
+    nbmap = (unsigned char *) malloc(bytes);
+    (void) memset((char *) nbmap, 0, bytes);
+
+    for (sy = 0; sy < bmap->height; sy++) {
+        for (col = sx = 0; sx < bmap->width; sx++, col += 2) {
+            si = (col & 7) >> 1;
+            byte = bmap->bitmap[(sy * sbpr) + (col >> 3)] & masks[si];
+            if (byte) {
+                /*
+                 * Shift the byte down to leave the index in the lowest 2
+                 * bits.
+                 */
+                if (si < 3)
+                  byte >>= (3 - si) << 1;
+
+                /*
+                 * Break 256 into 4 groups of 64 and map the 2bpp index to one
+                 * of those 4.
+                 */
+                byte <<= 6;
+                nbmap[(sy * bpr) + sx] = byte;
+            }
+        }
+    }
+    free((char *) bmap->bitmap);
+    bmap->bpp = 8;
+    bmap->bytes = bytes;
+    bmap->bitmap = nbmap;
+}
+
+static void
+_bdf_eight_to_two(bdf_bitmap_t *bmap)
+{
+    unsigned short bpr, sbpr, bytes, si, byte, sx, sy;
+    unsigned char *nbmap;
+
+    if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
+      return;
+
+    sbpr = bmap->width;
+    bpr = ((bmap->width << 1) + 7) >> 3;
+    bytes = bpr * bmap->height;
+    nbmap = (unsigned char *) malloc(bytes);
+    (void) memset((char *) nbmap, 0, bytes);
+
+    for (sy = 0; sy < bmap->height; sy++) {
+        for (sx = 0; sx < bmap->width; sx++) {
+            byte = bmap->bitmap[(sy * sbpr) + sx];
+            if (byte) {
+                /*
+                 * Scale the index to two bits per pixel and shift it into
+                 * place if necessary.
+                 */
+                byte >>= 6;
+                if (byte == 0)
+                  byte = 1;
+
+                si = ((sx << 1) & 7) >> 1;
+                if (si < 3)
+                  byte <<= (3 - si) << 1;
+
+                nbmap[(sy * bpr) + ((sx << 1) >> 3)] |= byte;
+            }
+        }
+    }
+    free((char *) bmap->bitmap);
+    bmap->bpp = 2;
+    bmap->bytes = bytes;
+    bmap->bitmap = nbmap;
+}
+
+static void
+_bdf_four_to_eight(bdf_bitmap_t *bmap)
+{
+    unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
+    unsigned char *nbmap, *masks;
+
+    if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
+      return;
+
+    masks = bdf_fourbpp;
+
+    sbpr = ((bmap->width << 2) + 7) >> 3;
+    bpr = bmap->width;
+    bytes = bpr * bmap->height;
+    nbmap = (unsigned char *) malloc(bytes);
+    (void) memset((char *) nbmap, 0, bytes);
+
+    for (sy = 0; sy < bmap->height; sy++) {
+        for (col = sx = 0; sx < bmap->width; sx++, col += 4) {
+            si = (col & 7) >> 2;
+            byte = bmap->bitmap[(sy * sbpr) + (col >> 3)] & masks[si];
+            if (byte) {
+                /*
+                 * Shift the byte down to make an index.
+                 */
+                if (si == 0)
+                  byte >>= 4;
+
+                /*
+                 * Multiply by 16 to get the 8bpp index.
+                 */
+                byte <<= 4;
+
+                nbmap[(sy * bpr) + sx] = byte;
+            }
+        }
+    }
+    free((char *) bmap->bitmap);
+    bmap->bpp = 8;
+    bmap->bytes = bytes;
+    bmap->bitmap = nbmap;
+}
+
+static void
+_bdf_eight_to_four(bdf_bitmap_t *bmap)
+{
+    unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
+    unsigned char *nbmap;
+
+    if (bmap == 0 || bmap->width == 0 || bmap->height == 0)
+      return;
+
+    sbpr = bmap->width;
+    bpr = ((bmap->width << 2) + 7) >> 3;
+    bytes = bpr * bmap->height;
+    nbmap = (unsigned char *) malloc(bytes);
+    (void) memset((char *) nbmap, 0, bytes);
+
+    for (sy = 0; sy < bmap->height; sy++) {
+        for (col = sx = 0; sx < bmap->width; sx++, col += 4) {
+            byte = bmap->bitmap[(sy * sbpr) + sx];
+            if (byte) {
+                /*
+                 * Divide the index by 16 to determine which 4bpp index
+                 * it will be.
+                 */
+                byte >>= 4;
+                if (byte == 0)
+                  byte = 1;
+
+                /*
+                 * Shift the bits up by 4 if the index is even.
+                 */
+                si = (col & 7) >> 2;
+                if (si == 0)
+                  byte <<= 4;
+
+                nbmap[(sy * bpr) + ((sx << 2) >> 3)] |= byte;
+            }
+        }
+    }
+    free((char *) bmap->bitmap);
+    bmap->bpp = 4;
+    bmap->bytes = bytes;
+    bmap->bitmap = nbmap;
+}
+
 /*
  * Add a bitmap to a grid as a selection.
  */
 void
-#ifdef __STDC__
 bdf_add_selection(bdf_glyph_grid_t *grid, bdf_bitmap_t *sel)
-#else
-bdf_add_selection(grid, sel)
-bdf_glyph_grid_t *grid;
-bdf_bitmap_t *sel;
-#endif
 {
     unsigned short bytes, bpr;
 
@@ -3281,10 +3312,22 @@ bdf_bitmap_t *sel;
           _bdf_one_to_n(sel, grid->bpp);
         else if (grid->bpp == 1)
           _bdf_n_to_one(sel);
-        else if (sel->bpp == 2)
-          _bdf_two_to_four(sel);
-        else
-          _bdf_four_to_two(sel);
+        else if (sel->bpp == 2) {
+            if (grid->bpp == 4)
+              _bdf_two_to_four(sel);
+            else
+              _bdf_two_to_eight(sel);
+        } else if (sel->bpp == 4) {
+            if (grid->bpp == 2)
+              _bdf_four_to_two(sel);
+            else
+              _bdf_four_to_eight(sel);
+        } else if (sel->bpp == 8) {
+            if (grid->bpp == 2)
+              _bdf_eight_to_two(sel);
+            else
+              _bdf_eight_to_four(sel);
+        }
     }
 
     /*
@@ -3341,25 +3384,19 @@ bdf_bitmap_t *sel;
 }
 
 int
-#ifdef __STDC__
 bdf_grid_color_at(bdf_glyph_grid_t *grid, short x, short y)
-#else
-bdf_grid_color_at(grid, x, y)
-bdf_glyph_grid_t *grid;
-short x, y;
-#endif
 {
     unsigned short bpr, si, di, byte;
-    unsigned char *masks;
+    unsigned char *masks = 0;
 
     if (grid->bpp == 1)
       return -1;
 
-    masks = twobpp;
     di = 0;
     switch (grid->bpp) {
-      case 2: di = 3; break;
-      case 4: di = 1; break;
+      case 2: masks = bdf_twobpp; di = 3; break;
+      case 4: masks = bdf_fourbpp; di = 1; break;
+      case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
     x *= grid->bpp;

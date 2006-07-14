@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgname.c,v 1.8 2004/01/29 17:15:37 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfgname.c 2 2006-01-08 00:57:53Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfgname.c,v 1.8 2004/01/29 17:15:37 mleisher Exp $";
+static char svnid[] = "$Id: bdfgname.c 2 2006-01-08 00:57:53Z mleisher $";
 #endif
 #endif
 
@@ -46,14 +46,7 @@ static unsigned long adobe_names_used;
 #define MAX_GLYPH_NAME_LEN 127
 
 static int
-#ifdef __STDC__
 getline(FILE *in, char *buf, int limit)
-#else
-getline(in, buf, limit)
-FILE *in;
-char *buf;
-int limit;
-#endif
 {
     int c, i;
 
@@ -85,14 +78,7 @@ int limit;
 }
 
 static long
-#ifdef __STDC__
 _bdf_find_name(long code, char *name, FILE *in)
-#else
-_bdf_find_name(code, name, in)
-long code;
-char *name;
-FILE *in;
-#endif
 {
     long c, i, pos;
     char *sp, buf[256];
@@ -133,12 +119,7 @@ FILE *in;
 }
 
 static int
-#ifdef __STDC__
 by_encoding(const void *a, const void *b)
-#else
-by_encoding(a, b)
-char *a, *b;
-#endif
 {
     _bdf_adobe_name_t *c1, *c2;
 
@@ -152,12 +133,7 @@ char *a, *b;
 }
 
 static void
-#ifdef __STDC__
 _bdf_load_adobe_names(FILE *in)
-#else
-_bdf_load_adobe_names(in)
-FILE *in;
-#endif
 {
     long c, pos;
     char *sp, buf[256];
@@ -216,14 +192,7 @@ FILE *in;
 }
 
 static long
-#ifdef __STDC__
 _bdf_find_adobe_name(long code, char *name, FILE *in)
-#else
-_bdf_find_adobe_name(code, name, in)
-long code;
-char *name;
-FILE *in;
-#endif
 {
     long len;
     int l, r, m;
@@ -266,16 +235,8 @@ FILE *in;
 }
 
 static int
-#ifdef __STDC__
 _bdf_set_glyph_names(FILE *in, bdf_font_t *font, bdf_callback_t callback,
                      int adobe)
-#else
-_bdf_set_glyph_names(in, font, callback, adobe)
-FILE *in;
-bdf_font_t *font;
-bdf_callback_t callback;
-int adobe;
-#endif
 {
     int changed;
     long i, size, len;
@@ -329,41 +290,20 @@ int adobe;
 }
 
 int
-#ifdef __STDC__
 bdf_set_unicode_glyph_names(FILE *in, bdf_font_t *font,
                             bdf_callback_t callback)
-#else
-bdf_set_unicode_glyph_names(in, font, callback)
-FILE *in;
-bdf_font_t *font;
-bdf_callback_t callback;
-#endif
 {
     return _bdf_set_glyph_names(in, font, callback, 0);
 }
 
 int
-#ifdef __STDC__
 bdf_set_adobe_glyph_names(FILE *in, bdf_font_t *font, bdf_callback_t callback)
-#else
-bdf_set_adobe_glyph_names(in, font, callback)
-FILE *in;
-bdf_font_t *font;
-bdf_callback_t callback;
-#endif
 {
     return _bdf_set_glyph_names(in, font, callback, 1);
 }
 
 int
-#ifdef __STDC__
 bdf_set_glyph_code_names(int prefix, bdf_font_t *font, bdf_callback_t callback)
-#else
-bdf_set_glyph_code_names(prefix, font, callback)
-int prefix;
-bdf_font_t *font;
-bdf_callback_t callback;
-#endif
 {
     int changed;
     long i, size, len;
@@ -419,11 +359,7 @@ bdf_callback_t callback;
 }
 
 void
-#ifdef __STDC__
 _bdf_glyph_name_cleanup(void)
-#else
-_bdf_glyph_name_cleanup()
-#endif
 {
     if (adobe_names_size > 0)
       free((char *) adobe_names);

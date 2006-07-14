@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfgrab.c,v 1.11 2004/02/20 05:10:05 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrab.c 2 2006-01-08 00:57:53Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfgrab.c,v 1.11 2004/02/20 05:10:05 mleisher Exp $";
+static char svnid[] = "$Id: bdfgrab.c 2 2006-01-08 00:57:53Z mleisher $";
 #endif
 #endif
 
@@ -52,12 +52,7 @@ static char rcsid[] = "$Id: bdfgrab.c,v 1.11 2004/02/20 05:10:05 mleisher Exp $"
  * Routine to compare two glyphs by encoding so they can be sorted.
  */
 static int
-#ifdef __STDC__
 by_encoding(const void *a, const void *b)
-#else
-by_encoding(a, b)
-char *a, *b;
-#endif
 {
     bdf_glyph_t *c1, *c2;
 
@@ -71,17 +66,8 @@ char *a, *b;
 }
 
 static void
-#ifdef __STDC__
 _bdf_get_glyphs(Display *d, XFontStruct *f, bdf_font_t *font,
                 bdf_callback_t callback, void *data)
-#else
-_bdf_get_glyphs(d, f, font, callback, data)
-Display *d;
-XFontStruct *f;
-bdf_font_t *font;
-bdf_callback_t callback;
-void *data;
-#endif
 {
     unsigned long off, b1, b2, black, x, y, bpr;
     GC cleargc, drawgc;
@@ -242,33 +228,20 @@ void *data;
 }
 
 static int
-#ifdef __STDC__
 error_handler(Display *d, XErrorEvent *event)
-#else
-error_handler(d, event)
-Display *d;
-XErrorEvent *event;
-#endif
 {
 
     if (event->request_code != X_GetAtomName)
+      fprintf(stderr, "X Server Error\n");
+#if 0
         XmuPrintDefaultErrorMessage(d, event, stderr);
+#endif
     return 0;
 }
 
 bdf_font_t *
-#ifdef __STDC__
 bdf_load_server_font(Display *d, XFontStruct *f, char *name,
                      bdf_options_t *opts, bdf_callback_t callback, void *data)
-#else
-bdf_load_server_font(d, f, name, opts, callback, data)
-Display *d;
-XFontStruct *f;
-char *name;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-#endif
 {
     unsigned long i, len, b1, b2;
     bdf_font_t *font;

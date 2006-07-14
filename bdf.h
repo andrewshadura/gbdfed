@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,7 @@
 #define _h_bdf
 
 /*
- * $Id: bdf.h,v 1.25 2004/02/08 23:58:59 mleisher Exp $
+ * $Id: bdf.h 60 2006-07-14 15:58:19Z mleisher $
  */
 
 #include <stdio.h>
@@ -46,16 +46,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-/*
- * A macro for prototypes.
- */
-#undef __
-#ifdef __STDC__
-#define __(x) x
-#else
-#define __(x) ()
 #endif
 
 /**************************************************************************
@@ -93,15 +83,16 @@ typedef struct {
     int bits_per_pixel;
     int eol;
     int psf_flags;
+    int cursor_font;
 } bdf_options_t;
 
 /*
  * Callback function type for unknown configuration options.
  */
-typedef int (*bdf_options_callback_t) __((bdf_options_t *opts,
-                                          char **params,
-                                          unsigned long nparams,
-                                          void *client_data));
+typedef int (*bdf_options_callback_t)(bdf_options_t *opts,
+                                      char **params,
+                                      unsigned long nparams,
+                                      void *client_data);
 
 /**************************************************************************
  *
@@ -404,8 +395,8 @@ typedef struct {
     unsigned long errlineno;
 } bdf_callback_struct_t;
 
-typedef void (*bdf_callback_t) __((bdf_callback_struct_t *call_data,
-                                   void *client_data));
+typedef void (*bdf_callback_t)(bdf_callback_struct_t *call_data,
+                               void *client_data);
 
 /**************************************************************************
  *
@@ -416,63 +407,63 @@ typedef void (*bdf_callback_t) __((bdf_callback_struct_t *call_data,
 /*
  * Startup and shutdown functions.
  */
-extern void bdf_setup __((void));
-extern void bdf_cleanup __((void));
+extern void bdf_setup(void);
+extern void bdf_cleanup(void);
 
 /*
  * Configuration file loading and saving.
  */
-extern void bdf_load_options __((FILE *in, bdf_options_t *opts,
-                                 bdf_options_callback_t callback,
-                                 void *client_data));
-extern void bdf_save_options __((FILE *out, bdf_options_t *opts));
+extern void bdf_load_options(FILE *in, bdf_options_t *opts,
+                             bdf_options_callback_t callback,
+                             void *client_data);
+extern void bdf_save_options(FILE *out, bdf_options_t *opts);
 
 /*
  * Font options functions.
  */
-extern void bdf_default_options __((bdf_options_t *opts));
+extern void bdf_default_options(bdf_options_t *opts);
 
 /*
  * Font load, create, save and free functions.
  */
-extern bdf_font_t *bdf_new_font __((char *name, long point_size,
-                                    long resolution_x, long resolution_y,
-                                    long spacing, int bpp));
-extern bdf_font_t *bdf_load_font __((FILE *in, bdf_options_t *opts,
-                                     bdf_callback_t callback, void *data));
-extern bdf_font_t *bdf_load_hbf_font __((char *filename, bdf_options_t *opts,
-                                         bdf_callback_t callback, void *data));
+extern bdf_font_t *bdf_new_font(char *name, long point_size,
+                                long resolution_x, long resolution_y,
+                                long spacing, int bpp);
+extern bdf_font_t *bdf_load_font(FILE *in, bdf_options_t *opts,
+                                 bdf_callback_t callback, void *data);
+#ifdef HAVE_HBF
+extern bdf_font_t *bdf_load_hbf_font(char *filename, bdf_options_t *opts,
+                                     bdf_callback_t callback, void *data);
+#endif
 
 #ifdef HAVE_XLIB
-extern bdf_font_t *bdf_load_server_font __((Display *d, XFontStruct *f,
-                                            char *name, bdf_options_t *opts,
-                                            bdf_callback_t callback,
-                                            void *data));
+extern bdf_font_t *bdf_load_server_font(Display *d, XFontStruct *f,
+                                        char *name, bdf_options_t *opts,
+                                        bdf_callback_t callback,
+                                        void *data);
 #endif /* HAVE_XLIB */
 
-extern int bdf_load_console_font __((FILE *in, bdf_options_t *opts,
-                                     bdf_callback_t callback, void *data,
-                                     bdf_font_t *fonts[3], int *nfonts));
+extern int bdf_load_console_font(FILE *in, bdf_options_t *opts,
+                                 bdf_callback_t callback, void *data,
+                                 bdf_font_t *fonts[3], int *nfonts);
 
-extern int bdf_load_mf_font __((FILE *in, bdf_options_t *opts,
-                                bdf_callback_t callback, void *data,
-                                bdf_font_t **font));
+extern int bdf_load_mf_font(FILE *in, bdf_options_t *opts,
+                            bdf_callback_t callback, void *data,
+                            bdf_font_t **font);
 
-extern void bdf_save_font __((FILE *out, bdf_font_t *font,
-                              bdf_options_t *opts, bdf_callback_t callback,
-                              void *data));
+extern void bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
+                          bdf_callback_t callback, void *data);
 
-extern void bdf_save_sbit_metrics __((FILE *out, bdf_font_t *font,
-                                      bdf_options_t *opts, char *appname));
+extern void bdf_save_sbit_metrics(FILE *out, bdf_font_t *font,
+                                  bdf_options_t *opts, char *appname);
 
-extern void bdf_export_hex __((FILE *out, bdf_font_t *font,
-                               bdf_options_t *opts, bdf_callback_t callback,
-                               void *data));
+extern void bdf_export_hex(FILE *out, bdf_font_t *font, bdf_options_t *opts,
+                           bdf_callback_t callback, void *data);
 
-extern int bdf_export_psf __((FILE *out, bdf_font_t *font, bdf_options_t *opts,
-                              long start, long end));
+extern int bdf_export_psf(FILE *out, bdf_font_t *font, bdf_options_t *opts,
+                          long start, long end);
 
-extern void bdf_free_font __((bdf_font_t *font));
+extern void bdf_free_font(bdf_font_t *font);
 
 #ifdef HAVE_FREETYPE
 
@@ -483,23 +474,36 @@ extern void bdf_free_font __((bdf_font_t *font));
 /*
  * ID numbers of the strings that can appear in an OpenType font.
  */
-#define BDFOTF_COPYRIGHT_STRING  0
-#define BDFOTF_FAMILY_STRING     1
-#define BDFOTF_SUBFAMILY_STRING  2
-#define BDFOTF_UNIQUEID_STRING   3
-#define BDFOTF_FULLNAME_STRING   4
-#define BDFOTF_VENDOR_STRING     5
-#define BDFOTF_POSTSCRIPT_STRING 6
-#define BDFOTF_TRADEMARK_STRING  7
+#define BDFOTF_COPYRIGHT_STRING     0
+#define BDFOTF_FAMILY_STRING        1
+#define BDFOTF_SUBFAMILY_STRING     2
+#define BDFOTF_UNIQUEID_STRING      3
+#define BDFOTF_FULLNAME_STRING      4
+#define BDFOTF_VENDOR_STRING        5
+#define BDFOTF_POSTSCRIPT_STRING    6
+#define BDFOTF_TRADEMARK_STRING     7
+#define BDFOTF_FOUNDRY_STRING       8
+#define BDFOTF_DESIGNER_STRING      9
+#define BDFOTF_DESCRIPTION_STRING   10
+#define BDFOTF_VENDORURL_STRING     11
+#define BDFOTF_DESIGNERURL_STRING   12
+#define BDFOTF_LICENSE_STRING       13
+#define BDFOTF_LICENSEURL_STRING    14
+#define BDFOTF_RESERVED_STRING      15
+#define BDFOTF_PREFFAMILY_STRING    16
+#define BDFOTF_PREFSUBFAMILY_STRING 17
+#define BDFOTF_COMPATIBLEMAC_STRING 18
+#define BDFOTF_SAMPLETEXT_STRING    19
+#define BDFOTF_PSCIDFF_STRING       20
 
-extern char *bdfotf_platform_name __((short pid));
-extern char *bdfotf_encoding_name __((short pid, short eid));
-extern int bdfotf_get_english_string __((FT_Face face, int nameID,
-                                         int dash_to_space, char *name));
+extern char *bdfotf_platform_name(short pid);
+extern char *bdfotf_encoding_name(short pid, short eid);
+extern int bdfotf_get_english_string(FT_Face face, int nameID,
+                                     int dash_to_space, char *name);
 
-extern int bdfotf_load_font __((FT_Face face, short pid, short eid,
-                                bdf_options_t *opts, bdf_callback_t callback,
-                                void *data, bdf_font_t **font));
+extern int bdfotf_load_font(FT_Face face, short pid, short eid,
+                            bdf_options_t *opts, bdf_callback_t callback,
+                            void *data, bdf_font_t **font);
 
 #endif /* HAVE_FREETYPE */
 
@@ -518,19 +522,18 @@ extern int bdfotf_load_font __((FT_Face face, short pid, short eid,
  */
 typedef struct _bdffnt_font_t *bdffnt_font_t;
 
-extern int bdffnt_open_font __((char *path, bdffnt_font_t *font));
-extern void bdffnt_close_font __((bdffnt_font_t font));
-extern int bdffnt_font_count __((bdffnt_font_t font));
-extern int bdffnt_get_copyright __((bdffnt_font_t font, unsigned long fontID,
-                                    unsigned char *string));
-extern int bdffnt_get_facename __((bdffnt_font_t font, unsigned long fontID,
-                                   int for_xlfd, unsigned char *string));
-extern int bdffnt_char_count __((bdffnt_font_t font, unsigned long fontID));
-extern int bdffnt_font_pointsize __((bdffnt_font_t font,
-                                     unsigned long fontID));
-extern int bdffnt_load_font __((bdffnt_font_t font, unsigned long fontID,
-                                bdf_callback_t callback, void *data,
-                                bdf_font_t **out));
+extern int bdffnt_open_font(char *path, bdffnt_font_t *font);
+extern void bdffnt_close_font(bdffnt_font_t font);
+extern int bdffnt_font_count(bdffnt_font_t font);
+extern int bdffnt_get_copyright(bdffnt_font_t font, unsigned long fontID,
+                                unsigned char *string);
+extern int bdffnt_get_facename(bdffnt_font_t font, unsigned long fontID,
+                               int for_xlfd, unsigned char *string);
+extern int bdffnt_char_count(bdffnt_font_t font, unsigned long fontID);
+extern int bdffnt_font_pointsize(bdffnt_font_t font, unsigned long fontID);
+extern int bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
+                            bdf_callback_t callback, void *data,
+                            bdf_font_t **out);
 
 /*
  * PSF font section.
@@ -543,60 +546,58 @@ extern int bdffnt_load_font __((bdffnt_font_t font, unsigned long fontID,
 #define BDFPSF_SOURCE_GLYPH 0x0001
 #define BDFPSF_PSEUDO_GLYPH 0x0002
 
-extern bdf_font_t *bdf_load_psf __((FILE *in, unsigned char *magic,
-                                    bdf_options_t *opts,
-                                    bdf_callback_t callback, void *data,
-                                    int *awidth));
+extern bdf_font_t *bdf_load_psf(FILE *in, unsigned char *magic,
+                                bdf_options_t *opts,
+                                bdf_callback_t callback, void *data,
+                                int *awidth);
 
 /*
  * Font property functions.
  */
-extern void bdf_create_property __((char *name, int type));
-extern bdf_property_t *bdf_get_property __((char *name));
-extern unsigned long bdf_property_list __((bdf_property_t **props));
+extern void bdf_create_property(char *name, int type);
+extern bdf_property_t *bdf_get_property(char *name);
+extern unsigned long bdf_property_list(bdf_property_t **props);
 
-extern void bdf_add_font_property __((bdf_font_t *font,
-                                      bdf_property_t *property));
-extern void bdf_delete_font_property __((bdf_font_t *font, char *name));
-extern bdf_property_t *bdf_get_font_property __((bdf_font_t *font,
-                                                 char *name));
-extern unsigned long bdf_font_property_list __((bdf_font_t *font,
-                                                bdf_property_t **props));
+extern void bdf_add_font_property(bdf_font_t *font, bdf_property_t *property);
+extern void bdf_delete_font_property(bdf_font_t *font, char *name);
+extern bdf_property_t *bdf_get_font_property(bdf_font_t *font, char *name);
+extern unsigned long bdf_font_property_list(bdf_font_t *font,
+                                            bdf_property_t **props);
+extern int bdf_is_xlfd_property(char *name);
 
 /*
  * Font comment functions.
  */
-extern int bdf_replace_comments __((bdf_font_t *font, char *comments,
-                                    unsigned long comments_len));
+extern int bdf_replace_comments(bdf_font_t *font, char *comments,
+                                unsigned long comments_len);
 
 /*
  * Other miscellaneous functions.
  */
-extern void bdf_set_default_metrics __((bdf_font_t *font));
+extern void bdf_set_default_metrics(bdf_font_t *font);
 
 /*
  * Font glyph editing functions.
  */
-extern int bdf_glyph_modified __((bdf_font_t *font, long which,
-                                  int unencoded));
+extern int bdf_glyph_modified(bdf_font_t *font, long which, int unencoded);
 
-extern void bdf_copy_glyphs __((bdf_font_t *font, long start, long end,
-                                bdf_glyphlist_t *glyphs, int unencoded));
+extern void bdf_copy_glyphs(bdf_font_t *font, long start, long end,
+                            bdf_glyphlist_t *glyphs, int unencoded);
 
-extern void bdf_delete_glyphs __((bdf_font_t *font, long start, long end,
-                                  int unencoded));
+extern int bdf_delete_glyphs(bdf_font_t *font, long start, long end,
+                             int unencoded);
 
-extern int bdf_insert_glyphs __((bdf_font_t *font, long start,
-                                 bdf_glyphlist_t *glyphs));
+extern int bdf_insert_glyphs(bdf_font_t *font, long start,
+                             bdf_glyphlist_t *glyphs);
 
-extern int bdf_replace_glyphs __((bdf_font_t *font, long start,
-                                  bdf_glyphlist_t *glyphs, int unencoded));
+extern int bdf_replace_glyphs(bdf_font_t *font, long start,
+                              bdf_glyphlist_t *glyphs, int unencoded);
 
-extern int bdf_merge_glyphs __((bdf_font_t *font, long start,
-                                bdf_glyphlist_t *glyphs, int unencoded));
+extern int bdf_merge_glyphs(bdf_font_t *font, long start,
+                            bdf_glyphlist_t *glyphs, int unencoded);
 
-extern int bdf_replace_mappings __((bdf_font_t *font, long encoding,
-                                    bdf_psf_unimap_t *map, int unencoded));
+extern int bdf_replace_mappings(bdf_font_t *font, long encoding,
+                                bdf_psf_unimap_t *map, int unencoded);
 
 /**************************************************************************
  *
@@ -604,36 +605,36 @@ extern int bdf_replace_mappings __((bdf_font_t *font, long encoding,
  *
  **************************************************************************/
 
-extern int bdf_set_font_bbx __((bdf_font_t *font, bdf_metrics_t *metrics));
+extern int bdf_set_font_bbx(bdf_font_t *font, bdf_metrics_t *metrics);
 
-extern void bdf_set_modified __((bdf_font_t *font, int modified));
+extern void bdf_set_modified(bdf_font_t *font, int modified);
 
-extern int bdf_has_xlfd_name __((bdf_font_t *font));
+extern int bdf_has_xlfd_name(bdf_font_t *font);
 
-extern char *bdf_make_xlfd_name __((bdf_font_t *font, char *foundry,
-                                    char *family));
+extern char *bdf_make_xlfd_name(bdf_font_t *font, char *foundry,
+                                char *family);
 
-extern void bdf_update_name_from_properties __((bdf_font_t *font));
+extern void bdf_update_name_from_properties(bdf_font_t *font);
 
-extern void bdf_update_properties_from_name __((bdf_font_t *font));
+extern int bdf_update_properties_from_name(bdf_font_t *font);
 
-extern int bdf_update_average_width __((bdf_font_t *font));
+extern int bdf_update_average_width(bdf_font_t *font);
 
-extern int bdf_set_unicode_glyph_names __((FILE *in, bdf_font_t *font,
-                                           bdf_callback_t callback));
+extern int bdf_set_unicode_glyph_names(FILE *in, bdf_font_t *font,
+                                       bdf_callback_t callback);
 
-extern int bdf_set_adobe_glyph_names __((FILE *in, bdf_font_t *font,
-                                         bdf_callback_t callback));
+extern int bdf_set_adobe_glyph_names(FILE *in, bdf_font_t *font,
+                                     bdf_callback_t callback);
 
-extern int bdf_set_glyph_code_names __((int prefix, bdf_font_t *font,
-                                        bdf_callback_t callback));
+extern int bdf_set_glyph_code_names(int prefix, bdf_font_t *font,
+                                    bdf_callback_t callback);
 
 /*
  * Routine to add Unicode mappings when editing PSF fonts.
  */
-extern int bdf_psf_add_unicode_mapping __((bdf_psf_unimap_t *u,
-                                           unsigned long *mapping,
-                                           unsigned long mapping_cnt));
+extern int bdf_psf_add_unicode_mapping(bdf_psf_unimap_t *u,
+                                       unsigned long *mapping,
+                                       unsigned long mapping_cnt);
 
 /**************************************************************************
  *
@@ -644,86 +645,84 @@ extern int bdf_psf_add_unicode_mapping __((bdf_psf_unimap_t *u,
 /*
  * Glyph grid allocation and deallocation functions.
  */
-extern bdf_glyph_grid_t *bdf_make_glyph_grid __((bdf_font_t *font,
-                                                 long code,
-                                                 int unencoded));
-extern void bdf_free_glyph_grid __((bdf_glyph_grid_t *grid));
+extern bdf_glyph_grid_t *bdf_make_glyph_grid(bdf_font_t *font,
+                                             long code,
+                                             int unencoded);
+extern void bdf_free_glyph_grid(bdf_glyph_grid_t *grid);
 
 /*
  * Glyph grid information functions.
  */
-extern void bdf_grid_image __((bdf_glyph_grid_t *grid, bdf_bitmap_t *image));
-extern void bdf_grid_origin __((bdf_glyph_grid_t *grid, short *x, short *y));
-extern bdf_glyph_t *bdf_grid_glyph __((bdf_glyph_grid_t *grid));
+extern void bdf_grid_image(bdf_glyph_grid_t *grid, bdf_bitmap_t *image);
+extern void bdf_grid_origin(bdf_glyph_grid_t *grid, short *x, short *y);
+extern bdf_glyph_t *bdf_grid_glyph(bdf_glyph_grid_t *grid);
 
 /*
  * Glyph grid editing functions.
  */
-extern int bdf_grid_enlarge __((bdf_glyph_grid_t *grid, unsigned short width,
-                                unsigned short height));
-extern int bdf_grid_resize __((bdf_glyph_grid_t *grid,
-                               bdf_metrics_t *metrics));
-extern int bdf_grid_crop __((bdf_glyph_grid_t *grid, int grid_modified));
+extern int bdf_grid_enlarge(bdf_glyph_grid_t *grid, unsigned short width,
+                            unsigned short height);
+extern int bdf_grid_resize(bdf_glyph_grid_t *grid,
+                           bdf_metrics_t *metrics);
+extern int bdf_grid_crop(bdf_glyph_grid_t *grid, int grid_modified);
 
-extern int bdf_grid_set_pixel __((bdf_glyph_grid_t *grid, short x, short y,
-                                  int val));
-extern int bdf_grid_clear_pixel __((bdf_glyph_grid_t *grid, short x, short y));
-extern int bdf_grid_invert_pixel __((bdf_glyph_grid_t *grid,
-                                     short x, short y, int val));
-extern int bdf_grid_shift __((bdf_glyph_grid_t *grid, short xcount,
-                              short ycount));
-extern int bdf_grid_flip __((bdf_glyph_grid_t *grid, short dir));
-extern int bdf_grid_rotate __((bdf_glyph_grid_t *grid, short degrees,
-                               int *resize));
-extern int bdf_grid_shear __((bdf_glyph_grid_t *grid, short degrees,
-                              int *resize));
-extern int bdf_grid_embolden __((bdf_glyph_grid_t *grid));
+extern int bdf_grid_set_pixel(bdf_glyph_grid_t *grid, short x, short y,
+                              int val);
+extern int bdf_grid_clear_pixel(bdf_glyph_grid_t *grid, short x, short y);
+extern int bdf_grid_invert_pixel(bdf_glyph_grid_t *grid,
+                                 short x, short y, int val);
+extern int bdf_grid_shift(bdf_glyph_grid_t *grid, short xcount,
+                          short ycount);
+extern int bdf_grid_flip(bdf_glyph_grid_t *grid, short dir);
+extern int bdf_grid_rotate(bdf_glyph_grid_t *grid, short degrees,
+                           int *resize);
+extern int bdf_grid_shear(bdf_glyph_grid_t *grid, short degrees,
+                          int *resize);
+extern int bdf_grid_embolden(bdf_glyph_grid_t *grid);
 
 /*
  * Glyph grid selection functions.
  */
-extern int bdf_has_selection __((bdf_glyph_grid_t *grid, short *x, short *y,
-                                 short *width, short *height));
-extern void bdf_set_selection __((bdf_glyph_grid_t *grid, short x, short y,
-                                  short width, short height));
-extern void bdf_lose_selection __((bdf_glyph_grid_t *grid));
-extern void bdf_detach_selection __((bdf_glyph_grid_t *grid));
-extern void bdf_attach_selection __((bdf_glyph_grid_t *grid));
-extern void bdf_delete_selection __((bdf_glyph_grid_t *grid));
-extern int bdf_in_selection __((bdf_glyph_grid_t *grid, short x, short y,
-                                short *set));
-extern void bdf_add_selection __((bdf_glyph_grid_t *grid, bdf_bitmap_t *sel));
+extern int bdf_has_selection(bdf_glyph_grid_t *grid, short *x, short *y,
+                             short *width, short *height);
+extern void bdf_set_selection(bdf_glyph_grid_t *grid, short x, short y,
+                              short width, short height);
+extern void bdf_lose_selection(bdf_glyph_grid_t *grid);
+extern void bdf_detach_selection(bdf_glyph_grid_t *grid);
+extern void bdf_attach_selection(bdf_glyph_grid_t *grid);
+extern void bdf_delete_selection(bdf_glyph_grid_t *grid);
+extern int bdf_in_selection(bdf_glyph_grid_t *grid, short x, short y,
+                            short *set);
+extern void bdf_add_selection(bdf_glyph_grid_t *grid, bdf_bitmap_t *sel);
 
 /*
  * Glyph grid misc functions.
  */
-extern int bdf_grid_color_at __((bdf_glyph_grid_t *grid, short x, short y));
+extern int bdf_grid_color_at(bdf_glyph_grid_t *grid, short x, short y);
 
 /*
  * Graphical transformation functions.
  */
-extern int bdf_translate_glyphs __((bdf_font_t *font, short dx, short dy,
-                                    long start, long end,
-                                    bdf_callback_t callback, void *data,
-                                    int unencoded));
-
-extern int bdf_rotate_glyphs __((bdf_font_t *font, short degrees,
-                                 long start, long end,
-                                 bdf_callback_t callback, void *data,
-                                 int unencoded));
-
-extern int bdf_shear_glyphs __((bdf_font_t *font, short degrees,
+extern int bdf_translate_glyphs(bdf_font_t *font, short dx, short dy,
                                 long start, long end,
                                 bdf_callback_t callback, void *data,
-                                int unencoded));
+                                int unencoded);
 
-extern int bdf_embolden_glyphs __((bdf_font_t *font, long start, long end,
-                                   bdf_callback_t callback, void *data,
-                                   int unencoded, int *resize));
+extern int bdf_rotate_glyphs(bdf_font_t *font, short degrees,
+                             long start, long end,
+                             bdf_callback_t callback, void *data,
+                             int unencoded);
 
-extern int bdf_little_endian __((void));
+extern int bdf_shear_glyphs(bdf_font_t *font, short degrees,
+                            long start, long end,
+                            bdf_callback_t callback, void *data,
+                            int unencoded);
 
-#undef __
+extern int bdf_embolden_glyphs(bdf_font_t *font, long start, long end,
+                               bdf_callback_t callback, void *data,
+                               int unencoded, int *resize);
+
+extern int bdf_little_endian(void);
 
 #ifdef __cplusplus
 }

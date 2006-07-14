@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfcons.c,v 1.10 2004/02/03 00:03:18 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfcons.c 2 2006-01-08 00:57:53Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfcons.c,v 1.10 2004/02/03 00:03:18 mleisher Exp $";
+static char svnid[] = "$Id: bdfcons.c 2 2006-01-08 00:57:53Z mleisher $";
 #endif
 #endif
 
@@ -72,17 +72,8 @@ typedef struct {
  **************************************************************************/
 
 static bdf_font_t *
-#ifdef __STDC__
 _bdf_load_vfont(FILE *in, vfhdr_t *hdr, bdf_callback_t callback, void *data,
                 int *awidth)
-#else
-_bdf_load_vfont(in, hdr, callback, data, awidth)
-FILE *in;
-vfhdr_t *hdr;
-bdf_callback_t callback;
-void *data;
-int *awidth;
-#endif
 {
     int first, ismono;
     long i, pos;
@@ -276,17 +267,8 @@ int *awidth;
  * Load a simple binary font.
  */
 static bdf_font_t *
-#ifdef __STDC__
 _bdf_load_simple(FILE *in, int height, bdf_callback_t callback, void *data,
                  int type, int *awidth)
-#else
-_bdf_load_simple(in, height, callback, data, type, awidth)
-FILE *in;
-int height;
-bdf_callback_t callback;
-void *data;
-int type, *awidth;
-#endif
 {
     long i;
     unsigned short dwidth, swidth;
@@ -409,13 +391,7 @@ typedef struct {
  * three fonts.
  */
 static void
-#ifdef __STDC__
 _bdf_codepage_progress(bdf_callback_struct_t *cb, void *data)
-#else
-_bdf_codepage_progress(cb, data)
-bdf_callback_struct_t *cb;
-void *data;
-#endif
 {
     _bdf_update_rec_t *up;
     bdf_callback_struct_t ncb;
@@ -446,17 +422,8 @@ void *data;
  * use of the routine that loads the simple fonts.
  */
 static int
-#ifdef __STDC__
 _bdf_load_codepage(FILE *in, bdf_callback_t callback, void *data,
                    bdf_font_t *fonts[3], int awidth[3])
-#else
-_bdf_load_codepage(in, callback, data, fonts, awidth)
-FILE *in;
-bdf_callback_t callback;
-void *data;
-bdf_font_t *fonts[3];
-int awidth[3];
-#endif
 {
     _bdf_update_rec_t up;
 
@@ -518,18 +485,8 @@ int awidth[3];
 static unsigned char vfmagic[] = {0x01, 0x1e};
 
 int
-#ifdef __STDC__
 bdf_load_console_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
                       void *data, bdf_font_t *fonts[3], int *nfonts)
-#else
-bdf_load_console_font(in, opts, callback, data, fonts, nfonts)
-FILE *in;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-bdf_font_t *fonts[3];
-int *nfonts;
-#endif
 {
     unsigned char hdr[4];
     int res, awidth[3];

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -38,9 +38,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfpkgf.c,v 1.8 2004/01/29 17:15:37 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfpkgf.c 14 2006-01-09 15:29:07Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfpkgf.c,v 1.8 2004/01/29 17:15:37 mleisher Exp $";
+static char svnid[] = "$Id: bdfpkgf.c 14 2006-01-09 15:29:07Z mleisher $";
 #endif
 #endif
 
@@ -117,12 +117,7 @@ typedef struct {
  * Routine to compare two glyphs by encoding so they can be sorted.
  */
 static int
-#ifdef __STDC__
 by_encoding(const void *a, const void *b)
-#else
-by_encoding(a, b)
-char *a, *b;
-#endif
 {
     bdf_glyph_t *c1, *c2;
 
@@ -139,23 +134,13 @@ char *a, *b;
  * Routines for scanning numbers from GF and PK files.
  */
 static long
-#ifdef __STDC__
 _bdf_mf_get16(FILE *in)
-#else
-_bdf_mf_get16(in)
-FILE *in;
-#endif
 {
     return (getc(in) << 8) | (getc(in) & 0xff);
 }
 
 static long
-#ifdef __STDC__
 _bdf_mf_get32(FILE *in)
-#else
-_bdf_mf_get32(in)
-FILE *in;
-#endif
 {
     long hi = _bdf_mf_get16(in);
 
@@ -165,13 +150,7 @@ FILE *in;
 }
 
 static void
-#ifdef __STDC__
 printscaled(long s, unsigned char *buf)
-#else
-printscaled(s, buf)
-long s;
-unsigned char *buf;
-#endif
 {
     long delta;
 
@@ -202,16 +181,8 @@ unsigned char *buf;
  * Routine to scan the PK specials and add them as comments if necessary.
  */
 static int
-#ifdef __STDC__
 _bdf_pk_specials(FILE *in, bdf_font_t *font, bdf_options_t *opts,
-                 char glyphname[])
-#else
-_bdf_pk_specials(in, font, opts, glyphname)
-FILE *in;
-bdf_font_t *font;
-bdf_options_t *opts;
-char glyphname[];
-#endif
+                 unsigned char *glyphname)
 {
     int c;
     long i, n, num;
@@ -222,6 +193,7 @@ char glyphname[];
      * Initialize the variable that keeps track of the storage allocated
      * for the comments encountered.
      */
+    comment = 0;
     comment_size = 0;
 
     while ((c = getc(in)) >= PK_xxx1 && c != GF_char_loc) {
@@ -263,13 +235,13 @@ char glyphname[];
                  */
                 fread((char *) comment, num, 1, in);
                 comment[num] = 0;
-                if (!strncmp(comment, "title ", 6))
+                if (!strncmp((char *) comment, "title ", 6))
                   /*
                    * The comment is the glyph's name/title; save it so it can
                    * be associated with the forthcoming glyph, rather than
                    * with the font as a whole.
                    */
-                  strcpy(glyphname, comment + 6);
+                  strcpy((char *) glyphname, (char *) comment + 6);
                 else
                   /*
                    * A regular comment.
@@ -298,7 +270,7 @@ char glyphname[];
                     comment_size = 64;
                 }
                 sprintf((char *) comment, "%ld", num);
-                printscaled(num, comment + strlen(comment));
+                printscaled(num, comment + strlen((char *) comment));
                 _bdf_add_comment(font, (char *) comment,
                                  strlen((char *) comment));
             }
@@ -322,13 +294,7 @@ char glyphname[];
  * Awkward little routine to collect packed bits from a PK file.
  */
 static int
-#ifdef __STDC__
 _bdf_pk_getbit(FILE *in, _bdf_mf_state_t *state)
-#else
-_bdf_pk_getbit(in, state)
-FILE *in;
-_bdf_mf_state_t *state;
-#endif
 {
     state->mask >>= 1;
     if (state->mask == 0) {
@@ -342,13 +308,7 @@ _bdf_mf_state_t *state;
  * Another awkward little routine to get 4 bits at a time from a PK file.
  */
 static int
-#ifdef __STDC__
 _bdf_pk_getnybble(FILE *in, _bdf_mf_state_t *state)
-#else
-_bdf_pk_getnybble(in, state)
-FILE *in;
-_bdf_mf_state_t *state;
-#endif
 {
     int r;
 
@@ -366,14 +326,7 @@ _bdf_mf_state_t *state;
  * a PK file.
  */
 static int
-#ifdef __STDC__
 _bdf_pk_getpacked(FILE *in, int *rcount, int dyn, _bdf_mf_state_t *state)
-#else
-_bdf_pk_getpacked(in, rcount, dyn, state)
-FILE *in;
-int *rcount, dyn;
-_bdf_mf_state_t *state;
-#endif
 {
     int i, j;
 
@@ -398,17 +351,8 @@ _bdf_mf_state_t *state;
 }
 
 static int
-#ifdef __STDC__
 _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
                   void *data, bdf_font_t **font)
-#else
-_bdf_load_pk_font(in, opts, callback, data, font)
-FILE *in;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-bdf_font_t **font;
-#endif
 {
     int n, res, set, x, y, bpr, rcnt, ismono;
     long num, plen, pend, row_size, awidth;
@@ -526,9 +470,9 @@ bdf_font_t **font;
     while ((res = _bdf_pk_specials(in, f, opts, glyphname)) != PK_post &&
            res > 0) {
 	/* Set the glyph's name, if we've seen it */
-        if (strlen(glyphname)) {
-            g.name = malloc(strlen(glyphname)+1);
-	    strcpy(g.name, glyphname);
+        if (strlen((char *) glyphname)) {
+            g.name = malloc(strlen((char *) glyphname)+1);
+	    strcpy((char *) g.name, (char *) glyphname);
 	}
         if ((res & 7) == 7) {
             /*
@@ -973,16 +917,8 @@ bdf_font_t **font;
 }
 
 static int
-#ifdef __STDC__
 _bdf_gf_specials(FILE *in, bdf_font_t *font, bdf_options_t *opts,
-                 char glyphname[])
-#else
-_bdf_gf_specials(in, font, opts, glyphname)
-FILE *in;
-bdf_font_t *font;
-bdf_options_t *opts;
-char glyphname[];
-#endif
+                 unsigned char glyphname[])
 {
     int c;
     long i, n, num;
@@ -1028,13 +964,13 @@ char glyphname[];
                  */
                 fread((char *) comment, num, 1, in);
                 comment[num] = 0;
-                if (!strncmp(comment, "title ", 6))
+                if (!strncmp((char *) comment, "title ", 6))
                   /*
                    * The comment is the glyph's name/title; save it so
                    * it can be associated with the forthcoming glyph,
                    * rather than with the font as a whole.
                    */
-                  strcpy(glyphname, comment + 6);
+                  strcpy((char *) glyphname, (char *) comment + 6);
                 else
                   /*
                    * A regular comment
@@ -1064,7 +1000,7 @@ char glyphname[];
                     comment_size = 64;
                 }
                 sprintf((char *) comment, "%ld", num);
-                printscaled(num, comment + strlen(comment));
+                printscaled(num, comment + strlen((char *) comment));
                 _bdf_add_comment(font, (char *) comment,
                                  strlen((char *) comment));
             }
@@ -1087,17 +1023,8 @@ char glyphname[];
 }
 
 static int
-#ifdef __STDC__
 _bdf_load_gf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
                   void *data, bdf_font_t **font)
-#else
-_bdf_load_gf_font(in, opts, callback, data, font)
-FILE *in;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-bdf_font_t **font;
-#endif
 {
     int n, res, set, x, y, bpr, ismono;
     long awidth, num;
@@ -1179,9 +1106,10 @@ bdf_font_t **font;
 
     while ((res = _bdf_gf_specials(in, f, opts, glyphname)) != GF_post) {
 	/* Set the glyph's name, if we've seen it */
-        if (((res == GF_boc) || (res == GF_boc1)) && strlen(glyphname)) {
-            g.name = malloc(strlen(glyphname)+1);
-	    strcpy(g.name, glyphname);
+        if (((res == GF_boc) || (res == GF_boc1)) &&
+            strlen((char *) glyphname)) {
+            g.name = malloc(strlen((char *) glyphname)+1);
+	    strcpy(g.name, (char *) glyphname);
 	}
 
         if (res == GF_boc) {
@@ -1557,17 +1485,8 @@ bdf_font_t **font;
 }
 
 int
-#ifdef __STDC__
 bdf_load_mf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
                  void *data, bdf_font_t **font)
-#else
-bdf_load_mf_font(in, opts, callback, data, font)
-FILE *in;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-bdf_font_t **font;
-#endif
 {
     unsigned char mfmag[2];
 

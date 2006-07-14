@@ -1,0 +1,59 @@
+dnl $Id: configure.in 60 2006-07-14 15:58:19Z mleisher $
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(gbdfed.c)
+
+AC_PROG_CC
+
+dnl get Compiler flags right.
+
+if test "x$CC" = xgcc; then
+	XX_CFLAGS="-Wall -pedantic"
+else
+	case "$host" in
+  		alpha-dec-osf*)
+        	XX_CFLAGS="-std1 -O2 -g3"
+       		;;
+  		*)
+          	XX_CFLAGS=
+       		;;
+	esac
+fi
+AC_SUBST(XX_CFLAGS)
+
+AC_CHECK_PROG(RM, rm, rm)
+AC_CHECK_PROG(CP, cp, cp)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([libintl.h stddef.h stdlib.h string.h unistd.h])
+
+AC_C_CONST
+
+dnl Checks for library functions.
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_FUNC_REALLOC
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([memmove memset strchr strdup strrchr strstr])
+
+dnl These use the pkgconfig macro (in aclocal.m4) to check on libraries.
+PKG_CHECK_MODULES(FREETYPE, freetype2 >= 2.0,DEFINES="-DHAVE_FREETYPE" CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS" LIBS="$LIBS $FREETYPE_LIBS",)
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6,CPPFLAGS="$CPPFLAGS $GTK_CFLAGS" LIBS="$LIBS $GTK_LIBS",)
+
+AC_CHECK_FILE(hbf.c, DEFINES="$DEFINES -DHAVE_HBF" HBFSRC="hbf.c" HBFOBJ="hbf.o",)
+
+AC_PATH_XTRA
+
+if test "$have_x" != yes; then
+  AC_MSG_NOTICE(X11 not found. Disabling server font grabbing.)
+else
+  DEFINES="$DEFINES -DHAVE_XLIB"
+fi
+
+AC_SUBST(DEFINES)
+AC_SUBST(HBFSRC)
+AC_SUBST(HBFOBJ)
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT

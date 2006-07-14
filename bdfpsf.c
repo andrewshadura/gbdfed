@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfpsf.c,v 1.11 2004/02/08 23:58:59 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfpsf.c 5 2006-01-08 01:39:22Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfpsf.c,v 1.11 2004/02/08 23:58:59 mleisher Exp $";
+static char svnid[] = "$Id: bdfpsf.c 5 2006-01-08 01:39:22Z mleisher $";
 #endif
 #endif
 
@@ -49,9 +49,9 @@ static char rcsid[] = "$Id: bdfpsf.c,v 1.11 2004/02/08 23:58:59 mleisher Exp $";
 
 /*
  * Flags which can appear in the third byte of the header (PSF1 mode).  HAS512
- * means the font contains between 512 glyphs.  Otherwise the font has 256
+ * means the font contains up to 512 glyphs.  Otherwise the font has 256
  * glyphs.  HASTAB and HASSEQ indicate the glyphs are followed by a Unicode
- * mappin table.
+ * mapping table.
  *
  * The HASTAB and HASSEQ flags appear to be essentially equivalent.
  */
@@ -101,15 +101,7 @@ typedef struct {
 #define _swap_endian(n) ((n) >> 16) | (((n) & 0xffff) << 16)
 
 static int
-#ifdef __STDC__
 _bdf_psf_load_map(FILE *in, bdf_font_t *font, int psf2, long *res)
-#else
-_bdf_psf_load_map(in, font, psf2, res)
-FILE *in;
-bdf_font_t *font;
-int psf2;
-long *res;
-#endif
 {
     int i, more, c0, c1, cnt;
     unsigned long code;
@@ -143,14 +135,27 @@ long *res;
                 if (code < 0x80)
                   buf[cnt++] = code & 0xff;
                 else if (code < 0x800) {
-                    buf[cnt++] = 0xc0 | ((code >> 6) & 0xff);
+                    buf[cnt++] = 0xc0 | (code >> 6);
                     buf[cnt++] = 0x80 | (code & 0x3f);
                 } else if (code < 0x10000) {
-                    buf[cnt++] = 0xe0 | ((code >> 12) & 0xff);
+                    buf[cnt++] = 0xe0 | (code >> 12);
                     buf[cnt++] = 0x80 | ((code >> 6) & 0x3f);
                     buf[cnt++] = 0x80 | (code & 0x3f);
                 } else if (code < 0x200000) {
-                    buf[cnt++] = 0xf0 | ((code >> 18) & 0xff);
+                    buf[cnt++] = 0xf0 | (code >> 18);
+                    buf[cnt++] = 0x80 | ((code >> 12) & 0x3f);
+                    buf[cnt++] = 0x80 | ((code >> 6) & 0x3f);
+                    buf[cnt++] = 0x80 | (code & 0x3f);
+                } else if (code < 0x4000000) {
+                    buf[cnt++] = 0xf8 | (code >> 24);
+                    buf[cnt++] = 0x80 | ((code >> 18) & 0x3f);
+                    buf[cnt++] = 0x80 | ((code >> 12) & 0x3f);
+                    buf[cnt++] = 0x80 | ((code >> 6) & 0x3f);
+                    buf[cnt++] = 0x80 | (code & 0x3f);
+                } else if (code < 0x7fffffff) {
+                    buf[cnt++] = 0xfc | (code >> 30);
+                    buf[cnt++] = 0x80 | ((code >> 24) & 0x3f);
+                    buf[cnt++] = 0x80 | ((code >> 18) & 0x3f);
                     buf[cnt++] = 0x80 | ((code >> 12) & 0x3f);
                     buf[cnt++] = 0x80 | ((code >> 6) & 0x3f);
                     buf[cnt++] = 0x80 | (code & 0x3f);
@@ -205,18 +210,11 @@ long *res;
 }
 
 static int
-#ifdef __STDC__
 _bdf_psf_dump_map(FILE *out, bdf_font_t *font, bdf_glyphlist_t *glyphs)
-#else
-_bdf_psf_dump_map(out, font, glyphs)
-FILE *out;
-bdf_font_t *font;
-bdf_glyphlist_t *glyphs;
-#endif
 {
     int seq;
     unsigned long i, nglyphs, n;
-    long code;
+    long code = -1;
     unsigned char *map, *map_end;
     bdf_glyph_t *gp;
 
@@ -249,7 +247,7 @@ bdf_glyphlist_t *glyphs;
                * One byte character.
                */
               code = (unsigned short) *map;
-            else if ((*map & 0xe0) == 0xc0) {
+            else if (*map < 0xe0) {
                 /*
                  * Two byte character.
                  */
@@ -257,7 +255,7 @@ bdf_glyphlist_t *glyphs;
                   return BDF_PSF_CORRUPT_UTF8;
                 code = ((*map & 0x1f) << 6) | (*(map + 1) & 0x3f);
                 n = 2;
-            } else if ((*map & 0xf0) == 0xe0) {
+            } else if (*map < 0xf0) {
                 /*
                  * Three byte character.
                  */
@@ -266,9 +264,9 @@ bdf_glyphlist_t *glyphs;
                 code = ((*map & 0x0f) << 12) |
                     ((*(map + 1) & 0x3f) << 6) | (*(map + 2) & 0x3f);
                 n = 3;
-            } else if ((*map & 0xf0) == 0xf0) {
+            } else if (*map < 0xf8) {
                 /*
-                 * Four byte supplementary character.
+                 * Four byte character.
                  */
                 if (map + 4 >= map_end)
                   return BDF_PSF_CORRUPT_UTF8;
@@ -276,6 +274,31 @@ bdf_glyphlist_t *glyphs;
                     ((*(map + 1) & 0x3f) << 12) |
                     ((*(map + 2) & 0x3f) << 6) | (*(map + 3) & 0x3f);
                 n = 4;
+            } else if (*map < 0xfc) {
+                /*
+                 * Five byte character.
+                 */
+                if (map + 5 >= map_end)
+                  return BDF_PSF_CORRUPT_UTF8;
+                code = ((*map & 0x03) << 24) |
+                    ((*(map + 1) & 0x3f) << 18) |
+                    ((*(map + 2) & 0x3f) << 12) |
+                    ((*(map + 3) & 0x3f) << 6) |
+                    (*(map + 4) & 0x3f);
+                n = 5;
+            } else if (*map < 0xfe) {
+                /*
+                 * Six byte character.
+                 */
+                if (map + 6 >= map_end)
+                  return BDF_PSF_CORRUPT_UTF8;
+                code = ((*map & 0x01) << 30) |
+                    ((*(map + 1) & 0x3f) << 24) |
+                    ((*(map + 2) & 0x3f) << 18) |
+                    ((*(map + 3) & 0x3f) << 12) |
+                    ((*(map + 4) & 0x3f) << 6) |
+                    (*(map + 5) & 0x3f);
+                n = 6;
             }
             /*
              * Print the code(s).  If we are printing the first one,
@@ -286,10 +309,18 @@ bdf_glyphlist_t *glyphs;
               putc('\t', out);
             else
               putc(((seq == 1) ? ',' : ' '), out);
-            fprintf(out, "U+%05lx", code);
+            if (n < 5)
+              fprintf(out, "U+%04lX", code);
+            else
+              fprintf(out, "U+%06lX", code);
             map += n;
             seq -= (seq == 2);
         }
+
+        /*
+         * Print the line separator.
+         */
+        putc('\n', out);
 
         /*
          * Free the current glyph storage.
@@ -322,16 +353,10 @@ bdf_glyphlist_t *glyphs;
  * use with the GUI.
  */
 char **
-#ifdef __STDC__
 _bdf_psf_unpack_mapping(bdf_psf_unimap_t *unimap, int *num_seq)
-#else
-    _bdf_psf_unpack_mapping(unimap, num_seq)
-    bdf_psf_unimap_t *unimap;
-int *num_seq;
-#endif
 {
     int ns, nc, sum, c;
-    long code;
+    long code = -1;
     unsigned char *mp, *ep;
     char **list, *lp;
 
@@ -365,12 +390,16 @@ int *num_seq;
         }
 
         c = 1;
-        if ((*mp & 0xe0) == 0xc0)
+        if (*mp < 0xe0)
           c = 2;
-        else if ((*mp & 0xf0) == 0xe0)
+        else if (*mp < 0xf0)
           c = 3;
-        else if ((*mp & 0xf0) == 0xf0)
+        else if (*mp < 0xf8)
           c = 4;
+        else if (*mp < 0xfc)
+          c = 5;
+        else if (*mp < 0xfe)
+          c = 6;
 
         nc++;
 
@@ -387,10 +416,11 @@ int *num_seq;
     sum = sizeof(unsigned char *) * ns;
 
     /*
-     * Each character uses 7 bytes in U+XXXXX form and each is followed by
-     * either space or a null, so each is basically eight bytes.
+     * Each character uses up to 8 bytes in U+XXXXXX form and each is followed
+     * by either space or a null, so each is basically nine bytes including
+     * the trailing NULL.
      */
-    sum += nc * 8;
+    sum += nc * 9;
 
     list = (char **) malloc(sum);
     lp = (char *) (list + ns);
@@ -421,32 +451,53 @@ int *num_seq;
         /*
          * Convert from UTF-8 to UTF-32.
          */
-        if ((*mp & 0x80) == 0)
+        if (*mp < 0x80)
           /*
            * One byte character.
            */
           code = (unsigned short) *mp;
-        else if ((*mp & 0xe0) == 0xc0) {
+        else if (*mp < 0xe0) {
             /*
              * Two byte character.
              */
             code = ((*mp & 0x1f) << 6) | (*(mp + 1) & 0x3f);
             nc = 2;
-        } else if ((*mp & 0xf0) == 0xe0) {
+        } else if (*mp < 0xf0) {
             /*
              * Three byte character.
              */
             code = ((*mp & 0x0f) << 12) |
                 ((*(mp + 1) & 0x3f) << 6) | (*(mp + 2) & 0x3f);
             nc = 3;
-        } else if ((*mp & 0xf0) == 0xf0) {
+        } else if (*mp < 0xf8) {
             /*
-             * Four byte supplementary character.
+             * Four byte character.
              */
             code = ((*mp & 0x07) << 18) |
                 ((*(mp + 1) & 0x3f) << 12) |
                 ((*(mp + 2) & 0x3f) << 6) | (*(mp + 3) & 0x3f);
             nc = 4;
+        } else if (*mp < 0xfc) {
+            /*
+             * Five byte character.
+             */
+            code = ((*mp & 0x03) << 24) |
+                ((*(mp + 1) & 0x3f) << 18) |
+                ((*(mp + 2) & 0x3f) << 12) |
+                ((*(mp + 3) & 0x3f) << 6) |
+                (*(mp + 4) & 0x3f);
+            nc = 5;
+        } else if (*mp < 0xfe) {
+            /*
+             * Six byte character.
+             */
+            code = ((*mp & 0x01) << 30) |
+                ((*(mp + 1) & 0x3f) << 24) |
+                ((*(mp + 2) & 0x3f) << 18) |
+                ((*(mp + 3) & 0x3f) << 12) |
+                ((*(mp + 4) & 0x3f) << 6) |
+                (*(mp + 5) & 0x3f);
+            nc = 6;
         }
 
         /*
@@ -455,7 +506,10 @@ int *num_seq;
 
         if (lp > list[ns])
           *lp++ = ' ';
-        sprintf(lp, "U+%05lx", code);
+        if (nc < 5)
+          sprintf(lp, "U+%04lX", code);
+        else
+          sprintf(lp, "U+%06lX", code);
         lp += 7;
 
         mp += nc;
@@ -471,12 +525,7 @@ int *num_seq;
  * by length of string.
  */
 static int
-#ifdef _STDC__
 cmplen(const void *a, const void *b)
-#else
-    cmplen(a, b)
-    const void *a, *b;
-#endif
 {
     int n;
     char *as = *((char **)a);
@@ -491,16 +540,8 @@ cmplen(const void *a, const void *b)
  * be stored back into a Unicode map.
  */
 int
-#ifdef __STDC__
 _bdf_psf_pack_mapping(char **list, int len, long encoding,
                       bdf_psf_unimap_t *map)
-#else
-    _bdf_psf_pack_mapping(list, len, encoding, map)
-    char **list;
-int len;
-long encoding;
-bdf_psf_unimap_t *map;
-#endif
 {
     int i, j, ncodes, bytes = 3;
     char *lp, *elp;
@@ -542,6 +583,10 @@ bdf_psf_unimap_t *map;
               bytes += 3;
             else if (codes[ncodes] < 0x200000)
               bytes += 4;
+            else if (codes[ncodes] < 0x4000000)
+              bytes += 5;
+            else if (codes[ncodes] < 0x7fffffff)
+              bytes += 6;
             ncodes++;
             lp = elp;
         }
@@ -586,6 +631,19 @@ bdf_psf_unimap_t *map;
                 map->map[map->map_used++] = 0x80 | ((codes[j] >> 12) & 0x3f);
                 map->map[map->map_used++] = 0x80 | ((codes[j] >> 6) & 0x3f);
                 map->map[map->map_used++] = 0x80 | (codes[j] & 0x3f);
+            } else if (codes[j] < 0x4000000) {
+                map->map[map->map_used++] = 0xf8 | ((codes[j] >> 24) & 0xff);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 18) & 0xff);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 12) & 0x3f);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 6) & 0x3f);
+                map->map[map->map_used++] = 0x80 | (codes[j] & 0x3f);
+            } else if (codes[j] < 0x7fffffff) {
+                map->map[map->map_used++] = 0xfc | ((codes[j] >> 30) & 0xff);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 24) & 0xff);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 18) & 0xff);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 12) & 0x3f);
+                map->map[map->map_used++] = 0x80 | ((codes[j] >> 6) & 0x3f);
+                map->map[map->map_used++] = 0x80 | (codes[j] & 0x3f);
             }
         }
         bytes = 0;
@@ -595,18 +653,8 @@ bdf_psf_unimap_t *map;
 }
 
 bdf_font_t *
-#ifdef __STDC__
 bdf_load_psf(FILE *in, unsigned char *magic, bdf_options_t *opts,
              bdf_callback_t callback, void *data, int *awidth)
-#else
-    bdf_load_psf(in, magic, callback, data, awidth)
-    FILE *in;
-unsigned char *magic;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-int *awidth;
-#endif
 {
     long i, enc;
     unsigned short dwidth, swidth;
@@ -781,16 +829,8 @@ int *awidth;
  * supplied when a partial font needs to be created.
  */
 int
-#ifdef __STDC__
 bdf_export_psf(FILE *out, bdf_font_t *font, bdf_options_t *opts, long start,
                long end)
-#else
-bdf_export_psf(out, font, opts, start, end)
-FILE *out;
-bdf_font_t *font;
-bdf_options_t *opts;
-long start, end;
-#endif
 {
     unsigned int i, nglyphs, flags;
     _bdf_psfhdr_t hdr;
