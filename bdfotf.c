@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,9 +27,9 @@
 
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdfotf.c,v 1.11 2004/02/23 14:08:07 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfotf.c 5 2006-01-08 01:39:22Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdfotf.c,v 1.11 2004/02/23 14:08:07 mleisher Exp $";
+static char svnid[] = "$Id: bdfotf.c 5 2006-01-08 01:39:22Z mleisher $";
 #endif
 #endif
 
@@ -102,12 +102,7 @@ static int nms_encodings = sizeof(ms_encodings) / sizeof(ms_encodings[0]);
  * Routine to get the platform name from the platform ID.
  */
 char *
-#ifdef __STDC__
 bdfotf_platform_name(short pid)
-#else
-bdfotf_platform_name(pid)
-short pid;
-#endif
 {
     return (pid < nplatform_names) ?
         platform_names[pid] : platform_names[nplatform_names - 1];
@@ -117,12 +112,7 @@ short pid;
  * Routine to get the encoding name from the platform and encoding IDs.
  */
 char *
-#ifdef __STDC__
 bdfotf_encoding_name(short pid, short eid)
-#else
-bdfotf_encoding_name(pid, eid)
-short pid, eid;
-#endif
 {
     int nnames;
     char **names;
@@ -163,20 +153,13 @@ short pid, eid;
  * Returns the number of bytes added.
  */
 int
-#ifdef __STDC__
 bdfotf_get_english_string(FT_Face face, int nameID, int dash_to_space,
                           char *name)
-#else
-bdfotf_get_english_string(face, nameID, dash_to_space, name)
-FT_Face face;
-int nameID, dash_to_space;
-char *name;
-#endif
 {
     int j, encid;
     FT_UInt i, nrec;
     FT_SfntName sfntName;
-    char *s;
+    unsigned char *s;
     unsigned short slen;
 
     nrec = FT_Get_Sfnt_Name_Count(face);
@@ -263,18 +246,8 @@ char *name;
 }
 
 static int
-#ifdef __STDC__
 _bdfotf_generate(FT_Face face, int nocmap, bdf_options_t *opts,
                  bdf_callback_t callback, void *data, bdf_font_t *fp)
-#else
-_bdfotf_generate(face, nocmap, opts, callback, data, fp)
-FT_Face face;
-int nocmap;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-bdf_font_t *fp;
-#endif
 {
     int ismono;
     long awidth, code, idx;
@@ -551,18 +524,8 @@ bdf_font_t *fp;
 }
 
 int
-#ifdef __STDC__
 bdfotf_load_font(FT_Face face, short pid, short eid, bdf_options_t *opts,
                  bdf_callback_t callback, void *data, bdf_font_t **font)
-#else
-bdfotf_load_font(face, pid, eid, opts, callback, data, font)
-FT_Face face;
-short pid, eid;
-bdf_options_t *opts;
-bdf_callback_t callback;
-void *data;
-bdf_font_t **font;
-#endif
 {
     int i, nocmap, res, slen;
     bdf_font_t *fp;

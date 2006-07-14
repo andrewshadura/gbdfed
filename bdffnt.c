@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Computing Research Labs, New Mexico State University
+ * Copyright 2006 Computing Research Labs, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: bdffnt.c,v 1.14 2004/02/23 18:07:09 mleisher Exp $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdffnt.c 2 2006-01-08 00:57:53Z mleisher $";
 #else
-static char rcsid[] = "$Id: bdffnt.c,v 1.14 2004/02/23 18:07:09 mleisher Exp $";
+static char svnid[] = "$Id: bdffnt.c 2 2006-01-08 00:57:53Z mleisher $";
 #endif
 #endif
 
@@ -264,13 +264,7 @@ static win_exe_t win;
  **************************************************************************/
 
 static void
-#ifdef __STDC__
 _bdffnt_endian_shorts(unsigned short *sp, unsigned long n)
-#else
-_bdffnt_endian_shorts(sp, n)
-unsigned short *sp;
-unsigned long n;
-#endif
 {
     for (; n > 0; n--, sp++)
       *sp = ((*sp >> 8) & 0xff) |
@@ -278,12 +272,7 @@ unsigned long n;
 }
 
 static void
-#ifdef __STDC__
 _bdffnt_endian_longs(unsigned long *lp, unsigned long n)
-#else
-_bdffnt_endian_longs(lp, n)
-unsigned long *lp, n;
-#endif
 {
     for (; n > 0; n--, lp++)
       *lp = (((*lp & 0xff) << 24) & 0xff000000) |
@@ -293,12 +282,7 @@ unsigned long *lp, n;
 }
 
 static unsigned short
-#ifdef __STDC__
 _bdffnt_get_short(unsigned char *field)
-#else
-_bdffnt_get_short(field)
-unsigned char *field;
-#endif
 {
     int a = 0, b = 1;
 
@@ -306,12 +290,7 @@ unsigned char *field;
 }
 
 static unsigned long
-#ifdef __STDC__
 _bdffnt_get_long(unsigned char *field)
-#else
-_bdffnt_get_long(field)
-unsigned char *field;
-#endif
 {
     int a = 0, b = 1, c = 2, d = 3;
 
@@ -324,13 +303,7 @@ unsigned char *field;
  * the endianess of the machine.
  */
 static void
-#ifdef __STDC__
 _bdffnt_transfer_fntinfo(fntinfo_t *fi, fishadow_t *fis)
-#else
-_bdffnt_transfer_fntinfo(fi, fis)
-fntinfo_t *fi;
-fishadow_t *fis;
-#endif
 {
     fi->dfVersion = _bdffnt_get_short(fis->dfVersion);
     (void) memcpy(fi->dfCopyright, fis->dfCopyright, 60);
@@ -375,13 +348,7 @@ fishadow_t *fis;
 }
 
 static char *
-#ifdef __STDC__
 _bdffnt_weight_name(unsigned short weight, int *len)
-#else
-_bdffnt_weight_name(weight, len)
-unsigned short weight;
-int *len;
-#endif
 {
     char *name;
 
@@ -417,12 +384,7 @@ int *len;
 }
 
 static char *
-#ifdef __STDC__
 _bdffnt_cset_name(int cset, int *enc)
-#else
-_bdffnt_cset_name(cset, enc)
-int cset, *enc;
-#endif
 {
     *enc = 0;
     switch (cset) {
@@ -452,13 +414,7 @@ int cset, *enc;
  **************************************************************************/
 
 int
-#ifdef __STDC__
 bdffnt_open_font(char *path, bdffnt_font_t *fnt)
-#else
-bdffnt_open_font(path, fnt)
-char *path;
-bdffnt_font_t *fnt;
-#endif
 {
     unsigned short sshift, version;
     int i;
@@ -636,12 +592,7 @@ bdffnt_font_t *fnt;
 }
 
 void
-#ifdef __STDC__
 bdffnt_close_font(bdffnt_font_t font)
-#else
-bdffnt_close_font(font)
-bdffnt_font_t font;
-#endif
 {
     if (font == 0)
       return;
@@ -655,26 +606,14 @@ bdffnt_font_t font;
 }
 
 int
-#ifdef __STDC__
 bdffnt_font_count(bdffnt_font_t font)
-#else
-bdffnt_font_count(font)
-bdffnt_font_t font;
-#endif
 {
     return (font != 0) ? font->nfonts : 0;
 }
 
 int
-#ifdef __STDC__
 bdffnt_get_copyright(bdffnt_font_t font, unsigned long fontID,
                      unsigned char *string)
-#else
-bdffnt_get_copyright(font, fontID, string)
-bdffnt_font_t font;
-unsigned long fontID;
-unsigned char *string;
-#endif
 {
     long off;
     unsigned char *sp;
@@ -692,16 +631,8 @@ unsigned char *string;
 }
 
 int
-#ifdef __STDC__
 bdffnt_get_facename(bdffnt_font_t font, unsigned long fontID, int for_xlfd,
                     unsigned char *string)
-#else
-bdffnt_get_facename(font, fontID, for_xlfd, string)
-bdffnt_font_t font;
-unsigned long fontID;
-int for_xlfd;
-unsigned char *string;
-#endif
 {
     int wlen, c;
     long off;
@@ -764,13 +695,7 @@ unsigned char *string;
 }
 
 int
-#ifdef __STDC__
 bdffnt_char_count(bdffnt_font_t font, unsigned long fontID)
-#else
-bdffnt_char_count(font, fontID)
-bdffnt_font_t font;
-unsigned long fontID;
-#endif
 {
     long off;
     fishadow_t fi;
@@ -791,13 +716,7 @@ unsigned long fontID;
 }
 
 int
-#ifdef __STDC__
 bdffnt_font_pointsize(bdffnt_font_t font, unsigned long fontID)
-#else
-bdffnt_font_pointsize(font, fontID)
-bdffnt_font_t font;
-unsigned long fontID;
-#endif
 {
     long off;
     fishadow_t fi;
@@ -818,17 +737,8 @@ unsigned long fontID;
 }
 
 int
-#ifdef __STDC__
 bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
                  bdf_callback_t callback, void *data, bdf_font_t **out)
-#else
-bdffnt_load_font(font, fontID, callback, data, out)
-bdffnt_font_t font;
-unsigned long fontID;
-bdf_callback_t callback;
-void *data;
-bdf_font_t **out;
-#endif
 {
     int x, y, i, nchars;
     unsigned short tmp, bpr;

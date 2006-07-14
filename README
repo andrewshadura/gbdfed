@@ -1,13 +1,13 @@
 #
-# $Id: README,v 1.27 2004/02/17 04:32:21 mleisher Exp $
+# $Id: README 62 2006-07-14 16:05:20Z mleisher $
 #
 
-XmBDFEditor 4.7
+gbdfed 1.1
 
 INTRO
 -----
 
-XmBDFEditor is a Motif-based BDF font editor with the following features:
+gbdfed is a GTK-based BDF font editor with the following features:
 
   o  Multiple fonts can be loaded from the command line.
   o  Multiple fonts can be open at the same time.
@@ -30,104 +30,92 @@ XmBDFEditor is a Motif-based BDF font editor with the following features:
   o  Imports Sun console fonts (vfont format).
   o  Imports fonts from the X server.
   o  Imports Windows FON/FNT fonts.
-  o  Imports TrueType fonts and collections.
+  o  Imports OpenType/TrueType fonts and collections.
   o  Exports PSF fonts.
   o  Exports HEX fonts.
-  o  Edits two and four bits per pixel gray scale fonts.
+
+HBF support:
+
+  o  If you need HBF support, you need to find the hbf.[ch] files somewhere on
+     the net and put them in the gbdfed-1.1 directory. Run configure again so
+     the HBF files will be found, do "make clean" and build gbdfed again.
 
 A few things missing from this font editor:
 
-  o  Selecting a non-console font when importing a console font should
-     autodetect by filename extension.
-  o  No support for scaling fonts.
   o  No way to create space glyphs in monowidth or character cell fonts.
+  o  No support for scaling fonts.
   o  Fonts with right-to-left direction (negative widths) not supported.
-  o  Many more font properties could be automatically calculated.
   o  No way to edit comments appearing in the properties list.
 
 Known problems:
 
-  o  Text fields do not have horizontal scrollbars.  Some machines running
-     X11R6 only have arrow keys on the keypad which earlier versions of Motif
-     don't recognize.
+  o  Selecting the original font editor from the "Windows" menu does not
+     deiconify, set focus, and place it on top like it should.
   o  Deleting glyphs from or inserting glyphs into a font grid do not update
      the glyph editors if they happen to be editing a deleted glyph or a glyph
      that moved due to an insertion.
 
 COMMAND LINE OPTIONS
 --------------------
-  xmbdfed [options] [font1 font2 ...]
+  gbdfed [options] [font1 font2 ...]
 
-  -nc     - do not preserve comments
-  -nu     - do not preserve unencoded glyphs
-  -nm     - do not make metrics corrections
-  -np     - do not pad character-cell bitmaps
-  -bp     - allow blank pages
-  -ed     - do not present the "Really Exit?" dialog
-  -ps n   - set default point size
-  -hres n - set default horizontal resolution
-  -vres n - set default vertical resolution
-  -res n  - set both default resolutions
-  -sp s   - set font spacing ("p" for proportional, "m" for monospace,
-            or "c" for charcell).
-  -bpp n  - set the font bits per pixel (1, 2, or 4).
-  -eol e  - set the default end-of-line char(s) ("u" for Unix, "d" for DOS,
-            or "m" for Mac).
-  -g code - set the initial glyph code (in decimal, hex or octal).
-  -pb     - turn off the progress bar.
+  -nc      - do not preserve comments
+  -nu      - do not preserve unencoded glyphs
+  -nm      - do not make metrics corrections
+  -np      - do not pad character-cell bitmaps
+  -bp      - allow blank pages
+  -ed      - do not present the "Really Exit?" dialog
+  -ps n    - set default point size
+  -hres n  - set default horizontal resolution
+  -vres n  - set default vertical resolution
+  -res n   - set both default resolutions
+  -sp s    - set font spacing ("p" for proportional, "m" for monospace,
+             or "c" for charcell).
+  -eol e   - set the default end-of-line char(s) ("u" for Unix, "d" for DOS,
+             or "m" for Mac).
+  -g code  - set the initial glyph code (in decimal, hex or octal).
+  -cb base - set the code base for display of glyph codes, can be "octal,"
+             "decimal," or "hexadecimal." The first letter of these names
+             work as well.
 
-  By default, xmbdfed will set its point size to 12, the horizontal and
+  By default, gbdfed will set its point size to 12, the horizontal and
   vertical resolution to that of the display (e.g. 90x90 dpi for Sun's), and
-  the font spacing to proportional.  Also by default, xmbdfed will preserve
+  the font spacing to proportional.  Also by default, gbdfed will preserve
   comments, preserve unencoded glyphs, and make metrics corrections when
-  loading fonts.  One bit per pixel is the default.
+  loading fonts.
 
 COMPILING
 ---------
 
-To compile XmBDFEditor, you will need the following:
-
-  Compiler     : ISO, Traditional C, or C++ compiler
-  Window System: X11R5 or X11R6
-  Toolkit      : OpenMotif <http://www.openmotif.org> or
-                 LessTif <http://www.lesstif.org>
+To build gbdfed, GTK 2.6 or greater is required. It may be that versions as
+early as 2.3 will work, but only various versions of 2.7 and 2.8 have been
+tested.
 
 Optional:
-  The FreeType and HBF import capabilities are optional.  To use them, you
-  need to get copies from the following ftp sites:
 
-  ftp://ftp.ifcss.org/pub/software/fonts/utils/hbf.tar.gz [source code]
-  ftp://ftp.ifcss.org/pub/software/info/HBF-1.1.tar.gz    [docs optional]
-  http://www.freetype.org
+  Freetype2 support is optional and can be found at:
 
-Step 0:
-  For HBF support, copy the hbf.h and hbf.c files from the original sources
-  into the current directory and apply the HBF.PATCH file using the patch
-  program.
+    http://www.freetype.org
 
-Step 1:
-  Edit the Makefile to set the INCS and LIBS variables to point at the header
-  file and library locations for X11 and Motif.
+Step 1.
 
-  Uncomment the FTYPE_* variables and edit FTYPE_INCS and FTYPE_LIBS to point
-  to the locations of the FreeType header and library if FreeType is
-  available.
+  Run the "configure" script to generate the Makefile. By default, the program
+  installs in /usr/local. You can change that by using the --prefix option of
+  the "configure" script.
 
-  Uncomment the HBF_* variables if HBF support is available.
+Step 2.
 
-  Edit the HBFDEFS variable to set the correct OS and correct directory for
-  the "gunzip" (GNU unzip) program.  If you do not have the "gunzip" program,
-  simply comment this variable out, which will remove the HBF support for
-  compressed glyph bitmap files.
-
-Step 2:
-  Build the program by typing "make".
+  Compile the program
 
 WARNINGS
 --------
 
 1. When compiling on HP/UX, the htext.h file has long concatenated strings that
    require the -H option (noted by W. Chao).
+
+2. Compiling with the gcc -pedantic option complains about strings being too
+   long in the help text file. The help system will be changed in later
+   versions.
 
 ACKNOWLEDGEMENTS
 ----------------
@@ -228,7 +216,17 @@ Thanks go to the following people:
   Patrick Hagglund <patrik.hagglund@bredband.net> for providing the patches to
   use FreeType 2.
 
+  James Cloos <cloos@jhcloos.com> for finding problems with gbdfed.
+
+  Ming Hua <minghua@rice.edu> for locating a problem with editing glyphs.
+
+  Sergio Martins <smartins@students.dei.uc.pt> for finding a typo and several
+  dialog related bugs.
+
+  Viktor Urban <viktor@icc-atcsolutions.com> for locating a problem when
+  saving and moving to the next or previous glyph.
+
 AUTHOR
 ------
   Mark Leisher <mleisher@crl.nmsu.edu>
-  17 February 2004
+  17 May 2006
