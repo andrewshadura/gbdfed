@@ -1,8 +1,8 @@
 #
-# $Id: README 62 2006-07-14 16:05:20Z mleisher $
+# $Id: README 66 2006-10-24 13:43:41Z mleisher $
 #
 
-gbdfed 1.1
+gbdfed 1.2
 
 INTRO
 -----
@@ -226,7 +226,13 @@ Thanks go to the following people:
   Viktor Urban <viktor@icc-atcsolutions.com> for locating a problem when
   saving and moving to the next or previous glyph.
 
+  Jiri "BlueBear" Dluhos <modry.medved@seznam.cz> for producing crash fixes on
+  64-bit machines.
+
+  Jan Engelhardt <jengelh@linux01.gwdg.de> for providing an improvement on the
+  help text, a missing prototype, and an improvement in Makefile.in.
+
 AUTHOR
 ------
   Mark Leisher <mleisher@crl.nmsu.edu>
-  17 May 2006
+  24 October 2006

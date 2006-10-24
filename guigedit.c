@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guigedit.c 50 2006-05-17 20:12:11Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guigedit.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: guigedit.c 50 2006-05-17 20:12:11Z mleisher $";
+static char svnid[] = "$Id: guigedit.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -1402,7 +1402,7 @@ operations_dialog_setup(GlypheditRec *ge)
 
 
     cell_renderer = gtk_cell_renderer_text_new();
-    g_object_set(G_OBJECT(cell_renderer), "editable", TRUE, 0);
+    g_object_set(G_OBJECT(cell_renderer), "editable", TRUE, (void *) 0);
     g_signal_connect_object(G_OBJECT(cell_renderer), "edited",
                             G_CALLBACK(change_unimap), (gpointer) store,
                             G_CONNECT_SWAPPED);

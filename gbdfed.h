@@ -23,7 +23,7 @@
 #define _h_gbdfed
 
 /*
- * $Id: gbdfed.h 62 2006-07-14 16:05:20Z mleisher $
+ * $Id: gbdfed.h 64 2006-09-11 16:39:52Z mleisher $
  */
 
 #include <gtk/gtk.h>
@@ -411,6 +411,7 @@ extern void guiedit_preference_cleanup(void);
 extern void guihelp_show_help(GtkWidget *w, gpointer data);
 
 extern void guigedit_cleanup(void);
+extern void guihelp_cleanup(void);
 
 /*************************************************************************
  *

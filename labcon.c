@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: labcon.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: labcon.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: labcon.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] = "$Id: labcon.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -298,7 +298,7 @@ labcon_new_label(const gchar *label, LabConAlignment align,
         g_return_val_if_fail(IS_LABCON(group), NULL);
     }
 
-    l = g_object_new(labcon_get_type(), 0);
+    l = g_object_new(labcon_get_type(), (void *) 0);
     l->pos = pos;
     l->spacing = spacing;
     l->child = child;
@@ -373,7 +373,7 @@ labcon_new_pixbuf(const GdkPixbuf *pixbuf, LabConAlignment align,
         g_return_val_if_fail(IS_LABCON(group), NULL);
     }
 
-    l = g_object_new(labcon_get_type(), 0);
+    l = g_object_new(labcon_get_type(), (void *) 0);
     l->pixbuf = pixbuf;
     l->pos = pos;
     l->spacing = spacing;

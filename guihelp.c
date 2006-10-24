@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guihelp.c 59 2006-07-02 21:19:30Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guihelp.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: guihelp.c 59 2006-07-02 21:19:30Z mleisher $";
+static char svnid[] = "$Id: guihelp.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -86,7 +86,7 @@ help_parse_start(GMarkupParseContext *ctx, const gchar *tag,
         gtk_text_buffer_insert_with_tags_by_name(hp.text, &hp.iter,
                                                  bullet, 3,
                                                  "margin",
-                                                 "large_bullet", 0);
+                                                 "large_bullet", (void *) 0);
         hp.flags |= HTEXT_BULLET;
         hp.tag_name = 0;
     } else if (strcmp(tag, "help") == 0)
@@ -102,12 +102,12 @@ help_parse_text(GMarkupParseContext *ctx, const gchar *txt, gsize txtlen,
     if (hp.tag_name != 0)
       gtk_text_buffer_insert_with_tags_by_name(hp.text, &hp.iter,
                                                txt, txtlen,
-                                               hp.tag_name, 0);
+                                               hp.tag_name, (void *) 0);
     else {
         if (hp.flags & HTEXT_BULLET)
           gtk_text_buffer_insert_with_tags_by_name(hp.text, &hp.iter,
                                                    txt, txtlen,
-                                                   "tabs", 0);
+                                                   "tabs", (void *) 0);
         else
           /*
            * Plain text insert.

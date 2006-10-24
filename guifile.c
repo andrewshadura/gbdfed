@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guifile.c 60 2006-07-14 15:58:19Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guifile.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: guifile.c 60 2006-07-14 15:58:19Z mleisher $";
+static char svnid[] = "$Id: guifile.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -2051,6 +2051,11 @@ really_open_font(guint ed_id)
       g_free(file);
 
     g_free(filename);
+
+    /*
+     * In case the editor list changed, set the pointer to the editor again.
+     */
+    ed = editors + ed_id;
 
     /*
      * Force the editor's info to be updated for the new font.  This causes

@@ -1,6 +1,14 @@
 #
-# $Id: NEWS 62 2006-07-14 16:05:20Z mleisher $
+# $Id: NEWS 66 2006-10-24 13:43:41Z mleisher $
 #
+
+Changes from 1.1 to 1.2
+-----------------------
+1. Some fixes for 64-bit systems.
+
+2. Some improvements in the help text.
+
+3. Added HBF support.
 
 Changes from 1.0 to 1.1
 -----------------------

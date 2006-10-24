@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: fontgrid.c 55 2006-06-29 22:56:08Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: fontgrid.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: fontgrid.c 55 2006-06-29 22:56:08Z mleisher $";
+static char svnid[] = "$Id: fontgrid.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -1242,8 +1242,8 @@ fontgrid_deselect_all(Fontgrid *fw)
     /*
      * Now clear the selected bitmaps.
      */
-    (void) memset((char *) pi->selmap, 0, sizeof(unsigned long) * 2048);
-    (void) memset((char *) opi->selmap, 0, sizeof(unsigned long) * 2048);
+    (void) memset((char *) pi->selmap, 0, sizeof(guint32) * 2048);
+    (void) memset((char *) opi->selmap, 0, sizeof(guint32) * 2048);
 
     /*
      * Reset the selection start and end points.
@@ -1263,7 +1263,7 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
      */
     gtk_widget_style_get(widget,
                          "focus-line-width", &fwidth,
-                         "focus-padding", &fpad, 0);
+                         "focus-padding", &fpad, (void *) 0);
 
     gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
 
@@ -2467,7 +2467,7 @@ fontgrid_init(GTypeInstance *obj, gpointer g_class)
     gtk_widget_style_get(GTK_WIDGET(fw),
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad,
-                         0);
+                         (void *) 0);
 
     fw->base = 16;
     fw->power2 = TRUE;
@@ -2587,7 +2587,7 @@ fontgrid_newv(bdf_font_t *font, guint32 pointSize, gint32 spacing,
               gint32 bitsPerPixel, gint32 horizontalResolution,
               gint32 verticalResolution, FontgridPageInfo *initialPageInfo)
 {
-    Fontgrid *fw = FONTGRID(g_object_new(fontgrid_get_type(), 0));
+    Fontgrid *fw = FONTGRID(g_object_new(fontgrid_get_type(), (void *) 0));
     gint32 i, boundary;
     FontgridInternalPageInfo *pi;
 
