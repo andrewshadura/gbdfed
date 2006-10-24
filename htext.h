@@ -1,1441 +1,1418 @@
 /*
-* Copyright 2006 Computing Research Labs, New Mexico State University
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the "Software"),
-* to deal in the Software without restriction, including without limitation
-* the rights to use, copy, modify, merge, publish, distribute, sublicense,
-* and/or sell copies of the Software, and to permit persons to whom the
-* Software is furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-* THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-* OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-* THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+ * $Id: htext.h 67 2006-10-24 13:52:57Z mleisher $
+ */
+static gchar *about_text = ""
+"<help>"
+"<center><b>GBDFEditor 1.2</b>\n"
+"mleisher@crl.nmsu.edu\n"
+"24 October 2006</center>\n"
+"\n"
+"GBDFEditor is a BDF font editor that supports "
+"these main features:\n"
+"\n"
+"<bullet> Multiple fonts can be loaded from the command line.</bullet>\n"
+"<bullet> Multiple fonts can be open at the same time.</bullet>\n"
+"<bullet> Cutting and pasting glyphs between fonts.</bullet>\n"
+"<bullet> Multiple glyph bitmap editors can be open at the same time.</bullet>\n"
+"<bullet> Cutting and pasting between glyph bitmap editors.</bullet>\n"
+"<bullet> Automatic correction of certain metrics when a font is loaded.</bullet>\n"
+"<bullet> Generation of XLFD font names for fonts without XLFD names.</bullet>\n"
+"<bullet> Update an XLFD font name from the font properties.</bullet>\n"
+"<bullet> Update the font properties from an XLFD font name.</bullet>\n"
+"<bullet> Font property editor.</bullet>\n"
+"<bullet> Font comment editor.</bullet>\n"
+"<bullet> Supports unencoded glyphs (ENCODING of -1).</bullet>\n"
+"<bullet> Display of glyph encodings in octal, decimal, or hex.</bullet>\n"
+"<bullet> Builtin on-line help.</bullet>\n"
+"<bullet> Imports PK/GF fonts.</bullet>\n"
+"<bullet> Imports HBF (Han Bitmap Font) fonts.</bullet>\n"
+"<bullet> Imports Linux console fonts (PSF, CP, and FNT).</bullet>\n"
+"<bullet> Imports Sun console fonts (vfont format).</bullet>\n"
+"<bullet> Imports fonts from the X server.</bullet>\n"
+"<bullet> Imports Windows FON/FNT fonts.</bullet>\n"
+"<bullet> Imports OpenType fonts and collections.</bullet>\n"
+"<bullet> Exports Linux console PSF2 fonts.</bullet>\n"
+"<bullet> Exports HEX fonts (http://czyborra.com/unifont).</bullet>\n"
+"<bullet> Edits gray scale fonts with 2, 4 or 8 bits per pixel.</bullet>\n"
+"\n"
+"GBDFEditor was designed to use GTK+ 2.6 or later.\n"
+"</help>";
 
-/*
-* $Id: htext.h 61 2006-07-14 15:59:01Z mleisher $
-*/
-static gchar *about_text = "\
-<help>
-<center><b>GBDFEditor 1.0</b>\n\
-mleisher@crl.nmsu.edu\n\
-16 January 2006</center>\n\
-\n\
-GBDFEditor is a BDF font editor that supports \
-these main features:\n\
-\n\
-<bullet> Multiple fonts can be loaded from the command line.</bullet>\n\
-<bullet> Multiple fonts can be open at the same time.</bullet>\n\
-<bullet> Cutting and pasting glyphs between fonts.</bullet>\n\
-<bullet> Multiple glyph bitmap editors can be open at the same time.</bullet>\n\
-<bullet> Cutting and pasting between glyph bitmap editors.</bullet>\n\
-<bullet> Automatic correction of certain metrics when a font is loaded.</bullet>\n\
-<bullet> Generation of XLFD font names for fonts without XLFD names.</bullet>\n\
-<bullet> Update an XLFD font name from the font properties.</bullet>\n\
-<bullet> Update the font properties from an XLFD font name.</bullet>\n\
-<bullet> Font property editor.</bullet>\n\
-<bullet> Font comment editor.</bullet>\n\
-<bullet> Supports unencoded glyphs (ENCODING of -1).</bullet>\n\
-<bullet> Display of glyph encodings in octal, decimal, or hex.</bullet>\n\
-<bullet> Builtin on-line help.</bullet>\n\
-<bullet> Imports PK/GF fonts.</bullet>\n\
-<bullet> Imports HBF (Han Bitmap Font) fonts.</bullet>\n\
-<bullet> Imports Linux console fonts (PSF, CP, and FNT).</bullet>\n\
-<bullet> Imports Sun console fonts (vfont format).</bullet>\n\
-<bullet> Imports fonts from the X server.</bullet>\n\
-<bullet> Imports Windows FON/FNT fonts.</bullet>\n\
-<bullet> Imports OpenType fonts and collections.</bullet>\n\
-<bullet> Exports Linux console PSF2 fonts.</bullet>\n\
-<bullet> Exports HEX fonts (http://czyborra.com/unifont).</bullet>\n\
-<bullet> Edits gray scale fonts with 2, 4 or 8 bits per pixel.</bullet>\n\
-\n\
-GBDFEditor was designed to use GTK+ 2.6 or later.\n\
-</help>
-";
+static gchar *program_text = "<help>"
+"By default, gbdfed automatically collects "
+"comments that are saved with the font, it "
+"preserves the unencoded glyphs, and it will "
+"attempt to make some metrics corrections "
+"automatically. These options can be set on the "
+"command line.\n"
+"\n"
+"More than one font can be specified on the command "
+"line.\n"
+"\n"
+"The command line parameters for gbdfed are:\n"
+"\n"
+"<param>-nc</param>\t\tno comments\n"
+"<param>-nm</param>\t\tno metrics corrections\n"
+"<param>-nu</param>\t\tno unencoded glyphs\n"
+"<param>-np</param>\t\tdo not pad character cell bitmaps\n"
+"<param>-bp</param>\t\tallow blank pages\n"
+"<param>-ed</param>\t\tno <b>Really Exit?</b> dialog\n"
+"<param>-ps</param> <i>n</i>\tset point size\n"
+"<param>-hres</param> <i>n</i>\tset horizontal resolution\n"
+"<param>-vres</param> <i>n</i>\tset vertical resolution\n"
+"<param>-res</param> <i>n</i>\tset both resolutions\n"
+"<param>-sp</param> <i>s</i>\tset the font spacing (<b>p</b>roportional, <b>m</b>onowidth, <b>c</b>haractercell)\n"
+"<param>-bpp</param> <i>n</i>\tset the font bits per pixel (<b>1</b>, <b>2</b>, <b>4</b>, <b>8</b>)\n"
+"<param>-eol</param> <i>e</i>\tset the default end of line char(s) (<b>u</b>nix, <b>d</b>os, <b>m</b>ac)\n"
+"<param>-g</param> <i>code</i>\tset the initial glyph code (can be decimal, hex, or octal)\n"
+"<param>-pb</param>\t\tuse watch cursor instead of progress bar\n"
+"<param>-cb</param> <i>base</i>\tset the code base for glyph codes (<b>oct</b>, <b>dec</b>, <b>hex</b>)\n"
+"</help>";
 
-static gchar *program_text = "<help>\
-By default, gbdfed automatically collects \
-comments that are saved with the font, it \
-preserves the unencoded glyphs, and it will \
-attempt to make some metrics corrections \
-automatically. These options can be set on the \
-command line.\n\
-\n\
-More than one font can be specified on the command \
-line.\n\
-\n\
-The command line parameters for gbdfed are:\n\
-\n\
-<param>-nc</param>\t\tno comments\n\
-<param>-nm</param>\t\tno metrics corrections\n\
-<param>-nu</param>\t\tno unencoded glyphs\n\
-<param>-np</param>\t\tdo not pad character cell bitmaps\n\
-<param>-bp</param>\t\tallow blank pages\n\
-<param>-ed</param>\t\tno <b>Really Exit?</b> dialog\n\
-<param>-ps</param> <i>n</i>\tset point size\n\
-<param>-hres</param> <i>n</i>\tset horizontal resolution\n\
-<param>-vres</param> <i>n</i>\tset vertical resolution\n\
-<param>-res</param> <i>n</i>\tset both resolutions\n\
-<param>-sp</param> <i>s</i>\tset the font spacing (<b>p</b>roportional, <b>m</b>onowidth, <b>c</b>haractercell)\n\
-<param>-bpp</param> <i>n</i>\tset the font bits per pixel (<b>1</b>, <b>2</b>, <b>4</b>, <b>8</b>)\n\
-<param>-eol</param> <i>e</i>\tset the default end of line char(s) (<b>u</b>nix, <b>d</b>os, <b>m</b>ac)\n\
-<param>-g</param> <i>code</i>\tset the initial glyph code (can be decimal, hex, or octal)\n\
-<param>-pb</param>\t\tuse watch cursor instead of progress bar\n\
-<param>-cb</param> <i>base</i>\tset the code base for glyph codes (<b>oct</b>, <b>dec</b>, <b>hex</b>)\n\
-</help>";
+static gchar *fgrid_text = "<help>"
+"At the top of each editor window there are some "
+"fields and buttons. These are:\n"
+"\n"
+"<margin>The <b>Font</b> text field is where the font name "
+"is set so it can be edited.</margin>\n"
+"\n"
+"<margin>The <b>Glyph</b> field is a label that provides "
+"some information about glyph name, encoding, and "
+"metrics when a glyph is selected. When a range "
+"of glyphs are selected, this field displays the "
+"start and end codes of the range.</margin>\n"
+"\n"
+"<margin>The push buttons are used to navigate through the "
+"glyph pages. The <b>Previous Page</b> and <b>Next Page</b> "
+"buttons normally skip glyph pages that are empty, "
+"but that can be changed using the <b>Setup</b> dialog.</margin>\n"
+"\n"
+"<margin>The <b>Page</b> field indicates the current glyph page "
+"and also allows a specific page number to be entered. "
+"Once a page number is entered, pressing the Return "
+"key will cause the Font Grid to shift to that page. "
+"The page number entered is expected to be a decimal "
+"number.</margin>\n"
+"\n"
+"<margin>The <b>Code</b> field is provided for situations where "
+"the page number is not known, but the encoding is "
+"known. The encoding entered in this field must be "
+"in the base (8, 10, or 16) that is currently being "
+"used to display glyph encodings (see the \"View\" "
+"menu below). Once the encoding is entered, pressing "
+"the Return key will cause the Font Grid to shift to "
+"the page containing the encoding.</margin>\n"
+"\n"
+"The main window of each font editor is called the "
+"Font Grid. All of the Font Grid's have a special "
+"clipboard used for passing glyphs around. This "
+"clipboard is called <b>FONTGRID_CLIPBOARD</b>.\n"
+"\n"
+"When a glyph has been modified either by the user or "
+"by automatic metrics corrections when the font is loaded, "
+"the glyph code above the glyph cell will be highlighted.\n"
+"\n"
+"<bul>Font Grid Menus</bul>\n"
+"\n"
+"<b>File</b>\n"
+"<margin1>New &lt;Ctrl+N&gt;</margin1> "
+"<margin2>This creates a new font and asks for the point "
+"size, resolution, and font spacing first.</margin2>\n"
+"\n"
+"<margin1>Open &lt;Ctrl+O&gt;</margin1> "
+"<margin2>This opens a new font in the current Font Grid.</margin2>\n"
+"\n"
+"<margin1>Save &lt;Ctrl+S&gt;</margin1> "
+"<margin2>Save the current font.</margin2>\n"
+"\n"
+"<margin1>Save As &lt;Ctrl+W&gt;</margin1> "
+"<margin2>Save the current font with some other name.</margin2>\n"
+"\n"
+"<margin1.5>Import</margin1.5>\n"
+"\n"
+"<margin2>PK/GF Font &lt;Ctrl+K&gt;</margin2> "
+"<margin3>Import a Metafont PK or GF font.</margin3>\n"
+"\n"
+"<margin2>Console Font &lt;Ctrl+L&gt;</margin2> "
+"<margin3>Import a Linux or Sun console (binary) font. "
+"If the font is a CP (Linux codepage) font, this "
+"will load all three point sizes of the font, "
+"display the 16pt font and create editors for the "
+"14pt and 8pt fonts. If the font is a PSF1 or PSF2 "
+"font, the embedded mapping table is loaded as well.</margin3>\n"
+"\n"
+"<margin2>HBF Font &lt;Ctrl+H&gt;</margin2> "
+"<margin3>Import an HBF font. Only available if "
+"gbdfed was compiled with HBF support.</margin3>\n"
+"\n"
+"<margin2>Windows Font &lt;Ctrl+B&gt;</margin2> "
+"<margin3>Import a Windows FON/FNT font. This will also "
+"import fonts from .EXE and .DLL files.</margin3>\n"
+"\n"
+"<margin2>OpenType Font &lt;Ctrl+Y&gt;</margin2> "
+"<margin3>Import an OpenType (.otf), TrueType font (.ttf) or "
+"TrueType collection (.ttc).</margin3>\n"
+"\n"
+"<margin2>Server Font &lt;Ctrl+G&gt;</margin2> "
+"<margin3>This will import a font from the X server.</margin3>\n"
+"\n"
+"<margin1.5>Export</margin1.5>\n"
+"\n"
+"<margin2>PSF &lt;Ctrl+F&gt;</margin2> "
+"<margin3>This will export the current BDF font or the current selection "
+"of glyphs to a PSF2 font.</margin3>\n"
+"\n"
+"<margin3>During the export, an option menu will let you select whether you "
+"want to:</margin3>\n"
+"\n"
+"<margin3>A. Export the font with it's Unicode mappings.</margin3> "
+" "
+"<margin3>B. Export just the glyphs.</margin3>\n"
+"\n"
+"<margin3>C. Export just the Unicode mappings in the simple "
+"ASCII form used by the psfaddtable(1) program.</margin3>\n"
+"\n"
+"<margin3>Only the first 512 glyphs will be exported from "
+"the font.</margin3>\n"
+"\n"
+"<margin2>HEX</margin2> "
+"<margin3>This will export the current BDF font into the "
+"HEX format (See the <b>HEX Font Notes</b> entry).</margin3>\n"
+"\n"
+"<margin1>Exit/Close &lt;Ctrl+F4&gt;</margin1> "
+"<margin2>Exit the program if this is the primary Font "
+"Grid or simply hide the current Font Grid window.</margin2>\n"
+"\n"
+"<margin2>The key binding for this can be changed in the "
+"configuration file. See the <b>Configuration File</b> "
+"help section.</margin2>\n"
+"\n"
+"<b>Edit</b>\n"
+"<margin1>Copy &lt;Ctrl+C&gt;</margin1> "
+"<margin2>This copies the current selection to the Font "
+"Grid clipboard.</margin2>\n"
+"\n"
+"<margin1>Cut &lt;Ctrl+X&gt;</margin1> "
+"<margin2>This copies the current selection to the Font Grid "
+"clipboard and then deletes the selection.</margin2>\n"
+"\n"
+"<margin1>Paste &lt;Ctrl+V&gt;</margin1> "
+"<margin2>This replaces the glyphs starting at the currently "
+"selected position with the Font Grid clipboard.</margin2>\n"
+"\n"
+"<margin1>Overlay &lt;Ctrl+Shift+V&gt;</margin1> "
+"<margin2>This merges the Font Grid clipboard with the glyphs "
+"starting at the currently selected position. "
+"The names of the modified glyphs are not changed.</margin2>\n"
+"\n"
+"<margin1>Insert &lt;Ctrl+Meta+V&gt;</margin1> "
+"<margin2>This inserts the Font Grid cliboard in front of the "
+"currently selected position.</margin2>\n"
+"\n"
+"<margin1>Properties &lt;Ctrl+P&gt;</margin1> "
+"<margin2>This invokes the font property editor.</margin2>\n"
+"\n"
+"<margin1>Comments &lt;Ctrl+M&gt;</margin1> "
+"<margin2>This invokes the font comments editor.</margin2>\n"
+"\n"
+"<margin1>Font Info &lt;Ctrl+I&gt;</margin1> "
+"<margin2>This invokes a dialog that allows changes "
+"to some of the font information so these "
+"values do not have to be changed using the "
+"property editor. These values include the "
+"default character, font device width (for "
+"monowidth and character cell fonts), font "
+"ascent and descent, font vertical and "
+"horizontal resolution, and the font spacing.</margin2>\n"
+"\n"
+"<margin1.5>Font Name</margin1.5>\n"
+"\n"
+"<margin2>Make XLFD Name</margin2> "
+"<margin3>If the font does not have an XLFD name, this "
+"will save the current font name in the "
+"<b>_ORIGINAL_FONT_NAME</b> font property and then "
+"generate an XLFD name for the font.</margin3>\n"
+"\n"
+"<margin2>Update Name From Properties</margin2> "
+"<margin3>This will update the XLFD font name fields from"
+"the font property list.</margin3>\n"
+"\n"
+"<margin2>Update Properties From Name</margin2> "
+"<margin3>This will update the font properties from the "
+"XLFD font name.</margin3>\n"
+"\n"
+"<margin2>Update Average Width</margin2> "
+"<margin3>This will update the average width field of the "
+"XLFD font name and will update the "
+"<b>AVERAGE_WIDTH</b> font property as a side effect.</margin3>\n"
+"\n"
+"<margin1.5>Rename Glyphs</margin1.5>\n"
+"<margin2>Unicode Names</margin2> "
+"<margin3>This option will rename all the glyphs using names "
+"from a Unicode Character Database file set in the "
+"config file or from the <b>Setup-&gt;Other Options</b> "
+"dialog.</margin3>\n"
+"\n"
+"<margin2>Unicode Values</margin2> "
+"<margin3>This option will rename all the glyphs with 16-bit "
+"hexadecimal values prefixed with <b>0x</b>, <b>U+</b>, or <b>\\u</b>.</margin3>\n"
+"\n"
+"<margin1>Test Glyphs &lt;Ctrl+Z&gt;</margin1> "
+"<margin2>This will toggle the glyph test dialog on or off for "
+"the editor. When this is active, clicking on a glyph "
+"in any Font Grid will also add it to the glyph test "
+"dialog. When changes are made to a glyph or the font "
+"bounding box, the glyph test dialog will be updated "
+"accordingly.</margin2>\n"
+"\n"
+"<margin2>The glyph test dialog provides a toggle to turn the "
+"baseline on or off and another toggle to draw from right "
+"to left instead of left to right.</margin2>\n"
+"\n"
+"<margin1>Preferences &lt;Ctrl+T&gt;</margin1> "
+"<margin2>This will invoke the dialog to edit various preferences"
+"used by the editor and when loading/creating fonts.</margin2>\n"
+"\n"
+"<b>View</b>\n"
+"<margin1>Unencoded &lt;Ctrl+E&gt;</margin1> "
+"<margin2>If the font has unencoded glyphs (<b>ENCODING</b> "
+"field is -1), this will toggle between "
+"displaying the unencoded and encoded glyphs.</margin2>\n"
+"\n"
+"<margin1.5>Code Base</margin1.5>\n"
+"<margin2>Octal</margin2> "
+"<margin3>This option will display glyph encodings in "
+"octal (base 8).</margin3>\n"
+"\n"
+"<margin2>Decimal</margin2> "
+"<margin3>This option will display glyph encodings in "
+"decimal (base 10).</margin3>\n"
+"\n"
+"<margin2>Hexadecimal</margin2> "
+"<margin3>This option will display glyph encodings in "
+"hexadecimal (base 16).</margin3>\n"
+"\n"
+"<margin1>Other Page &lt;Ctrl+Shift+S&gt;</margin1> "
+"<margin2>This will toggle between the current glyph page "
+"and the last page that was viewed.</margin2>\n"
+"\n"
+"<margin1>Vertical/Horizontal View &lt;Ctrl+Q&gt;</margin1> "
+"<margin2>This will toggle the FontGrid between showing the "
+"glyphs horizontally (default) or vertically.</margin2>\n"
+"\n"
+"<margin1>Messages &lt;Ctrl+A&gt;</margin1> "
+"<margin2>This will show messages generated when corrections "
+"to the font metrics are done or when errors are "
+"encountered.</margin2>\n"
+"\n"
+"<b>Operations</b>\n"
+"<margin1>Translate &lt;Ctrl+D&gt;</margin1> "
+"<margin2>This will bring up the dialog for entering the X "
+"offset and Y offset used to translate the glyph to "
+"a new location.</margin2>\n"
+"\n"
+"<margin2>The option of translating the selected glyphs or all "
+"of the glyphs is provided.</margin2>\n"
+"\n"
+"<margin1>Rotate &lt;Ctrl+R&gt;</margin1> "
+"<margin2>This will bring up the dialog for entering the "
+"rotation angle. The rotation is limited to between "
+"± 1° and 359°.</margin2>\n"
+"\n"
+"<margin2>The option of rotating the selected glyphs or all "
+"of the glyphs is provided.</margin2>\n"
+"\n"
+"<margin1>Shear &lt;Ctrl+J&gt;</margin1> "
+"<margin2>This will bring up the dialog for entering the "
+"angle of the shear. The shear is limited to between "
+"± 1° and 45°.</margin2>\n"
+"\n"
+"<margin2>The option of rotating the selected glyphs or all "
+"of the glyphs is provided.</margin2>\n"
+"\n"
+"<margin1>Embolden &lt;Ctrl+Shift+B&gt;</margin1> "
+"<margin2>This will bring up the dialog for choosing whether "
+"to embolden the selected glyphs or to embolden all "
+"glyphs.</margin2>\n"
+"\n"
+"<margin2>To <bi>embolden</bi> means to make bold.</margin2> "
+" "
+"<b>Windows</b> "
+"<margin1>New &lt;Ctrl+N&gt;</margin1>\n"
+"<margin2>This will cause a new editor to be created with "
+"the point size, resolution, and bits per pixel "
+"set from the config file, command line, or from "
+"the Setup dialog.</margin2>\n"
+"\n"
+"<margin1>[editor list]</margin1> "
+"<margin2>The remaining menu items are all the Font "
+"Grid's that have been created. Choosing one "
+"will force that window to be made visible and "
+"also put that window on top.</margin2>\n"
+"\n"
+"<bul>Font Grid Translations</bul>\n"
+"<margin>0..9</margin> "
+"<margin1>Typing digits will accumulate a count which is "
+"applied to movement done with the arrow and page keys.</margin1>\n"
+"\n"
+"<margin>Left</margin> "
+"<margin1>This will move the single cell selection left.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Right</margin> "
+"<margin1>This will move the single cell selection right.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Up</margin> "
+"<margin1>This will move the single cell selection up.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Down</margin> "
+"<margin1>This will move the single cell selection down.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+Left</margin> "
+"<margin1>This will extend the selection to the left.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+Right</margin> "
+"<margin1>This will extend the selection to the right.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+Up</margin> "
+"<margin1>This will extend the selection up a row or column, "
+"depending on the display orientation, horizontal or "
+"vertical.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+Down</margin> "
+"<margin1>This will extend the selection down a row or column, "
+"depending on the display orientation, horizontal or "
+"vertical.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>PageUp</margin> "
+"<margin1>This will switch to the next page of glyphs.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>PageDown</margin> "
+"<margin1>This will switch to the previous page of glyphs.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Home</margin> "
+"<margin1>This will switch to the first page of glyphs.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>End</margin> "
+"<margin1>This will switch to the last page of glyphs.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+PageUp</margin> "
+"<margin1>This will extend the selection to the next page.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+PageDown</margin> "
+"<margin1>This will extend the selection to the previous page.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+Home</margin> "
+"<margin1>This will extend the selection to the first page that "
+"has glyphs.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Shift+End</margin> "
+"<margin1>This will extend the selection to the last page that "
+"has glyphs.</margin1>\n"
+"<margin1>If a decimal number is typed before this, this "
+"operation will be done that number of times.</margin1>\n"
+"\n"
+"<margin>Button1Down</margin> "
+"<margin1>This will start selecting glyphs. If Button1 is "
+"double-clicked, it will edit the current glyph.</margin1>\n"
+"\n"
+"<margin>Button1Motion</margin> "
+"<margin1>This will extend the selected glyphs.</margin1>\n"
+"\n"
+"<margin>Button1Up</margin> "
+"<margin1>This will end glyph selection.</margin1>\n"
+"\n"
+"<margin>Shift+Button1Down</margin> "
+"<margin1>This will adjust the glyphs already selected by "
+"adding or removing glyphs from the selection.</margin1>\n"
+"\n"
+"<margin>Button2Down</margin> "
+"<margin1>This will paste the glyphs on the Font Grid "
+"clipboard at the glyph position under the mouse. "
+"If the paste is done in the unencoded glyph area, "
+"the glyphs will simply be appended to the end. "
+"The unencoded glyph area is simply a container "
+"for unused glyphs.</margin1>\n"
+"\n"
+"<margin>Shift+Button2Down</margin> "
+"<margin1>This will insert the glyphs on the Font Grid "
+"clipboard in front of the glyphs starting at the "
+"position under the mouse. Any glyphs moved past "
+"the 0xffff encoding will be moved to the unencoded "
+"area so they are not lost. This action will always "
+"insert, no matter what mode the font grid is in.</margin1>\n"
+"\n"
+"<margin>Ctrl+Button2Down</margin> "
+"<margin1>This will merge (overlay) the glyphs being pasted with "
+"the glyphs that are in the range of the glyphs being pasted. "
+"If a merge is done in the unencoded glyph area, the glyphs "
+"will simply be appended and not merged (overlayed).</margin1>\n"
+"\n"
+"<margin>Button3Down</margin> "
+"<margin1>This will copy the selected glyphs to the Font "
+"Grid clipboard.</margin1>\n"
+"\n"
+"<margin>Return</margin> "
+"<margin1>This will invoke a Glypheditor for the current glyph.</margin1>\n"
+"\n"
+"<margin>Ctrl+Return</margin> "
+"<margin1>This will cause the end selection callback to be called. "
+"The effect in the gbdfed program is to send the glyph "
+"to the glyph test dialog if it is open.</margin1>\n"
+"\n"
+"<margin>Copy</margin> "
+"<margin1>This will copy the selected glyphs to the Font "
+"Grid clipboard.</margin1>\n"
+"\n"
+"<margin>Cut</margin> "
+"<margin1>This will copy the selected glyphs to the Font "
+"Grid clipboard and then delete the glyphs.</margin1>\n"
+"\n"
+"<margin>Paste</margin> "
+"<margin1>This will paste the glyphs on the Font Grid "
+"clipboard at the currently selected glyph "
+"position.</margin1>\n"
+"\n"
+"<margin>Delete</margin> "
+"<margin1>This will copy the selected glyphs to the Font "
+"Grid clipboard and then delete the glyphs.</margin1>\n"
+"\n"
+"<margin>BackSpace</margin> "
+"<margin1>This will copy the selected glyphs to the Font "
+"Grid clipboard and then delete the glyphs.</margin1>\n"
+"\n"
+"<margin>Double clicking with Button1 will invoke the Glyph "
+"Editor for the current glyph.</margin>\n"
+"\n"
+"<b>Other Font Grid Features</b>\n"
+"<margin>The font name can be edited in the Font Grid and "
+"page switching can be done with the buttons on the "
+"Font Grid.</margin>\n"
+"</help>";
 
-static gchar *fgrid_text = "<help>\
-At the top of each editor window there are some \
-fields and buttons. These are:\n\
-\n\
-<margin>The <b>Font</b> text field is where the font name \
-is set so it can be edited.</margin>\n\
-\n\
-<margin>The <b>Glyph</b> field is a label that provides \
-some information about glyph name, encoding, and \
-metrics when a glyph is selected. When a range \
-of glyphs are selected, this field displays the \
-start and end codes of the range.</margin>\n\
-\n\
-<margin>The push buttons are used to navigate through the \
-glyph pages. The <b>Previous Page</b> and <b>Next Page</b> \
-buttons normally skip glyph pages that are empty, \
-but that can be changed using the <b>Setup</b> dialog.</margin>\n\
-\n\
-<margin>The <b>Page</b> field indicates the current glyph page \
-and also allows a specific page number to be entered. \
-Once a page number is entered, pressing the Return \
-key will cause the Font Grid to shift to that page. \
-The page number entered is expected to be a decimal \
-number.</margin>\n\
-\n\
-<margin>The <b>Code</b> field is provided for situations where \
-the page number is not known, but the encoding is \
-known. The encoding entered in this field must be \
-in the base (8, 10, or 16) that is currently being \
-used to display glyph encodings (see the \"View\" \
-menu below). Once the encoding is entered, pressing \
-the Return key will cause the Font Grid to shift to \
-the page containing the encoding.</margin>\n\
-\n\
-The main window of each font editor is called the \
-Font Grid. All of the Font Grid's have a special \
-clipboard used for passing glyphs around. This \
-clipboard is called <b>FONTGRID_CLIPBOARD</b>.\n\
-\n\
-When a glyph has been modified either by the user or \
-by automatic metrics corrections when the font is loaded, \
-the glyph code above the glyph cell will be highlighted.\n\
-\n\
-<bul>Font Grid Menus</bul>\n\
-\n\
-<b>File</b>\n\
-<margin1>New &lt;Ctrl+N&gt;</margin1> \
-<margin2>This creates a new font and asks for the point \
-size, resolution, and font spacing first.</margin2>\n\
-\n\
-<margin1>Open &lt;Ctrl+O&gt;</margin1> \
-<margin2>This opens a new font in the current Font Grid.</margin2>\n\
-\n\
-<margin1>Save &lt;Ctrl+S&gt;</margin1> \
-<margin2>Save the current font.</margin2>\n\
-\n\
-<margin1>Save As &lt;Ctrl+W&gt;</margin1> \
-<margin2>Save the current font with some other name.</margin2>\n\
-\n\
-<margin1.5>Import</margin1.5>\n\
-\n\
-<margin2>PK/GF Font &lt;Ctrl+K&gt;</margin2> \
-<margin3>Import a Metafont PK or GF font.</margin3>\n\
-\n\
-<margin2>Console Font &lt;Ctrl+L&gt;</margin2> \
-<margin3>Import a Linux or Sun console (binary) font. \
-If the font is a CP (Linux codepage) font, this \
-will load all three point sizes of the font, \
-display the 16pt font and create editors for the \
-14pt and 8pt fonts. If the font is a PSF1 or PSF2 \
-font, the embedded mapping table is loaded as well.</margin3>\n\
-\n\
-<margin2>HBF Font &lt;Ctrl+H&gt;</margin2> \
-<margin3>Import an HBF font. Only available if \
-gbdfed was compiled with HBF support.</margin3>\n\
-\n\
-<margin2>Windows Font &lt;Ctrl+B&gt;</margin2> \
-<margin3>Import a Windows FON/FNT font. This will also \
-import fonts from .EXE and .DLL files.</margin3>\n\
-\n\
-<margin2>OpenType Font &lt;Ctrl+Y&gt;</margin2> \
-<margin3>Import an OpenType (.otf), TrueType font (.ttf) or \
-TrueType collection (.ttc).</margin3>\n\
-\n\
-<margin2>Server Font &lt;Ctrl+G&gt;</margin2> \
-<margin3>This will import a font from the X server.</margin3>\n\
-\n\
-<margin1.5>Export</margin1.5>\n\
-\n\
-<margin2>PSF &lt;Ctrl+F&gt;</margin2> \
-<margin3>This will export the current BDF font or the current selection \
-of glyphs to a PSF2 font.</margin3>\n\
-\n\
-<margin3>During the export, an option menu will let you select whether you \
-want to:</margin3>\n\
-\n\
-<margin3>A. Export the font with it's Unicode mappings.</margin3> \
- \
-<margin3>B. Export just the glyphs.</margin3>\n\
-\n\
-<margin3>C. Export just the Unicode mappings in the simple \
-ASCII form used by the psfaddtable(1) program.</margin3>\n\
-\n\
-<margin3>Only the first 512 glyphs will be exported from \
-the font.</margin3>\n\
-\n\
-<margin2>HEX</margin2> \
-<margin3>This will export the current BDF font into the \
-HEX format (See the <b>HEX Font Notes</b> entry).</margin3>\n\
-\n\
-<margin1>Exit/Close &lt;Ctrl+F4&gt;</margin1> \
-<margin2>Exit the program if this is the primary Font \
-Grid or simply hide the current Font Grid window.</margin2>\n\
-\n\
-<margin2>The key binding for this can be changed in the \
-configuration file. See the <b>Configuration File</b> \
-help section.</margin2>\n\
-\n\
-<b>Edit</b>\n\
-<margin1>Copy &lt;Ctrl+C&gt;</margin1> \
-<margin2>This copies the current selection to the Font \
-Grid clipboard.</margin2>\n\
-\n\
-<margin1>Cut &lt;Ctrl+X&gt;</margin1> \
-<margin2>This copies the current selection to the Font Grid \
-clipboard and then deletes the selection.</margin2>\n\
-\n\
-<margin1>Paste &lt;Ctrl+V&gt;</margin1> \
-<margin2>This replaces the glyphs starting at the currently \
-selected position with the Font Grid clipboard.</margin2>\n\
-\n\
-<margin1>Overlay &lt;Ctrl+Shift+V&gt;</margin1> \
-<margin2>This merges the Font Grid clipboard with the glyphs \
-starting at the currently selected position. \
-The names of the modified glyphs are not changed.</margin2>\n\
-\n\
-<margin1>Insert &lt;Ctrl+Meta+V&gt;</margin1> \
-<margin2>This inserts the Font Grid cliboard in front of the \
-currently selected position.</margin2>\n\
-\n\
-<margin1>Properties &lt;Ctrl+P&gt;</margin1> \
-<margin2>This invokes the font property editor.</margin2>\n\
-\n\
-<margin1>Comments &lt;Ctrl+M&gt;</margin1> \
-<margin2>This invokes the font comments editor.</margin2>\n\
-\n\
-<margin1>Font Info &lt;Ctrl+I&gt;</margin1> \
-<margin2>This invokes a dialog that allows changes \
-to some of the font information so these \
-values do not have to be changed using the \
-property editor. These values include the \
-default character, font device width (for \
-monowidth and character cell fonts), font \
-ascent and descent, font vertical and \
-horizontal resolution, and the font spacing.</margin2>\n\
-\n\
-<margin1.5>Font Name</margin1.5>\n\
-\n\
-<margin2>Make XLFD Name</margin2> \
-<margin3>If the font does not have an XLFD name, this \
-will save the current font name in the \
-<b>_ORIGINAL_FONT_NAME</b> font property and then \
-generate an XLFD name for the font.</margin3>\n\
-\n\
-<margin2>Update Name From Properties</margin2> \
-<margin3>This will update the XLFD font name fields from\
-the font property list.</margin3>\n\
-\n\
-<margin2>Update Properties From Name</margin2> \
-<margin3>This will update the font properties from the \
-XLFD font name.</margin3>\n\
-\n\
-<margin2>Update Average Width</margin2> \
-<margin3>This will update the average width field of the \
-XLFD font name and will update the \
-<b>AVERAGE_WIDTH</b> font property as a side effect.</margin3>\n\
-\n\
-<margin1.5>Rename Glyphs</margin1.5>\n\
-<margin2>Unicode Names</margin2> \
-<margin3>This option will rename all the glyphs using names \
-from a Unicode Character Database file set in the \
-config file or from the <b>Setup-&gt;Other Options</b> \
-dialog.</margin3>\n\
-\n\
-<margin2>Unicode Values</margin2> \
-<margin3>This option will rename all the glyphs with 16-bit \
-hexadecimal values prefixed with <b>0x</b>, <b>U+</b>, or <b>\\u</b>.</margin3>\n\
-\n\
-<margin1>Test Glyphs &lt;Ctrl+Z&gt;</margin1> \
-<margin2>This will toggle the glyph test dialog on or off for \
-the editor. When this is active, clicking on a glyph \
-in any Font Grid will also add it to the glyph test \
-dialog. When changes are made to a glyph or the font \
-bounding box, the glyph test dialog will be updated \
-accordingly.</margin2>\n\
-\n\
-<margin2>The glyph test dialog provides a toggle to turn the \
-baseline on or off and another toggle to draw from right \
-to left instead of left to right.</margin2>\n\
-\n\
-<margin1>Preferences &lt;Ctrl+T&gt;</margin1> \
-<margin2>This will invoke the dialog to edit various preferences\
-used by the editor and when loading/creating fonts.</margin2>\n\
-\n\
-<b>View</b>\n\
-<margin1>Unencoded &lt;Ctrl+E&gt;</margin1> \
-<margin2>If the font has unencoded glyphs (<b>ENCODING</b> \
-field is -1), this will toggle between \
-displaying the unencoded and encoded glyphs.</margin2>\n\
-\n\
-<margin1.5>Code Base</margin1.5>\n\
-<margin2>Octal</margin2> \
-<margin3>This option will display glyph encodings in \
-octal (base 8).</margin3>\n\
-\n\
-<margin2>Decimal</margin2> \
-<margin3>This option will display glyph encodings in \
-decimal (base 10).</margin3>\n\
-\n\
-<margin2>Hexadecimal</margin2> \
-<margin3>This option will display glyph encodings in \
-hexadecimal (base 16).</margin3>\n\
-\n\
-<margin1>Other Page &lt;Ctrl+Shift+S&gt;</margin1> \
-<margin2>This will toggle between the current glyph page \
-and the last page that was viewed.</margin2>\n\
-\n\
-<margin1>Vertical/Horizontal View &lt;Ctrl+Q&gt;</margin1> \
-<margin2>This will toggle the FontGrid between showing the \
-glyphs horizontally (default) or vertically.</margin2>\n\
-\n\
-<margin1>Messages &lt;Ctrl+A&gt;</margin1> \
-<margin2>This will show messages generated when corrections \
-to the font metrics are done or when errors are \
-encountered.</margin2>\n\
-\n\
-<b>Operations</b>\n\
-<margin1>Translate &lt;Ctrl+D&gt;</margin1> \
-<margin2>This will bring up the dialog for entering the X \
-offset and Y offset used to translate the glyph to \
-a new location.</margin2>\n\
-\n\
-<margin2>The option of translating the selected glyphs or all \
-of the glyphs is provided.</margin2>\n\
-\n\
-<margin1>Rotate &lt;Ctrl+R&gt;</margin1> \
-<margin2>This will bring up the dialog for entering the \
-rotation angle. The rotation is limited to between \
-± 1° and 359°.</margin2>\n\
-\n\
-<margin2>The option of rotating the selected glyphs or all \
-of the glyphs is provided.</margin2>\n\
-\n\
-<margin1>Shear &lt;Ctrl+J&gt;</margin1> \
-<margin2>This will bring up the dialog for entering the \
-angle of the shear. The shear is limited to between \
-± 1° and 45°.</margin2>\n\
-\n\
-<margin2>The option of rotating the selected glyphs or all \
-of the glyphs is provided.</margin2>\n\
-\n\
-<margin1>Embolden &lt;Ctrl+Shift+B&gt;</margin1> \
-<margin2>This will bring up the dialog for choosing whether \
-to embolden the selected glyphs or to embolden all \
-glyphs.</margin2>\n\
-\n\
-<margin2>To <bi>embolden</bi> means to make bold.</margin2> \
- \
-<b>Windows</b> \
-<margin1>New &lt;Ctrl+N&gt;</margin1>\n\
-<margin2>This will cause a new editor to be created with \
-the point size, resolution, and bits per pixel \
-set from the config file, command line, or from \
-the Setup dialog.</margin2>\n\
-\n\
-<margin1>[editor list]</margin1> \
-<margin2>The remaining menu items are all the Font \
-Grid's that have been created. Choosing one \
-will force that window to be made visible and \
-also put that window on top.</margin2>\n\
-\n\
-<bul>Font Grid Translations</bul>\n\
-<margin>0..9</margin> \
-<margin1>Typing digits will accumulate a count which is \
-applied to movement done with the arrow and page keys.</margin1>\n\
-\n\
-<margin>Left</margin> \
-<margin1>This will move the single cell selection left.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Right</margin> \
-<margin1>This will move the single cell selection right.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Up</margin> \
-<margin1>This will move the single cell selection up.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Down</margin> \
-<margin1>This will move the single cell selection down.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+Left</margin> \
-<margin1>This will extend the selection to the left.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+Right</margin> \
-<margin1>This will extend the selection to the right.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+Up</margin> \
-<margin1>This will extend the selection up a row or column, \
-depending on the display orientation, horizontal or \
-vertical.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+Down</margin> \
-<margin1>This will extend the selection down a row or column, \
-depending on the display orientation, horizontal or \
-vertical.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>PageUp</margin> \
-<margin1>This will switch to the next page of glyphs.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>PageDown</margin> \
-<margin1>This will switch to the previous page of glyphs.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Home</margin> \
-<margin1>This will switch to the first page of glyphs.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>End</margin> \
-<margin1>This will switch to the last page of glyphs.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+PageUp</margin> \
-<margin1>This will extend the selection to the next page.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+PageDown</margin> \
-<margin1>This will extend the selection to the previous page.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+Home</margin> \
-<margin1>This will extend the selection to the first page that \
-has glyphs.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Shift+End</margin> \
-<margin1>This will extend the selection to the last page that \
-has glyphs.</margin1>\n\
-<margin1>If a decimal number is typed before this, this \
-operation will be done that number of times.</margin1>\n\
-\n\
-<margin>Button1Down</margin> \
-<margin1>This will start selecting glyphs. If Button1 is \
-double-clicked, it will edit the current glyph.</margin1>\n\
-\n\
-<margin>Button1Motion</margin> \
-<margin1>This will extend the selected glyphs.</margin1>\n\
-\n\
-<margin>Button1Up</margin> \
-<margin1>This will end glyph selection.</margin1>\n\
-\n\
-<margin>Shift+Button1Down</margin> \
-<margin1>This will adjust the glyphs already selected by \
-adding or removing glyphs from the selection.</margin1>\n\
-\n\
-<margin>Button2Down</margin> \
-<margin1>This will paste the glyphs on the Font Grid \
-clipboard at the glyph position under the mouse. \
-If the paste is done in the unencoded glyph area, \
-the glyphs will simply be appended to the end. \
-The unencoded glyph area is simply a container \
-for unused glyphs.</margin1>\n\
-\n\
-<margin>Shift+Button2Down</margin> \
-<margin1>This will insert the glyphs on the Font Grid \
-clipboard in front of the glyphs starting at the \
-position under the mouse. Any glyphs moved past \
-the 0xffff encoding will be moved to the unencoded \
-area so they are not lost. This action will always \
-insert, no matter what mode the font grid is in.</margin1>\n\
-\n\
-<margin>Ctrl+Button2Down</margin> \
-<margin1>This will merge (overlay) the glyphs being pasted with \
-the glyphs that are in the range of the glyphs being pasted. \
-If a merge is done in the unencoded glyph area, the glyphs \
-will simply be appended and not merged (overlayed).</margin1>\n\
-\n\
-<margin>Button3Down</margin> \
-<margin1>This will copy the selected glyphs to the Font \
-Grid clipboard.</margin1>\n\
-\n\
-<margin>Return</margin> \
-<margin1>This will invoke a Glypheditor for the current glyph.</margin1>\n\
-\n\
-<margin>Ctrl+Return</margin> \
-<margin1>This will cause the end selection callback to be called. \
-The effect in the gbdfed program is to send the glyph \
-to the glyph test dialog if it is open.</margin1>\n\
-\n\
-<margin>Copy</margin> \
-<margin1>This will copy the selected glyphs to the Font \
-Grid clipboard.</margin1>\n\
-\n\
-<margin>Cut</margin> \
-<margin1>This will copy the selected glyphs to the Font \
-Grid clipboard and then delete the glyphs.</margin1>\n\
-\n\
-<margin>Paste</margin> \
-<margin1>This will paste the glyphs on the Font Grid \
-clipboard at the currently selected glyph \
-position.</margin1>\n\
-\n\
-<margin>Delete</margin> \
-<margin1>This will copy the selected glyphs to the Font \
-Grid clipboard and then delete the glyphs.</margin1>\n\
-\n\
-<margin>BackSpace</margin> \
-<margin1>This will copy the selected glyphs to the Font \
-Grid clipboard and then delete the glyphs.</margin1>\n\
-\n\
-<margin>Double clicking with Button1 will invoke the Glyph \
-Editor for the current glyph.</margin>\n\
-\n\
-<b>Other Font Grid Features</b>\n\
-<margin>The font name can be edited in the Font Grid and \
-page switching can be done with the buttons on the \
-Font Grid.</margin>\n\
-</help>";
+static gchar *gedit_text = "<help>"
+"The Glyph Editor provides a simple bitmap editor "
+"designed to edit glyph bitmaps and other glyph "
+"information. The Glyph Editors all use a special "
+"clipboard used to pass bitmaps between the Glyph "
+"Editors. This clipboard is called "
+"<b>GLYPHEDIT_CLIPBOARD.</b>\n"
+"\n"
+"The only limit on the number of Glyph Editors that "
+"can be open at one time is the amount of memory.\n"
+"\n"
+"<bul>Glyph Editor Menus</bul>\n"
+"\n"
+"<b>File</b>\n"
+"<margin1>Update &lt;Ctrl+S&gt;</margin1> "
+"<margin2>This will update the Font Grid with the "
+"modified glyph.</margin2>\n"
+"\n"
+"<margin1>Update and Next &lt;Ctrl+U&gt;</margin1> "
+"<margin2>This will update the FontGrid with the "
+"modified glyph and move to the next glyph.</margin2>\n"
+"\n"
+"<margin1>Update and Previous &lt;Ctrl+B&gt;</margin1> "
+"<margin2>This will update the FontGrid with the "
+"modified glyph and move to the previous glyph.</margin2>\n"
+"\n"
+"<margin1>Close &lt;Ctrl+F4&gt;</margin1> "
+"<margin2>This will close the Glyph Editor.</margin2>\n"
+"\n"
+"<b>Edit</b>\n"
+"<margin1>Reload &lt;Ctrl+L&gt;</margin1> "
+"<margin2>This will reload the glyph and discard any "
+"changes in the glyph.</margin2>\n"
+"\n"
+"<margin1>Copy &lt;Ctrl+C&gt;</margin1> "
+"<margin2>This will copy the currently selected portion "
+"of the bitmap to the Glyph Editor clipboard.</margin2>\n"
+"\n"
+"<margin1>Cut &lt;Ctrl+X&gt;</margin1> "
+"<margin2>This will copy the currently selected portion "
+"of the bitmap to the Glyph Editor clipboard "
+"and then delete the selection.</margin2>\n"
+"\n"
+"<margin1>Paste &lt;Ctrl+V&gt;</margin1> "
+"<margin2>This will paste the Glyph Editor clipboard "
+"into the current Glyph Editor with the "
+"top-left coordinate of the bitmap on the "
+"clipboard pasted at the location of the mouse. "
+"If the bitmap is too big to fit if it is "
+"pasted at the mouse location, the bitmap will "
+"be shifted until it fits completely in the "
+"Glyph Editor.</margin2>\n"
+"\n"
+"<margin1>Select All &lt;Ctrl+A&gt;</margin1> "
+"<margin2>This will select the whole glyph bitmap.</margin2>\n"
+"\n"
+"<margin1>Next Glyph &lt;Ctrl+N&gt;</margin1> "
+"<margin2>This will move the Glyph Editor to the next "
+"glyph position in the Font Grid. If the "
+"current glyph has been modified, a save prompt "
+"will appear before moving to the next glyph.</margin2>\n"
+"\n"
+"<margin1>Previous Glyph &lt;Ctrl+P&gt;</margin1> "
+"<margin2>This will move the Glyph Editor to the previous "
+"glyph position in the Font Grid. If the "
+"current glyph has been modified, a save prompt "
+"will appear before moving to the previous glyph.</margin2>\n"
+"\n"
+"<margin2>If you do not close this editor, it will be updated "
+"with Unicode mappings if you move to the next or "
+"previous glyph.</margin2>\n"
+"\n"
+"<b>Operation</b>\n"
+"<margin1>Draw &lt;Ctrl+D&gt;</margin1> "
+"<margin2>Change the Glyph Editor into Draw mode.</margin2>\n"
+"\n"
+"<margin1>Move &lt;Ctrl+M&gt;</margin1> "
+"<margin2>Change the Glyph Editor into Move mode. Move "
+"mode allows selecting a portion of the glyph "
+"bitmap and moving it to another location.</margin2>\n"
+"\n"
+"<margin1>Copy &lt;Ctrl+Y&gt;</margin1> "
+"<margin2>Change the Glyph Editor into Copy mode. Copy "
+"mode allows copying a portion of the glyph "
+"bitmap and moving it to another location.</margin2>\n"
+"\n"
+"<margin1>Rotate &lt;Ctrl+T&gt;</margin1> "
+"<margin2>This will invoke the rotation dialog that "
+"allows the degrees of rotation to be specified. "
+"Rotation can be between 1 and 359 degrees.</margin2>\n"
+"\n"
+"<margin1>Shear &lt;Ctrl+E&gt;</margin1> "
+"<margin2>This will invoke the shear dialog that allows "
+"the degrees of horizontal shear to be specified. "
+"Other names for shearing are obliquing or slanting. "
+"Shearing is allowed between 1 and 45 degrees.</margin2>\n"
+"\n"
+"<margin1>Embolden &lt;Ctrl+H&gt;</margin1> "
+"<margin2>This will embolden the current glyph in a simple "
+"way within the width of the glyph.</margin2>\n"
+"\n"
+"<margin1>Resize BBX &lt;Ctrl+R&gt;</margin1> "
+"<margin2>This will allow changing the sizes of the "
+"glyph bounding box including the left/right "
+"bearings and the glyph ascent/descent. If "
+"this change causes the glyph bounding box to "
+"be larger than the font bounding box, the "
+"font bounding box will be resized when the "
+"glyph is saved next.</margin2>\n"
+"\n"
+"<margin1>Edit PSF Unicode Mappings &lt;Ctrl+F&gt;</margin1> "
+"<margin2>This will show a list of Unicode mappings "
+"associated with the glyph. The list can be edited "
+"and once the Apply button has been pressed, the "
+"the changes will be applied to the glyph in the "
+"font proper.</margin2>\n"
+"\n"
+"<bul>Glyph Editor Translations</bul>\n"
+"\n"
+"<margin>ButtonDown</margin> "
+"<margin1>Depending on the operation of the Glyph Editor, this "
+"will start drawing, start selecting for a Move "
+"or start selecting for a Copy. When in Draw "
+"mode, Button1 will set pixels, Button2 will "
+"invert pixels, and Button3 will clear pixels.</margin1>\n"
+"\n"
+"<margin1>When in Move or Copy mode and a selection "
+"exists, pressing Button1 within the selection "
+"will \"grab\" the selection so it can be Moved or "
+"Copied. Pressing Button3 after a selection has "
+"been made will copy the selection to the Glyph Editor "
+"clipboard.</margin1>\n"
+"\n"
+"<margin>Shift+Button2Down</margin> "
+"<margin1>This will paste the contents of the Glyph Editor "
+"clipboard into the Glypheditor at the location "
+"of the mouse.</margin1>\n"
+"\n"
+"<margin>Motion</margin> "
+"<margin1>This will continue the operation started with "
+"<b>ButtonDown</b> as well as report the current mouse "
+"coordinates in Cartesian form relative to the "
+"bounding box for the glyph.</margin1>\n"
+"\n"
+"<margin>ButtonUp</margin> "
+"<margin1>This will end the operation started with "
+"<b>ButtonDown</b>.</margin1>\n"
+"\n"
+"<margin>Copy</margin> "
+"<margin1>This will copy the selected bitmap to the Glyph "
+"Editor clipboard.</margin1>\n"
+"\n"
+"<margin>Cut</margin> "
+"<margin1>This will copy the selected bitmap to the Glyph "
+"Editor clipboard and then delete it.</margin1>\n"
+"\n"
+"<margin>Paste</margin> "
+"<margin1>This will paste the Glyph Editor clipboard at "
+"the mouse position.</margin1>\n"
+"\n"
+"<margin>Right</margin> "
+"<margin1>This will shift the glyph bitmap toward (but not "
+"past) the right edge of the bitmap grid.</margin1>\n"
+"\n"
+"<margin>Left</margin> "
+"<margin1>This will shift the glyph bitmap toward (but not "
+"past) the left edge of the bitmap grid.</margin1>\n"
+"\n"
+"<margin>Up</margin> "
+"<margin1>This will shift the glyph bitmap toward (but not "
+"past) the top edge of the bitmap grid.</margin1>\n"
+"\n"
+"<margin>Down</margin> "
+"<margin1>This will shift the glyph bitmap toward (but not "
+"past) the bottom edge of the bitmap grid.</margin1>\n"
+"\n"
+"<margin>9</margin> "
+"<margin1>This will rotate the glyph bitmap 90° "
+"counter-clockwise.</margin1>\n"
+"\n"
+"<margin>0</margin> "
+"<margin1>This will rotate the glyph bitmap 90° "
+"clockwise.</margin1>\n"
+"\n"
+"<margin>-</margin> "
+"<margin1>This will flip the glyph bitmap around the "
+"vertical axis (horizontal flip).</margin1>\n"
+"\n"
+"<margin>=</margin> "
+"<margin1>This will flip the glyph bitmap around the "
+"horizontal axis (vertical flip).</margin1>\n"
+"\n"
+"<margin>comma, Z, or z</margin> "
+"<margin1>This will select the previous color or "
+"cycle back to the last color.</margin1>\n"
+"\n"
+"<margin>period, X, or x</margin> "
+"<margin1>This will select the next color or cycle "
+"to the first color.</margin1>\n"
+"\n"
+"<bul>Other Metrics Features</bul>\n"
+"\n"
+"If the font defines the X height and the Cap height, "
+"these can be displayed in the Glypheditors by turning "
+"them on or off individually from the "
+"<b>Preferences-&gt;Editing Options</b> tab. The size of the "
+"pixel used in the Glypheditor can also be set here. These "
+"values affect all Glypheditors.\n"
+"\n"
+"<bul>Other Glyph Editor Features</bul>\n"
+"\n"
+"In addition to editing the glyph bitmap, the glyph "
+"editor also allows editing of the glyph name and "
+"setting its device width (BDF <b>DWIDTH</b> field). To "
+"get more aesthetic spacing between glyphs, this "
+"value can be set explicitly. The glyph name "
+"should be a maximum of 14 characters.\n"
+"\n"
+"The Glypheditor also provides a simple toolbox "
+"that has buttons to switch between operations and to "
+"perform various bitmap manipulations.\n"
+"\n"
+"Pressing one of the shift buttons in the toolbox "
+"will repeat the shift operation if the mouse button "
+"is held down longer than 100 milliseconds. This is "
+"not configurable at the moment.\n"
+"\n"
+"If the font uses 2, 4, or 8 bits per pixel, a strip "
+"of colors will be presented down the left side of "
+"the toolbox. These colors can be selected with the "
+"mouse or can be chosen using the keys mentioned "
+"above in the Glypheditor translations. At the moment "
+"the Glypheditor must have the focus for the keys to "
+"work.</help>";
 
-static gchar *gedit_text = "<help>\
-The Glyph Editor provides a simple bitmap editor \
-designed to edit glyph bitmaps and other glyph \
-information. The Glyph Editors all use a special \
-clipboard used to pass bitmaps between the Glyph \
-Editors. This clipboard is called \
-<b>GLYPHEDIT_CLIPBOARD.</b>\n\
-\n\
-The only limit on the number of Glyph Editors that \
-can be open at one time is the amount of memory.\n\
-\n\
-<bul>Glyph Editor Menus</bul>\n\
-\n\
-<b>File</b>\n\
-<margin1>Update &lt;Ctrl+S&gt;</margin1> \
-<margin2>This will update the Font Grid with the \
-modified glyph.</margin2>\n\
-\n\
-<margin1>Update and Next &lt;Ctrl+U&gt;</margin1> \
-<margin2>This will update the FontGrid with the \
-modified glyph and move to the next glyph.</margin2>\n\
-\n\
-<margin1>Update and Previous &lt;Ctrl+B&gt;</margin1> \
-<margin2>This will update the FontGrid with the \
-modified glyph and move to the previous glyph.</margin2>\n\
-\n\
-<margin1>Close &lt;Ctrl+F4&gt;</margin1> \
-<margin2>This will close the Glyph Editor.</margin2>\n\
-\n\
-<b>Edit</b>\n\
-<margin1>Reload &lt;Ctrl+L&gt;</margin1> \
-<margin2>This will reload the glyph and discard any \
-changes in the glyph.</margin2>\n\
-\n\
-<margin1>Copy &lt;Ctrl+C&gt;</margin1> \
-<margin2>This will copy the currently selected portion \
-of the bitmap to the Glyph Editor clipboard.</margin2>\n\
-\n\
-<margin1>Cut &lt;Ctrl+X&gt;</margin1> \
-<margin2>This will copy the currently selected portion \
-of the bitmap to the Glyph Editor clipboard \
-and then delete the selection.</margin2>\n\
-\n\
-<margin1>Paste &lt;Ctrl+V&gt;</margin1> \
-<margin2>This will paste the Glyph Editor clipboard \
-into the current Glyph Editor with the \
-top-left coordinate of the bitmap on the \
-clipboard pasted at the location of the mouse. \
-If the bitmap is too big to fit if it is \
-pasted at the mouse location, the bitmap will \
-be shifted until it fits completely in the \
-Glyph Editor.</margin2>\n\
-\n\
-<margin1>Select All &lt;Ctrl+A&gt;</margin1> \
-<margin2>This will select the whole glyph bitmap.</margin2>\n\
-\n\
-<margin1>Next Glyph &lt;Ctrl+N&gt;</margin1> \
-<margin2>This will move the Glyph Editor to the next \
-glyph position in the Font Grid. If the \
-current glyph has been modified, a save prompt \
-will appear before moving to the next glyph.</margin2>\n\
-\n\
-<margin1>Previous Glyph &lt;Ctrl+P&gt;</margin1> \
-<margin2>This will move the Glyph Editor to the previous \
-glyph position in the Font Grid. If the \
-current glyph has been modified, a save prompt \
-will appear before moving to the previous glyph.</margin2>\n\
-\n\
-<margin2>If you do not close this editor, it will be updated \
-with Unicode mappings if you move to the next or \
-previous glyph.</margin2>\n\
-\n\
-<b>Operation</b>\n\
-<margin1>Draw &lt;Ctrl+D&gt;</margin1> \
-<margin2>Change the Glyph Editor into Draw mode.</margin2>\n\
-\n\
-<margin1>Move &lt;Ctrl+M&gt;</margin1> \
-<margin2>Change the Glyph Editor into Move mode. Move \
-mode allows selecting a portion of the glyph \
-bitmap and moving it to another location.</margin2>\n\
-\n\
-<margin1>Copy &lt;Ctrl+Y&gt;</margin1> \
-<margin2>Change the Glyph Editor into Copy mode. Copy \
-mode allows copying a portion of the glyph \
-bitmap and moving it to another location.</margin2>\n\
-\n\
-<margin1>Rotate &lt;Ctrl+T&gt;</margin1> \
-<margin2>This will invoke the rotation dialog that \
-allows the degrees of rotation to be specified. \
-Rotation can be between 1 and 359 degrees.</margin2>\n\
-\n\
-<margin1>Shear &lt;Ctrl+E&gt;</margin1> \
-<margin2>This will invoke the shear dialog that allows \
-the degrees of horizontal shear to be specified. \
-Other names for shearing are obliquing or slanting. \
-Shearing is allowed between 1 and 45 degrees.</margin2>\n\
-\n\
-<margin1>Embolden &lt;Ctrl+H&gt;</margin1> \
-<margin2>This will embolden the current glyph in a simple \
-way within the width of the glyph.</margin2>\n\
-\n\
-<margin1>Resize BBX &lt;Ctrl+R&gt;</margin1> \
-<margin2>This will allow changing the sizes of the \
-glyph bounding box including the left/right \
-bearings and the glyph ascent/descent. If \
-this change causes the glyph bounding box to \
-be larger than the font bounding box, the \
-font bounding box will be resized when the \
-glyph is saved next.</margin2>\n\
-\n\
-<margin1>Edit PSF Unicode Mappings &lt;Ctrl+F&gt;</margin1> \
-<margin2>This will show a list of Unicode mappings \
-associated with the glyph. The list can be edited \
-and once the Apply button has been pressed, the \
-the changes will be applied to the glyph in the \
-font proper.</margin2>\n\
-\n\
-<bul>Glyph Editor Translations</bul>\n\
-\n\
-<margin>ButtonDown</margin> \
-<margin1>Depending on the operation of the Glyph Editor, this \
-will start drawing, start selecting for a Move \
-or start selecting for a Copy. When in Draw \
-mode, Button1 will set pixels, Button2 will \
-invert pixels, and Button3 will clear pixels.</margin1>\n\
-\n\
-<margin1>When in Move or Copy mode and a selection \
-exists, pressing Button1 within the selection \
-will \"grab\" the selection so it can be Moved or \
-Copied. Pressing Button3 after a selection has \
-been made will copy the selection to the Glyph Editor \
-clipboard.</margin1>\n\
-\n\
-<margin>Shift+Button2Down</margin> \
-<margin1>This will paste the contents of the Glyph Editor \
-clipboard into the Glypheditor at the location \
-of the mouse.</margin1>\n\
-\n\
-<margin>Motion</margin> \
-<margin1>This will continue the operation started with \
-<b>ButtonDown</b> as well as report the current mouse \
-coordinates in Cartesian form relative to the \
-bounding box for the glyph.</margin1>\n\
-\n\
-<margin>ButtonUp</margin> \
-<margin1>This will end the operation started with \
-<b>ButtonDown</b>.</margin1>\n\
-\n\
-<margin>Copy</margin> \
-<margin1>This will copy the selected bitmap to the Glyph \
-Editor clipboard.</margin1>\n\
-\n\
-<margin>Cut</margin> \
-<margin1>This will copy the selected bitmap to the Glyph \
-Editor clipboard and then delete it.</margin1>\n\
-\n\
-<margin>Paste</margin> \
-<margin1>This will paste the Glyph Editor clipboard at \
-the mouse position.</margin1>\n\
-\n\
-<margin>Right</margin> \
-<margin1>This will shift the glyph bitmap toward (but not \
-past) the right edge of the bitmap grid.</margin1>\n\
-\n\
-<margin>Left</margin> \
-<margin1>This will shift the glyph bitmap toward (but not \
-past) the left edge of the bitmap grid.</margin1>\n\
-\n\
-<margin>Up</margin> \
-<margin1>This will shift the glyph bitmap toward (but not \
-past) the top edge of the bitmap grid.</margin1>\n\
-\n\
-<margin>Down</margin> \
-<margin1>This will shift the glyph bitmap toward (but not \
-past) the bottom edge of the bitmap grid.</margin1>\n\
-\n\
-<margin>9</margin> \
-<margin1>This will rotate the glyph bitmap 90° \
-counter-clockwise.</margin1>\n\
-\n\
-<margin>0</margin> \
-<margin1>This will rotate the glyph bitmap 90° \
-clockwise.</margin1>\n\
-\n\
-<margin>-</margin> \
-<margin1>This will flip the glyph bitmap around the \
-vertical axis (horizontal flip).</margin1>\n\
-\n\
-<margin>=</margin> \
-<margin1>This will flip the glyph bitmap around the \
-horizontal axis (vertical flip).</margin1>\n\
-\n\
-<margin>comma, Z, or z</margin> \
-<margin1>This will select the previous color or \
-cycle back to the last color.</margin1>\n\
-\n\
-<margin>period, X, or x</margin> \
-<margin1>This will select the next color or cycle \
-to the first color.</margin1>\n\
-\n\
-<bul>Other Metrics Features</bul>\n\
-\n\
-If the font defines the X height and the Cap height, \
-these can be displayed in the Glypheditors by turning \
-them on or off individually from the \
-<b>Preferences-&gt;Editing Options</b> tab. The size of the \
-pixel used in the Glypheditor can also be set here. These \
-values affect all Glypheditors.\n\
-\n\
-<bul>Other Glyph Editor Features</bul>\n\
-\n\
-In addition to editing the glyph bitmap, the glyph \
-editor also allows editing of the glyph name and \
-setting its device width (BDF <b>DWIDTH</b> field). To \
-get more aesthetic spacing between glyphs, this \
-value can be set explicitly. The glyph name \
-should be a maximum of 14 characters.\n\
-\n\
-The Glypheditor also provides a simple toolbox \
-that has buttons to switch between operations and to \
-perform various bitmap manipulations.\n\
-\n\
-Pressing one of the shift buttons in the toolbox \
-will repeat the shift operation if the mouse button \
-is held down longer than 100 milliseconds. This is \
-not configurable at the moment.\n\
-\n\
-If the font uses 2, 4, or 8 bits per pixel, a strip \
-of colors will be presented down the left side of \
-the toolbox. These colors can be selected with the \
-mouse or can be chosen using the keys mentioned \
-above in the Glypheditor translations. At the moment \
-the Glypheditor must have the focus for the keys to \
-work.</help>";
+static gchar *conf_text = "<help>"
+"gbdfed can be configured using an external\n"
+"file. This file is always assumed to be in the\n"
+"home directory and is called <b>.gbdfedrc</b>.\n"
+"\n"
+"This file sets default values which can be changed\n"
+"and saved from the editor. The default values\n"
+"apply to either the editor itself or the font\n"
+"management system.\n"
+"\n"
+"For the configuration options, the following types\n"
+"are used:\n"
+"\n"
+"<margin>&lt;boolean&gt;</margin>\n"
+"<margin1>A &lt;boolean&gt; value can be \"0\", \"false\", \"no\", "
+"\"1\", \"true\", or \"yes\". Boolean values are "
+"case insensitive.</margin1>\n"
+"\n"
+"<margin>&lt;labelstring&gt;</margin>\n"
+"<margin1>A &lt;labelstring&gt; value is a string used as a label "
+"for some of the options.</margin1>\n"
+"\n"
+"<margin>&lt;atom&gt;</margin>\n"
+"<margin1>An &lt;atom&gt; is basically a string.</margin1>\n"
+"\n"
+"<margin>&lt;cardinal&gt;</margin>\n"
+"<margin1>A &lt;cardinal&gt; value is an unsigned 32-bit "
+"integer value.</margin1>\n"
+"\n"
+"<margin>&lt;integer&gt;</margin>\n"
+"<margin1>An &lt;integer&gt; is a signed 32-bit integer "
+"value.</margin1>\n"
+"\n"
+"<margin>&lt;property-name&gt;</margin>\n"
+"<margin1>A &lt;property-name&gt; is any name that conforms to "
+"the XLFD definition of a user-defined "
+"property. Basically, the property name must "
+"start with the underscore character (_). "
+"These names are conventionally in upper case "
+"with the underscore character used to provide "
+"\"spaces\" between parts of the name.</margin1>\n"
+"\n"
+"<margin>&lt;property-type&gt;</margin>\n"
+"<margin1>A &lt;property-type&gt; can be one of \"atom\", "
+"\"cardinal\", or \"integer\" (see above).</margin1>\n"
+"\n"
+"<margin>&lt;font-spacing&gt;</margin>\n"
+"<margin1>A &lt;font-spacing&gt; value can be one of "
+"\"proportional\", \"monowidth\", or "
+"\"charactercell\".</margin1>\n"
+"\n"
+"<margin1>If an unknown &lt;font-spacing&gt; value is "
+"encountered, the default value is "
+"\"proportional\".</margin1>\n"
+"\n"
+"<margin>&lt;codebase&gt;</margin>\n"
+"<margin1>A &lt;codebase&gt; value can be one of \"octal\", "
+"\"decimal\", or \"hexadecimal\". It can also "
+"be shortened to just the first letter. Any "
+"unknown &lt;codebase&gt; values are assumed to be "
+"\"hexadecimal\".</margin1>\n"
+"\n"
+"<margin>&lt;translation&gt;</margin>\n"
+"<margin1>A &lt;translation&gt; is a valid X Toolkit translation "
+"string.</margin1>\n"
+"\n"
+"<margin>&lt;filename&gt;</margin>\n"
+"<margin1>A &lt;filename&gt; is the name of a file including or "
+"excluding a partial or full path to the file.</margin1>\n"
+"\n"
+"<margin>&lt;eolname&gt;</margin>\n"
+"<margin1>An &lt;eolname&gt; value can be one of \"unix\" (^J), "
+"\"dos\" (^M^J), or \"mac\" (^M). This value is "
+"used when saving BDF fonts.</margin1>\n"
+"\n"
+"<bul>gbdfed Configuration File Options</bul>\n"
+"\n"
+"<margin>code_base &lt;codebase&gt; [default: \"hex\"]</margin>\n"
+"\n"
+"<margin1>By default, set the code base used to display the "
+"glyph encodings to base 16, or hex. This option can "
+"be set to \"oct\", \"dec\", or \"hex\".</margin1>\n"
+"\n"
+"<margin>skip_blank_pages &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will skip font pages "
+"that do not have any glyphs when the \"Next "
+"Page\" and \"Previous Page\" buttons are used.</margin1>\n"
+"\n"
+"<margin1>If this option is set to \"false\", the \"Next "
+"Page\" and \"Previous Page\" buttons will simply "
+"move to the next or previous page, even if "
+"they do not have glyphs on them.</margin1>\n"
+"\n"
+"<margin1>This feature is only available in the configuration "
+"file and on the command line.</margin1>\n"
+"\n"
+"<margin>really_exit &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will always present the "
+"\"Really Exit?\" dialog when exiting. If this "
+"option is set to \"false\", then the dialog "
+"not be presented when exiting.</margin1>\n"
+"\n"
+"<margin1>This feature is only available in the configuration "
+"file and on the command line.</margin1>\n"
+"\n"
+"<margin>grid_overwrite_mode &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, pasting glyphs into a Font Grid will "
+"overwrite glyphs that are in the same range as the "
+"glyphs being pasted. If this option is set to "
+"\"false\", pasting glyphs into a Font Grid will "
+"move glyphs to make room for the glyphs being pasted. "
+"Any glyphs moved that have an encoding larger than "
+"65535 will be moved to the unencoded area.</margin1>\n"
+"\n"
+"<margin1>This feature is toggled using the <b>Preferences</b> dialog.</margin1> \n"
+"\n"
+"<margin>close_accelerator_text &lt;labelstring&gt; [default: \"Ctrl+F4\"]</margin>\n"
+"\n"
+"<margin1>The default close accelerator text shown on the "
+"Close/Exit menu options of the FontGrid's and "
+"GlyphEditor's is \"Ctrl+F4\". This option changes the "
+"label string on those menu options. This option should "
+"be used in conjunction with the next option.</margin1>\n"
+"\n"
+"<margin1>This feature is only available in the configuration "
+"file.</margin1>\n"
+"\n"
+"<margin>close_accelerator &lt;translation&gt; [default: \"&lt;Control&gt;F4\"]</margin>\n"
+"\n"
+"<margin1>The default accelerator for the Close/Exit menu options "
+"in the FontGrid's and GlyphEditor's can sometimes be "
+"awkward for various reasons. This option allows that "
+"accelerator to be changed. This option should be used "
+"in conjunction with the previous option.</margin1>\n"
+"\n"
+"<margin1>This feature is only available in the configuration "
+"file.</margin1>\n"
+"\n"
+"<margin>unicode_name_file &lt;filename&gt;</margin>\n"
+"\n"
+"<margin1>This specifies a file that contains entries in the UCDB "
+"(Unicode Character Database) format. When glyphs are named "
+"using Unicode names, this file provides the mapping between "
+"the code and the name. This file is assumed to be sorted by "
+"code.</margin1>\n"
+"\n"
+"<margin1>This feature is set using the \"Preferences-&gt;Editing Options\" "
+"tab.</margin1>\n"
+"\n"
+"<margin>adobe_name_file &lt;filename&gt;</margin>\n"
+"\n"
+"<margin1>This specifies a file that contains entries in the Adobe "
+"Glyph List format (see Adobe for details). When glyphs "
+"are named using the Adobe names, this file provides the "
+"mapping between the code and the name. This file is assumed "
+"to be sorted by name and not by code.</margin1>\n"
+"\n"
+"<margin1>This feature is set using the <b>Preferences-&gt;Editing Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>pixel_size &lt;integer&gt; [default: \"10\"]</margin>\n"
+"\n"
+"<margin1>The Glypheditors will use a square of size 10x10 to "
+"represent a pixel in the glyph bitmap. If the glyph "
+"bitmap causes the Glypheditor grid to be larger than "
+"1/2 the display height, then this value will be reduced "
+"until the bitmap fits within 1/2 the display size or "
+"until a pixel size of 2 is reached.</margin1>\n"
+"\n"
+"<margin1>The Glypheditors will always attempt to use this default "
+"value first before reducing the size, if reducing the size "
+"is needed.</margin1>\n"
+"\n"
+"<margin1>This feature is set using the \"Preferences-&gt;Editing Options\" "
+"tab.</margin1>\n"
+"\n"
+"<margin>show_cap_height &lt;boolean&gt; [default: \"false\"]</margin>\n"
+"\n"
+"<margin1>If the font has the <b>CAP_HEIGHT</b> property defined, "
+"this flag will toggle the display of this height "
+"in the Glypheditors.</margin1>\n"
+"\n"
+"<margin1>The <b>CAP_HEIGHT</b> is shown as a solid horizontal line "
+"above the baseline in the same color as the baseline.</margin1>\n"
+"\n"
+"<margin1>This feature is toggled using the <b>Preferences-&gt;Editing Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>show_x_height &lt;boolean&gt; [default: \"false\"]</margin>\n"
+"\n"
+"<margin1>If the font has the <b>X_HEIGHT</b> property defined, "
+"this flag will toggle the display of this height "
+"in the Glypheditors.</margin1>\n"
+"\n"
+"<margin1>The <b>X_HEIGHT</b> is shown as a solid horizontal line "
+"above the baseline in the same color as the baseline.</margin1>\n"
+"\n"
+"<margin1>This feature is toggled using the <b>Setup-&gt;Editing Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>font_grid_horizontal &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>This option determines if the glyphs are displayed "
+"horizontally or vertically. The default is to display "
+"horizontally.</margin1>\n"
+"\n"
+"<margin1>This default orientation option can only be set in "
+"the configuration file at the moment.</margin1>\n"
+"\n"
+"<margin>power2 &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>This option determines whether the font grid always "
+"adjusts the rows and columns to powers of 2. This "
+"option can only be set in the configuration file at "
+"the moment.</margin1>\n"
+"\n"
+"<margin>generate_sbit_metrics &lt;boolean&gt; [default: \"false\"]</margin>\n"
+"\n"
+"<margin1>This option determines whether an SBIT metrics file "
+"will be written after the BDF font has been written. "
+"NOTE: This is for use with the SBIT utility from "
+"Microsoft.</margin1>\n"
+"\n"
+"<margin1>This feature is toggled using the \"Preferences-&gt;General Options\" "
+"tab.</margin1>\n"
+"\n"
+"<bul>General Font Configuration Options</bul>\n"
+"\n"
+"<margin>make_backups &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will make backups when "
+"it saves fonts. The filename will have .bak "
+"on the end. This option will turn this feature "
+"off.</margin1>\n"
+"\n"
+"<margin1>This feature is toggled using the <b>Setup</b> dialog.</margin1>\n"
+"\n"
+"<margin>correct_metrics &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will make certain "
+"corrections to the font metrics when a font "
+"is loaded. If this value is \"false\", then "
+"no metrics corrections will be performed "
+"when a font is loaded.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>keep_unencoded &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will keep any "
+"unencoded glyphs that are found when a font "
+"is loaded. An unencoded glyph will have an "
+"\"ENCODING\" field set to -1. If this option "
+"is set to \"false\", then all unencoded glyphs "
+"will be ignored.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>keep_comments &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will keep all "
+"comments found in the font file. This "
+"allows them to be edited.</margin1>\n"
+"\n"
+"<margin1>If this option is set to \"false\", all "
+"comments except those that appear in the "
+"font properties list will be ignored. The "
+"comments in the font properties list are "
+"kept because they sometimes contain useful "
+"notes about the properties.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>pad_character_cells &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will pad each glyph "
+"bitmap from fonts with \"charactercell\" "
+"spacing. This means that each glyph has "
+"blank bits added around it until it matches "
+"the font bounding box exactly.</margin1>\n"
+"\n"
+"<margin1>This option is \"true\" by default because "
+"that seems to be what most people expect, "
+"based on numerous \"charactercell\" fonts that "
+"were checked.</margin1>\n"
+"\n"
+"<margin1>However, since the BDF format is sometimes "
+"used as a transfer format between programs, "
+"this option can be set to \"false\" to reduce "
+"the size of the BDF font.</margin1>\n"
+"\n"
+"<margin1>In either case, the fonts will display "
+"correctly, and metrics calculations should "
+"not be affected.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>eol &lt;eolname&gt; [default: \"unix\"]</margin>\n"
+"\n"
+"<margin1>By default, BDF fonts will be saved with a Unix "
+"end-of-line character (^J). This option can be "
+"\"unix\", \"dos\", or \"mac\".</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>hint_opentype_glyphs &lt;boolean&gt; [default: \"true\"]</margin>\n"
+"\n"
+"<margin1>By default, importing OpenType fonts will have "
+"the glyphs hinted. If this option is set to "
+"\"false\", the glyphs will not be hinted.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>point_size &lt;cardinal&gt; [default: \"12\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will create new fonts "
+"with point size 12.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>horizontal_resolution &lt;integer&gt; [default: \"display\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will determine the "
+"horizontal resolution based on the X display "
+"being used by the editor. For instance, "
+"this value is often \"90\" for Sun displays.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>vertical_resolution &lt;integer&gt; [default: \"display\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will determine the "
+"vertical resolution based on the X display "
+"being used by the editor. For instance, "
+"this value is often \"90\" for Sun displays.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>font_spacing &lt;font-spacing&gt; [default: \"proportional\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor will create new fonts "
+"with proportional spacing. This option can "
+"be set to \"monowidth\" or \"charactercell\" if "
+"\"proportional\" is not wanted.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>bits_per_pixel &lt;integer&gt; [default: \"1\"]</margin>\n"
+"\n"
+"<margin1>By default, the editor works with fonts that "
+"have one bit per pixel. But it also supports "
+"2, 4, or 8 bits per pixel. This option sets "
+"the default bits per pixel when creating new "
+"fonts.</margin1>\n"
+"\n"
+"<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> "
+"tab.</margin1>\n"
+"\n"
+"<margin>2bpp_grays &lt;integer&gt;...</margin>\n"
+"\n"
+"<margin1>This parameter supplies a default set of gray values "
+"between 0 and 255 for 2 bits per pixel fonts. Four values "
+"should be supplied.</margin1>\n"
+"\n"
+"<margin>4bpp_grays &lt;integer&gt;...</margin>\n"
+"\n"
+"<margin1>This parameter supplies a default set of gray values "
+"between 0 and 255 for 2 bits per pixel fonts. Sixteen values "
+"should be supplied.</margin1>\n"
+"\n"
+"<margin>property &lt;property-name&gt; &lt;property-type&gt;</margin>\n"
+"\n"
+"<margin1>To support user-defined properties, the "
+"editor provides the facility to define them "
+"in the configuration file in order to "
+"interpret them correctly (atom, cardinal, or "
+"integer) when editing fonts containing "
+"user-defined properties.</margin1>\n"
+"\n"
+"<margin1>If an unknown user-defined property is "
+"encountered in a font, it always defaults to "
+"a &lt;property-type&gt; of \"atom\".</margin1>\n"
+"\n"
+"<margin1>There is no limit to the number of "
+"\"property\" options set in the configuration "
+"file.</margin1>\n"
+"</help>";
 
-static gchar *conf_text = "<help>\
-gbdfed can be configured using an external\n\
-file. This file is always assumed to be in the\n\
-home directory and is called <b>.gbdfedrc</b>.\n\
-\n\
-This file sets default values which can be changed\n\
-and saved from the editor. The default values\n\
-apply to either the editor itself or the font\n\
-management system.\n\
-\n\
-For the configuration options, the following types\n\
-are used:\n\
-\n\
-<margin>&lt;boolean&gt;</margin>\n\
-<margin1>A &lt;boolean&gt; value can be \"0\", \"false\", \"no\", \
-\"1\", \"true\", or \"yes\". Boolean values are \
-case insensitive.</margin1>\n\
-\n\
-<margin>&lt;labelstring&gt;</margin>\n\
-<margin1>A &lt;labelstring&gt; value is a string used as a label \
-for some of the options.</margin1>\n\
-\n\
-<margin>&lt;atom&gt;</margin>\n\
-<margin1>An &lt;atom&gt; is basically a string.</margin1>\n\
-\n\
-<margin>&lt;cardinal&gt;</margin>\n\
-<margin1>A &lt;cardinal&gt; value is an unsigned 32-bit \
-integer value.</margin1>\n\
-\n\
-<margin>&lt;integer&gt;</margin>\n\
-<margin1>An &lt;integer&gt; is a signed 32-bit integer \
-value.</margin1>\n\
-\n\
-<margin>&lt;property-name&gt;</margin>\n\
-<margin1>A &lt;property-name&gt; is any name that conforms to \
-the XLFD definition of a user-defined \
-property. Basically, the property name must \
-start with the underscore character (_). \
-These names are conventionally in upper case \
-with the underscore character used to provide \
-\"spaces\" between parts of the name.</margin1>\n\
-\n\
-<margin>&lt;property-type&gt;</margin>\n\
-<margin1>A &lt;property-type&gt; can be one of \"atom\", \
-\"cardinal\", or \"integer\" (see above).</margin1>\n\
-\n\
-<margin>&lt;font-spacing&gt;</margin>\n\
-<margin1>A &lt;font-spacing&gt; value can be one of \
-\"proportional\", \"monowidth\", or \
-\"charactercell\".</margin1>\n\
-\n\
-<margin1>If an unknown &lt;font-spacing&gt; value is \
-encountered, the default value is \
-\"proportional\".</margin1>\n\
-\n\
-<margin>&lt;codebase&gt;</margin>\n\
-<margin1>A &lt;codebase&gt; value can be one of \"octal\", \
-\"decimal\", or \"hexadecimal\". It can also \
-be shortened to just the first letter. Any \
-unknown &lt;codebase&gt; values are assumed to be \
-\"hexadecimal\".</margin1>\n\
-\n\
-<margin>&lt;translation&gt;</margin>\n\
-<margin1>A &lt;translation&gt; is a valid X Toolkit translation \
-string.</margin1>\n\
-\n\
-<margin>&lt;filename&gt;</margin>\n\
-<margin1>A &lt;filename&gt; is the name of a file including or \
-excluding a partial or full path to the file.</margin1>\n\
-\n\
-<margin>&lt;eolname&gt;</margin>\n\
-<margin1>An &lt;eolname&gt; value can be one of \"unix\" (^J), \
-\"dos\" (^M^J), or \"mac\" (^M). This value is \
-used when saving BDF fonts.</margin1>\n\
-\n\
-<bul>gbdfed Configuration File Options</bul>\n\
-\n\
-<margin>code_base &lt;codebase&gt; [default: \"hex\"]</margin>\n\
-\n\
-<margin1>By default, set the code base used to display the \
-glyph encodings to base 16, or hex. This option can \
-be set to \"oct\", \"dec\", or \"hex\".</margin1>\n\
-\n\
-<margin>skip_blank_pages &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will skip font pages \
-that do not have any glyphs when the \"Next \
-Page\" and \"Previous Page\" buttons are used.</margin1>\n\
-\n\
-<margin1>If this option is set to \"false\", the \"Next \
-Page\" and \"Previous Page\" buttons will simply \
-move to the next or previous page, even if \
-they do not have glyphs on them.</margin1>\n\
-\n\
-<margin1>This feature is only available in the configuration \
-file and on the command line.</margin1>\n\
-\n\
-<margin>really_exit &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will always present the \
-\"Really Exit?\" dialog when exiting. If this \
-option is set to \"false\", then the dialog \
-not be presented when exiting.</margin1>\n\
-\n\
-<margin1>This feature is only available in the configuration \
-file and on the command line.</margin1>\n\
-\n\
-<margin>grid_overwrite_mode &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, pasting glyphs into a Font Grid will \
-overwrite glyphs that are in the same range as the \
-glyphs being pasted. If this option is set to \
-\"false\", pasting glyphs into a Font Grid will \
-move glyphs to make room for the glyphs being pasted. \
-Any glyphs moved that have an encoding larger than \
-65535 will be moved to the unencoded area.</margin1>\n\
-\n\
-<margin1>This feature is toggled using the <b>Preferences</b> dialog.</margin1> \n\
-\n\
-<margin>close_accelerator_text &lt;labelstring&gt; [default: \"Ctrl+F4\"]</margin>\n\
-\n\
-<margin1>The default close accelerator text shown on the \
-Close/Exit menu options of the FontGrid's and \
-GlyphEditor's is \"Ctrl+F4\". This option changes the \
-label string on those menu options. This option should \
-be used in conjunction with the next option.</margin1>\n\
-\n\
-<margin1>This feature is only available in the configuration \
-file.</margin1>\n\
-\n\
-<margin>close_accelerator &lt;translation&gt; [default: \"&lt;Control&gt;F4\"]</margin>\n\
-\n\
-<margin1>The default accelerator for the Close/Exit menu options \
-in the FontGrid's and GlyphEditor's can sometimes be \
-awkward for various reasons. This option allows that \
-accelerator to be changed. This option should be used \
-in conjunction with the previous option.</margin1>\n\
-\n\
-<margin1>This feature is only available in the configuration \
-file.</margin1>\n\
-\n\
-<margin>unicode_name_file &lt;filename&gt;</margin>\n\
-\n\
-<margin1>This specifies a file that contains entries in the UCDB \
-(Unicode Character Database) format. When glyphs are named \
-using Unicode names, this file provides the mapping between \
-the code and the name. This file is assumed to be sorted by \
-code.</margin1>\n\
-\n\
-<margin1>This feature is set using the \"Preferences-&gt;Editing Options\" \
-tab.</margin1>\n\
-\n\
-<margin>adobe_name_file &lt;filename&gt;</margin>\n\
-\n\
-<margin1>This specifies a file that contains entries in the Adobe \
-Glyph List format (see Adobe for details). When glyphs \
-are named using the Adobe names, this file provides the \
-mapping between the code and the name. This file is assumed \
-to be sorted by name and not by code.</margin1>\n\
-\n\
-<margin1>This feature is set using the <b>Preferences-&gt;Editing Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>pixel_size &lt;integer&gt; [default: \"10\"]</margin>\n\
-\n\
-<margin1>The Glypheditors will use a square of size 10x10 to \
-represent a pixel in the glyph bitmap. If the glyph \
-bitmap causes the Glypheditor grid to be larger than \
-1/2 the display height, then this value will be reduced \
-until the bitmap fits within 1/2 the display size or \
-until a pixel size of 2 is reached.</margin1>\n\
-\n\
-<margin1>The Glypheditors will always attempt to use this default \
-value first before reducing the size, if reducing the size \
-is needed.</margin1>\n\
-\n\
-<margin1>This feature is set using the \"Preferences-&gt;Editing Options\" \
-tab.</margin1>\n\
-\n\
-<margin>show_cap_height &lt;boolean&gt; [default: \"false\"]</margin>\n\
-\n\
-<margin1>If the font has the <b>CAP_HEIGHT</b> property defined, \
-this flag will toggle the display of this height \
-in the Glypheditors.</margin1>\n\
-\n\
-<margin1>The <b>CAP_HEIGHT</b> is shown as a solid horizontal line \
-above the baseline in the same color as the baseline.</margin1>\n\
-\n\
-<margin1>This feature is toggled using the <b>Preferences-&gt;Editing Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>show_x_height &lt;boolean&gt; [default: \"false\"]</margin>\n\
-\n\
-<margin1>If the font has the <b>X_HEIGHT</b> property defined, \
-this flag will toggle the display of this height \
-in the Glypheditors.</margin1>\n\
-\n\
-<margin1>The <b>X_HEIGHT</b> is shown as a solid horizontal line \
-above the baseline in the same color as the baseline.</margin1>\n\
-\n\
-<margin1>This feature is toggled using the <b>Setup-&gt;Editing Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>font_grid_horizontal &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>This option determines if the glyphs are displayed \
-horizontally or vertically. The default is to display \
-horizontally.</margin1>\n\
-\n\
-<margin1>This default orientation option can only be set in \
-the configuration file at the moment.</margin1>\n\
-\n\
-<margin>power2 &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>This option determines whether the font grid always \
-adjusts the rows and columns to powers of 2. This \
-option can only be set in the configuration file at \
-the moment.</margin1>\n\
-\n\
-<margin>generate_sbit_metrics &lt;boolean&gt; [default: \"false\"]</margin>\n\
-\n\
-<margin1>This option determines whether an SBIT metrics file \
-will be written after the BDF font has been written. \
-NOTE: This is for use with the SBIT utility from \
-Microsoft.</margin1>\n\
-\n\
-<margin1>This feature is toggled using the \"Preferences-&gt;General Options\" \
-tab.</margin1>\n\
-\n\
-<bul>General Font Configuration Options</bul>\n\
-\n\
-<margin>make_backups &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will make backups when \
-it saves fonts. The filename will have .bak \
-on the end. This option will turn this feature \
-off.</margin1>\n\
-\n\
-<margin1>This feature is toggled using the <b>Setup</b> dialog.</margin1>\n\
-\n\
-<margin>correct_metrics &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will make certain \
-corrections to the font metrics when a font \
-is loaded. If this value is \"false\", then \
-no metrics corrections will be performed \
-when a font is loaded.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>keep_unencoded &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will keep any \
-unencoded glyphs that are found when a font \
-is loaded. An unencoded glyph will have an \
-\"ENCODING\" field set to -1. If this option \
-is set to \"false\", then all unencoded glyphs \
-will be ignored.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>keep_comments &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will keep all \
-comments found in the font file. This \
-allows them to be edited.</margin1>\n\
-\n\
-<margin1>If this option is set to \"false\", all \
-comments except those that appear in the \
-font properties list will be ignored. The \
-comments in the font properties list are \
-kept because they sometimes contain useful \
-notes about the properties.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>pad_character_cells &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, the editor will pad each glyph \
-bitmap from fonts with \"charactercell\" \
-spacing. This means that each glyph has \
-blank bits added around it until it matches \
-the font bounding box exactly.</margin1>\n\
-\n\
-<margin1>This option is \"true\" by default because \
-that seems to be what most people expect, \
-based on numerous \"charactercell\" fonts that \
-were checked.</margin1>\n\
-\n\
-<margin1>However, since the BDF format is sometimes \
-used as a transfer format between programs, \
-this option can be set to \"false\" to reduce \
-the size of the BDF font.</margin1>\n\
-\n\
-<margin1>In either case, the fonts will display \
-correctly, and metrics calculations should \
-not be affected.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>eol &lt;eolname&gt; [default: \"unix\"]</margin>\n\
-\n\
-<margin1>By default, BDF fonts will be saved with a Unix \
-end-of-line character (^J). This option can be \
-\"unix\", \"dos\", or \"mac\".</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>hint_opentype_glyphs &lt;boolean&gt; [default: \"true\"]</margin>\n\
-\n\
-<margin1>By default, importing OpenType fonts will have \
-the glyphs hinted. If this option is set to \
-\"false\", the glyphs will not be hinted.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;General Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>point_size &lt;cardinal&gt; [default: \"12\"]</margin>\n\
-\n\
-<margin1>By default, the editor will create new fonts \
-with point size 12.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>horizontal_resolution &lt;integer&gt; [default: \"display\"]</margin>\n\
-\n\
-<margin1>By default, the editor will determine the \
-horizontal resolution based on the X display \
-being used by the editor. For instance, \
-this value is often \"90\" for Sun displays.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>vertical_resolution &lt;integer&gt; [default: \"display\"]</margin>\n\
-\n\
-<margin1>By default, the editor will determine the \
-vertical resolution based on the X display \
-being used by the editor. For instance, \
-this value is often \"90\" for Sun displays.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>font_spacing &lt;font-spacing&gt; [default: \"proportional\"]</margin>\n\
-\n\
-<margin1>By default, the editor will create new fonts \
-with proportional spacing. This option can \
-be set to \"monowidth\" or \"charactercell\" if \
-\"proportional\" is not wanted.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>bits_per_pixel &lt;integer&gt; [default: \"1\"]</margin>\n\
-\n\
-<margin1>By default, the editor works with fonts that \
-have one bit per pixel. But it also supports \
-2, 4, or 8 bits per pixel. This option sets \
-the default bits per pixel when creating new \
-fonts.</margin1>\n\
-\n\
-<margin1>This feature is available on the <b>Preferences-&gt;New Font Options</b> \
-tab.</margin1>\n\
-\n\
-<margin>2bpp_grays &lt;integer&gt;...</margin>\n\
-\n\
-<margin1>This parameter supplies a default set of gray values \
-between 0 and 255 for 2 bits per pixel fonts. Four values \
-should be supplied.</margin1>\n\
-\n\
-<margin>4bpp_grays &lt;integer&gt;...</margin>\n\
-\n\
-<margin1>This parameter supplies a default set of gray values \
-between 0 and 255 for 2 bits per pixel fonts. Sixteen values \
-should be supplied.</margin1>\n\
-\n\
-<margin>property &lt;property-name&gt; &lt;property-type&gt;</margin>\n\
-\n\
-<margin1>To support user-defined properties, the \
-editor provides the facility to define them \
-in the configuration file in order to \
-interpret them correctly (atom, cardinal, or \
-integer) when editing fonts containing \
-user-defined properties.</margin1>\n\
-\n\
-<margin1>If an unknown user-defined property is \
-encountered in a font, it always defaults to \
-a &lt;property-type&gt; of \"atom\".</margin1>\n\
-\n\
-<margin1>There is no limit to the number of \
-\"property\" options set in the configuration \
-file.</margin1>\n\
-</help>";
+static gchar *otf_text = "<help>"
+"If this program was compiled with the FreeType "
+"library to support importing OpenType fonts "
+"(.otf extension), TrueType fonts (.ttf extension), and "
+"TrueType collections (.ttc extension), "
+"when importing a font or collection, a dialog "
+"will be presented to allow you to choose a single font, "
+"the platform, and encoding. If you are loading a "
+"TrueType collection, there will be more than one font "
+"to choose from.\n"
+"\n"
+"OpenType fonts imported will use the point size and "
+"resolution set in your ~/.gbdfedrc file or the defaults "
+"set at compile time if you do not have a ~/.gbdfedrc.\n"
+"\n"
+"The point size and resolution can also be set before "
+"importing using the <b>Preferences</b> dialog.\n"
+"\n"
+"The renderer used to import OpenType fonts is "
+"available from http://www.freetype.org.\n"
+"</help>";
 
-static gchar *otf_text = "<help>\
-If this program was compiled with the FreeType \
-library to support importing OpenType fonts \
-(.otf extension), TrueType fonts (.ttf extension), and \
-TrueType collections (.ttc extension), \
-when importing a font or collection, a dialog \
-will be presented to allow you to choose a single font, \
-the platform, and encoding. If you are loading a \
-TrueType collection, there will be more than one font \
-to choose from.\n\
-\n\
-OpenType fonts imported will use the point size and \
-resolution set in your ~/.gbdfedrc file or the defaults \
-set at compile time if you do not have a ~/.gbdfedrc.\n\
-\n\
-The point size and resolution can also be set before \
-importing using the <b>Preferences</b> dialog.\n\
-\n\
-The renderer used to import OpenType fonts is \
-available from http://www.freetype.org.\n\
-</help>";
+static gchar *fnt_text = "<help>"
+"When a Windows .FON, .EXE, or .DLL file resource "
+"table holds more than one font, you are presented with "
+"a list of fonts to choose from. You can select as many "
+"of them as you wish or simply import them all using "
+"the <b>Import All</b> button.\n"
+"</help>";
 
-static gchar *fnt_text = "<help>\
-When a Windows .FON, .EXE, or .DLL file resource \
-table holds more than one font, you are presented with \
-a list of fonts to choose from. You can select as many \
-of them as you wish or simply import them all using \
-the <b>Import All</b> button.\n\
-</help>";
+static gchar *psf_text ="<help>"
+"This editor imports both PSF1 and PSF2 Linux "
+"console fonts. It only exports the newer PSF2 "
+"fonts, usually with a \".psfu\" extension.\n"
+"\n"
+"When a PSF1 or PSF2 font is imported, it can have "
+"a Unicode mapping table following the glyphs. "
+"This mapping table can be modified through the "
+"Glypheditor from the Operations menu or by pressing "
+"&lt;Ctrl+F&gt;.\n"
+"\n"
+"When editing the mappings, the codes are expected "
+"to be entered in hex.\n"
+"\n"
+"Unicode mappings are included during cut and paste "
+"operations, allowing them to be transfered to other "
+"fonts or other locations within one font.\n"
+"\n"
+"There is no support currently for attaching an "
+"external mapping table to a font. This can be "
+"done outside this editor using the "
+"\"psfaddtable(1)\" program on Linux.\n"
+"</help>";
 
-static gchar *psf_text ="<help>\
-This editor imports both PSF1 and PSF2 Linux \
-console fonts. It only exports the newer PSF2 \
-fonts, usually with a \".psfu\" extension.\n\
-\n\
-When a PSF1 or PSF2 font is imported, it can have \
-a Unicode mapping table following the glyphs. \
-This mapping table can be modified through the \
-Glypheditor from the Operations menu or by pressing \
-&lt;Ctrl+F&gt;.\n\
-\n\
-When editing the mappings, the codes are expected \
-to be entered in hex.\n\
-\n\
-Unicode mappings are included during cut and paste \
-operations, allowing them to be transfered to other \
-fonts or other locations within one font.\n\
-\n\
-There is no support currently for attaching an \
-external mapping table to a font. This can be \
-done outside this editor using the \
-\"psfaddtable(1)\" program on Linux.\n\
-</help>";
+static gchar *hex_text = "<help>"
+"The HEX format is described in more detail at: "
+"http://czyborra.com/unifont/.\n"
+"\n"
+"HEX fonts are fonts that have two glyph widths, "
+"with the smaller width being half the size of "
+"the larger width.\n"
+"</help>";
 
-static gchar *hex_text = "<help>\
-The HEX format is described in more detail at: \
-http://czyborra.com/unifont/.\n\
-\n\
-HEX fonts are fonts that have two glyph widths, \
-with the smaller width being half the size of \
-the larger width.\n\
-</help>";
+static gchar *preferences_text = "<help>"
+"The Preferences dialog is used to set options for the "
+"Font Grid, Glyph Editors, and the BDF fonts. "
+"The options that can be set are:\n"
+"\n"
+"<margin>Insert Mode or Overwrite Mode</margin>\n"
+"\n"
+"<margin1>This affects the way glyphs are pasted in the "
+"Font Grids.</margin1>\n"
+"\n"
+"<margin1>The default mode, Overwrite, will simply replace "
+"everything in the range of the glyphs being pasted "
+"from the <b>FONTGRID_CLIPBOARD</b>.</margin1>\n"
+"\n"
+"<margin1>If Insert Mode is on, then all glyphs from the "
+"insert point forward are shifted forward to make "
+"room for the glyphs being pasted. Since this shift "
+"changes the encoding of the glyphs moved forward, "
+"it is possible for glyphs to get encodings greater "
+"than the maximum for BDF fonts (65535). If this "
+"happens, then the glyphs that have encodings greater "
+"than 65535 are moved to the unencoded area and are "
+"accessible by switching to the unencoded pages with "
+"\"Ctrl+E\".</margin1>\n"
+"\n"
+"<margin>Correct Metrics, Keep Unencoded, Keep Comments, "
+"Pad Character Cells, and EOL.</margin>\n"
+"\n"
+"<margin1>If <b>Correct Metrics</b> is set, certain metrics will be "
+"adjusted when a BDF font is loaded. If this option "
+"is not set, then the editor will assume the metrics "
+"are correct.</margin1>\n"
+"\n"
+"<margin1>If <b>Keep Unencoded</b> is set, glyphs with an ENCODING "
+"value of -1 will be stored in the unencoded pages "
+"which are accessible by switching using \"Ctrl+E\". "
+"If this is not set, then unencoded glyphs will be "
+"ignored when a BDF font is loaded.</margin1>\n"
+"\n"
+"<margin1>If <b>Keep Comments</b> is set, then comments collected will "
+"be stored with the font and written out before the "
+"PROPERTIES section of the BDF font. Comments can be "
+"edited with the Comment editor invoked with \"Ctrl+M\". "
+"If this is not set, then comments are simply ignored "
+"when the BDF font is loaded.</margin1>\n"
+"\n"
+"<margin1>If <b>Pad Character Cells</b> is set, then character cell "
+"fonts will have all glyphs padded with zero bits "
+"until they fit the font bounding box exactly. "
+"If this is not set, then the bitmaps for each "
+"glyph will be clipped to the minimum rectangle "
+"needed to hold the bitmap.</margin1>\n"
+"\n"
+"<margin1>The EOL menu sets the end-of-line string used "
+"when BDF fonts are saved. The three most common "
+"options are provided: Unix, DOS, and Mac EOL's.</margin1>\n"
+"\n"
+"<margin>Point Size, Horizontal and Vertical Resolution</margin>\n"
+"\n"
+"<margin1>These fields allow these three values to be set "
+"for new fonts created with \"Ctrl+N\" and also are "
+"used to set the desired size and resolution of "
+"OpenType fonts when they are imported.</margin1>\n"
+"\n"
+"<margin>Proportional, Monowidth, and Character Cell</margin>\n"
+"\n"
+"<margin1>These set the font spacing type for new fonts "
+"created using \"Ctrl+N\".</margin1>\n"
+"\n"
+"<margin>Bits Per Pixel</margin>\n"
+"\n"
+"<margin1>This option allows setting the bits per pixel "
+"value for new fonts created using \"Ctrl+N\". "
+"Selecting two or four bits per pixel also "
+"enables the Color button used to edit the colors "
+"used for gray scale fonts.</margin1>\n"
+"\n"
+"Along the bottom are some buttons. These buttons are:\n"
+"\n"
+"<margin>Update</margin>\n"
+"\n"
+"<margin1>When one or more options have changed, this button "
+"becomes active. If it is pressed, it will actually "
+"update the changed values. If it is not pressed and "
+"the dialog is closed, none of the changes made will "
+"take affect.</margin1>\n"
+"\n"
+"<margin>Save Setup</margin>\n"
+"\n"
+"<margin1>This button will become active after the Update "
+"button was pressed to actually change the setup "
+"options. Pressing this button will write all the "
+"setup values to a file in the home directory. This "
+"file is called \".gbdfedrc\".</margin1>\n"
+"\n"
+"<margin>Color</margin>\n"
+"\n"
+"<margin1>If the bits per pixel for new fonts is two or four "
+"this button will invoke the color editor. This editor "
+"allows adjusting what the different colors look like "
+"on the current screen. These colors are really only "
+"useful for testing with the current screen and may "
+"actually look different on other screens.</margin1>\n"
+"\n"
+"<margin1>In the color editor, a button at the bottom toggles "
+"between the colors for two and four bits per pixel.</margin1>\n"
+"\n"
+"<margin>Close</margin>\n"
+"\n"
+"<margin1>This closes the Setup dialog. If any changes were "
+"made and not applied with Update (or saved), then "
+"the changes are discarded.</margin1>\n"
+"\n"
+"<margin>Other Options</margin>\n"
+"\n"
+"<margin1>This button opens another setup dialog to set "
+"more options. The close button at the bottom "
+"simply closes the window. These options are:</margin1>\n"
+"\n"
+"<margin2>Hint OpenType Glyphs</margin2> "
+"\n"
+"<margin3>If this option is set, the OpenType renderer "
+"will use the hints in the font if they exist. "
+"This can sometimes make clearer glyphs at small "
+"point sizes.</margin3>\n"
+"\n"
+"<margin2>Unicode Glyph Name File</margin2> "
+"\n"
+"<margin3>This field is for setting the name of a file "
+"in the Unicode Character Database format. This "
+"file will supply glyph names from the file. "
+"The \"Browse\" button allows a file to be "
+"selected using a FileSelection dialog.</margin3>\n"
+"\n"
+"<margin3>The Unicode Character Database format is basically "
+"a set of semi-colon separated fields on a single line "
+"with the first field being 4 hex digits representing "
+"the encoding of the glyph and the next field being "
+"the name of the glyph. These are the only two "
+"fields used by this editor. The entries in this "
+"file are expected to be sorted in ascending order "
+"by encoding.</margin3>\n"
+"\n"
+"<margin2>Adobe Glyph Name File</margin2> "
+"\n"
+"<margin3>This field is for setting the name of a file "
+"in the Adobe Glyph List format. This file will "
+"supply glyph names from the file.</margin3>\n"
+"\n"
+"<margin3>The Adobe Glyph List format is basically a set of "
+"semi-colon separated fields with the first field "
+"being 4 hex digits representing the encoding of the "
+"glyph and the next field being the Adobe name of the "
+"glyph. The entries are not expected to be in ascending "
+"order by glyph code.</margin3>\n"
+"\n"
+"<margin2>Pixel Size</margin2> "
+"\n"
+"<margin3>This option allows the pixel size in the GlyphEditors "
+"to be set to different sizes. This effectively zooms "
+"the glyph in the editor. If this is changed and the "
+"Update button is pressed, all open GlyphEditors will "
+"be updated with the new value.</margin3>\n"
+"\n"
+"<margin2>Show Cap Height and Show X Height</margin2> "
+"\n"
+"<margin3>These two options can be set to make the cap height "
+"and the x height lines show up in the GlyphEditors. "
+"These will only show up if they are defined in the "
+"font or are set using the property editor. If these "
+"are changed and the Update button is pressed, all "
+"open GlyphEditors will be udated to show the lines.</margin3>\n"
+"\n"
+"<margin2>SBIT Metrics</margin2> "
+"\n"
+"<margin3>This option toggles the generation of an SBIT metrics "
+"file which can be incorporated into a OpenType font "
+"using the SBIT utility provided by Microsoft.</margin3>\n"
+"</help>";
 
-static gchar *preferences_text = "<help>\
-The Preferences dialog is used to set options for the \
-Font Grid, Glyph Editors, and the BDF fonts. \
-The options that can be set are:\n\
-\n\
-<margin>Insert Mode or Overwrite Mode</margin>\n\
-\n\
-<margin1>This affects the way glyphs are pasted in the \
-Font Grids.</margin1>\n\
-\n\
-<margin1>The default mode, Overwrite, will simply replace \
-everything in the range of the glyphs being pasted \
-from the <b>FONTGRID_CLIPBOARD</b>.</margin1>\n\
-\n\
-<margin1>If Insert Mode is on, then all glyphs from the \
-insert point forward are shifted forward to make \
-room for the glyphs being pasted. Since this shift \
-changes the encoding of the glyphs moved forward, \
-it is possible for glyphs to get encodings greater \
-than the maximum for BDF fonts (65535). If this \
-happens, then the glyphs that have encodings greater \
-than 65535 are moved to the unencoded area and are \
-accessible by switching to the unencoded pages with \
-\"Ctrl+E\".</margin1>\n\
-\n\
-<margin>Correct Metrics, Keep Unencoded, Keep Comments, \
-Pad Character Cells, and EOL.</margin>\n\
-\n\
-<margin1>If <b>Correct Metrics</b> is set, certain metrics will be \
-adjusted when a BDF font is loaded. If this option \
-is not set, then the editor will assume the metrics \
-are correct.</margin1>\n\
-\n\
-<margin1>If <b>Keep Unencoded</b> is set, glyphs with an ENCODING \
-value of -1 will be stored in the unencoded pages \
-which are accessible by switching using \"Ctrl+E\". \
-If this is not set, then unencoded glyphs will be \
-ignored when a BDF font is loaded.</margin1>\n\
-\n\
-<margin1>If <b>Keep Comments</b> is set, then comments collected will \
-be stored with the font and written out before the \
-PROPERTIES section of the BDF font. Comments can be \
-edited with the Comment editor invoked with \"Ctrl+M\". \
-If this is not set, then comments are simply ignored \
-when the BDF font is loaded.</margin1>\n\
-\n\
-<margin1>If <b>Pad Character Cells</b> is set, then character cell \
-fonts will have all glyphs padded with zero bits \
-until they fit the font bounding box exactly. \
-If this is not set, then the bitmaps for each \
-glyph will be clipped to the minimum rectangle \
-needed to hold the bitmap.</margin1>\n\
-\n\
-<margin1>The EOL menu sets the end-of-line string used \
-when BDF fonts are saved. The three most common \
-options are provided: Unix, DOS, and Mac EOL's.</margin1>\n\
-\n\
-<margin>Point Size, Horizontal and Vertical Resolution</margin>\n\
-\n\
-<margin1>These fields allow these three values to be set \
-for new fonts created with \"Ctrl+N\" and also are \
-used to set the desired size and resolution of \
-OpenType fonts when they are imported.</margin1>\n\
-\n\
-<margin>Proportional, Monowidth, and Character Cell</margin>\n\
-\n\
-<margin1>These set the font spacing type for new fonts \
-created using \"Ctrl+N\".</margin1>\n\
-\n\
-<margin>Bits Per Pixel</margin>\n\
-\n\
-<margin1>This option allows setting the bits per pixel \
-value for new fonts created using \"Ctrl+N\". \
-Selecting two or four bits per pixel also \
-enables the Color button used to edit the colors \
-used for gray scale fonts.</margin1>\n\
-\n\
-Along the bottom are some buttons. These buttons are:\n\
-\n\
-<margin>Update</margin>\n\
-\n\
-<margin1>When one or more options have changed, this button \
-becomes active. If it is pressed, it will actually \
-update the changed values. If it is not pressed and \
-the dialog is closed, none of the changes made will \
-take affect.</margin1>\n\
-\n\
-<margin>Save Setup</margin>\n\
-\n\
-<margin1>This button will become active after the Update \
-button was pressed to actually change the setup \
-options. Pressing this button will write all the \
-setup values to a file in the home directory. This \
-file is called \".gbdfedrc\".</margin1>\n\
-\n\
-<margin>Color</margin>\n\
-\n\
-<margin1>If the bits per pixel for new fonts is two or four \
-this button will invoke the color editor. This editor \
-allows adjusting what the different colors look like \
-on the current screen. These colors are really only \
-useful for testing with the current screen and may \
-actually look different on other screens.</margin1>\n\
-\n\
-<margin1>In the color editor, a button at the bottom toggles \
-between the colors for two and four bits per pixel.</margin1>\n\
-\n\
-<margin>Close</margin>\n\
-\n\
-<margin1>This closes the Setup dialog. If any changes were \
-made and not applied with Update (or saved), then \
-the changes are discarded.</margin1>\n\
-\n\
-<margin>Other Options</margin>\n\
-\n\
-<margin1>This button opens another setup dialog to set \
-more options. The close button at the bottom \
-simply closes the window. These options are:</margin1>\n\
-\n\
-<margin2>Hint OpenType Glyphs</margin2> \
-\n\
-<margin3>If this option is set, the OpenType renderer \
-will use the hints in the font if they exist. \
-This can sometimes make clearer glyphs at small \
-point sizes.</margin3>\n\
-\n\
-<margin2>Unicode Glyph Name File</margin2> \
-\n\
-<margin3>This field is for setting the name of a file \
-in the Unicode Character Database format. This \
-file will supply glyph names from the file. \
-The \"Browse\" button allows a file to be \
-selected using a FileSelection dialog.</margin3>\n\
-\n\
-<margin3>The Unicode Character Database format is basically \
-a set of semi-colon separated fields on a single line \
-with the first field being 4 hex digits representing \
-the encoding of the glyph and the next field being \
-the name of the glyph. These are the only two \
-fields used by this editor. The entries in this \
-file are expected to be sorted in ascending order \
-by encoding.</margin3>\n\
-\n\
-<margin2>Adobe Glyph Name File</margin2> \
-\n\
-<margin3>This field is for setting the name of a file \
-in the Adobe Glyph List format. This file will \
-supply glyph names from the file.</margin3>\n\
-\n\
-<margin3>The Adobe Glyph List format is basically a set of \
-semi-colon separated fields with the first field \
-being 4 hex digits representing the encoding of the \
-glyph and the next field being the Adobe name of the \
-glyph. The entries are not expected to be in ascending \
-order by glyph code.</margin3>\n\
-\n\
-<margin2>Pixel Size</margin2> \
-\n\
-<margin3>This option allows the pixel size in the GlyphEditors \
-to be set to different sizes. This effectively zooms \
-the glyph in the editor. If this is changed and the \
-Update button is pressed, all open GlyphEditors will \
-be updated with the new value.</margin3>\n\
-\n\
-<margin2>Show Cap Height and Show X Height</margin2> \
-\n\
-<margin3>These two options can be set to make the cap height \
-and the x height lines show up in the GlyphEditors. \
-These will only show up if they are defined in the \
-font or are set using the property editor. If these \
-are changed and the Update button is pressed, all \
-open GlyphEditors will be udated to show the lines.</margin3>\n\
-\n\
-<margin2>SBIT Metrics</margin2> \
-\n\
-<margin3>This option toggles the generation of an SBIT metrics \
-file which can be incorporated into a OpenType font \
-using the SBIT utility provided by Microsoft.</margin3>\n\
-</help>";
+static gchar *color_text = "<help>"
+"The editor supports BDF fonts with 2, 4 and 8 bits per pixel. "
+"This is stored in the BDF file as a number on the end of "
+"the SIZE line.\n"
+"\n"
+"This is a non-standard extension and currently can only be "
+"used to create bitmap fonts (strikes or EBSC entries) that "
+"can be embedded in OpenType fonts.\n"
+"</help>";
 
-static gchar *color_text = "<help>\
-The editor supports BDF fonts with 2, 4 and 8 bits per pixel. \
-This is stored in the BDF file as a number on the end of \
-the SIZE line.\n\
-\n\
-This is a non-standard extension and currently can only be \
-used to create bitmap fonts (strikes or EBSC entries) that \
-can be embedded in OpenType fonts.\n\
-</help>";
-
-static gchar *tips_text = "<help>\
-Useful Tips:\n\
-\n\
-To add space glyphs to proportional fonts, simply set \
-the Device Width field to the desired width of the blank. \
-When the font is saved, a bitmap is automatically \
-generated for it.\n\
-</help>";
+static gchar *tips_text = "<help>"
+"Useful Tips:\n"
+"\n"
+"To add space glyphs to proportional fonts, simply set "
+"the Device Width field to the desired width of the blank. "
+"When the font is saved, a bitmap is automatically "
+"generated for it.\n"
+"</help>";

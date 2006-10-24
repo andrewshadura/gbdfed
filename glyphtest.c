@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: glyphtest.c 21 2006-01-10 22:30:55Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: glyphtest.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: glyphtest.c 21 2006-01-10 22:30:55Z mleisher $";
+static char svnid[] = "$Id: glyphtest.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -253,7 +253,7 @@ glyphtest_draw_focus(GtkWidget *widget, GdkRectangle *area)
      */
     gtk_widget_style_get(widget,
                          "focus-line-width", &fwidth,
-                         "focus-padding", &fpad, 0);
+                         "focus-padding", &fpad, (void *) 0);
 
     gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
 
@@ -611,7 +611,7 @@ glyphtest_init(GTypeInstance *obj, gpointer g_class)
      */
     gtk_widget_style_get(GTK_WIDGET(gw),
                          "focus-line-width", &fwidth,
-                         0);
+                         (void *) 0);
 
     /*
      * Padding that will appear before and after the focus rectangle.
@@ -663,7 +663,7 @@ glyphtest_get_type(void)
 GtkWidget *
 glyphtest_new(void)
 {
-    return GTK_WIDGET(g_object_new(glyphtest_get_type(), 0));
+    return GTK_WIDGET(g_object_new(glyphtest_get_type(), (void *) 0));
 }
 
 void

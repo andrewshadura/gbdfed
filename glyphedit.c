@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: glyphedit.c 50 2006-05-17 20:12:11Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: glyphedit.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: glyphedit.c 50 2006-05-17 20:12:11Z mleisher $";
+static char svnid[] = "$Id: glyphedit.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -340,7 +340,7 @@ glyphedit_draw_focus(GtkWidget *widget, GdkRectangle *area)
      */
     gtk_widget_style_get(widget,
                          "focus-line-width", &fwidth,
-                         "focus-padding", &fpad, 0);
+                         "focus-padding", &fpad, (void *) 0);
 
     gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
 
@@ -898,7 +898,7 @@ glyphedit_init(GTypeInstance *obj, gpointer g_class)
     gtk_widget_style_get(GTK_WIDGET(gw),
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad,
-                         0);
+                         (void *) 0);
 
     /*
      * Padding that will appear before and after the focus rectangle.
@@ -974,7 +974,7 @@ glyphedit_newv(bdf_glyph_grid_t *grid, guint16 default_pixel_size,
                                  "showXHeight", show_x_height,
                                  "showCapHeight", show_cap_height,
                                  "colorList", colors,
-                                 0);
+                                 (void *) 0);
 
     return GTK_WIDGET(ge);
 }
@@ -996,7 +996,7 @@ glyphedit_get_glyph_metrics(Glyphedit *gw, bdf_metrics_t *metrics)
     g_return_if_fail(IS_GLYPHEDIT(gw));
 
     if (!gw->grid)
-      memset(&metrics, 0, sizeof(bdf_metrics_t));
+      memset(metrics, 0, sizeof(bdf_metrics_t));
     else {
         metrics->font_spacing = gw->grid->spacing;
         metrics->swidth = gw->grid->swidth;
@@ -1018,7 +1018,7 @@ glyphedit_get_font_metrics(Glyphedit *gw, bdf_metrics_t *metrics)
     g_return_if_fail(IS_GLYPHEDIT(gw));
 
     if (!gw->grid)
-      memset(&metrics, 0, sizeof(bdf_metrics_t));
+      memset(metrics, 0, sizeof(bdf_metrics_t));
     else {
         metrics->font_spacing = gw->grid->spacing;
         metrics->swidth = gw->grid->swidth;

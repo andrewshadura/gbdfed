@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guipref.c 41 2006-01-17 17:22:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guipref.c 64 2006-09-11 16:39:52Z mleisher $";
 #else
-static char svnid[] = "$Id: guipref.c 41 2006-01-17 17:22:52Z mleisher $";
+static char svnid[] = "$Id: guipref.c 64 2006-09-11 16:39:52Z mleisher $";
 #endif
 #endif
 
@@ -365,7 +365,7 @@ pref_select_colors(GtkWidget *w, gpointer data)
                                GTK_STOCK_REVERT_TO_SAVED,
                                GTK_RESPONSE_REJECT,
                                GTK_STOCK_CLOSE,
-                               GTK_RESPONSE_CLOSE, 0);
+                               GTK_RESPONSE_CLOSE, (void *) 0);
 
         gtk_dialog_set_default_response(GTK_DIALOG(pref_color_dialog),
                                         GTK_RESPONSE_CLOSE);
