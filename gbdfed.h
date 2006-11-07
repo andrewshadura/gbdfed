@@ -23,7 +23,7 @@
 #define _h_gbdfed
 
 /*
- * $Id: gbdfed.h 64 2006-09-11 16:39:52Z mleisher $
+ * $Id: gbdfed.h 49 2007-04-12 14:46:40Z mleisher $
  */
 
 #include <gtk/gtk.h>
@@ -32,7 +32,7 @@
 
 G_BEGIN_DECLS
 
-#define GBDFED_VERSION "1.1"
+#define GBDFED_VERSION "1.3"
 
 /*************************************************************************
  *
@@ -51,8 +51,8 @@ typedef struct {
     gboolean really_exit;
     gboolean overwrite_mode;
     gint initial_glyph;
-    unsigned long pixel_size;
-    unsigned long resolution;
+    unsigned int pixel_size;
+    unsigned int resolution;
     gboolean show_cap_height;
     gboolean show_x_height;
 #if 0

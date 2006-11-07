@@ -1,7 +1,7 @@
 .\"
-.\" $Id: gbdfed.man 64 2006-09-11 16:39:52Z mleisher $
+.\" $Id: gbdfed.man 1 2006-11-02 16:47:28Z mleisher $
 .\"
-.TH GBDFED 1 "14 July 2006" "GTK2"
+.TH GBDFED 1 "26 October 2006" "GTK2"
 .SH NAME 
 gbdfed \- GTK-based BDF font editor
 
@@ -677,6 +677,10 @@ Jiri "BlueBear" Dluhos <modry.medved@seznam.cz> for providing 64-bit fixes.
 .br
 Jan Engelhardt <jengelh@linux01.gwdg.de> help text improvements and missing
 prototype.
+.br
+Daniel Richard G. <skunk@iSKUNK.ORG> for help on 64-bit architectures.
+.br
+Baruch Even <baruch@ev-en.org> for help on 64-bit architectures.
 
 .SH AUTHOR
 Mark Leisher

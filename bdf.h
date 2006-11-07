@@ -23,7 +23,7 @@
 #define _h_bdf
 
 /*
- * $Id: bdf.h 60 2006-07-14 15:58:19Z mleisher $
+ * $Id: bdf.h 49 2007-04-12 14:46:40Z mleisher $
  */
 
 #include <stdio.h>
@@ -77,9 +77,9 @@ typedef struct {
     int keep_comments;
     int pad_cells;
     int font_spacing;
-    long point_size;
-    unsigned long resolution_x;
-    unsigned long resolution_y;
+    int point_size;
+    unsigned int resolution_x;
+    unsigned int resolution_y;
     int bits_per_pixel;
     int eol;
     int psf_flags;
@@ -91,7 +91,7 @@ typedef struct {
  */
 typedef int (*bdf_options_callback_t)(bdf_options_t *opts,
                                       char **params,
-                                      unsigned long nparams,
+                                      unsigned int nparams,
                                       void *client_data);
 
 /**************************************************************************
@@ -114,8 +114,8 @@ typedef struct {
     int builtin;        /* A builtin property.                          */
     union {
         char *atom;
-        long int32;
-        unsigned long card32;
+        int int32;
+        unsigned int card32;
     } value;            /* Value of the property.                       */
 } bdf_property_t;
 
@@ -176,8 +176,8 @@ typedef struct _bdf_undo_t *bdf_undo_t;
 
 typedef struct {
     unsigned char *map;
-    unsigned long map_used;
-    unsigned long map_size;
+    unsigned int map_used;
+    unsigned int map_size;
 } bdf_psf_unimap_t;
 
 /**************************************************************************
@@ -197,7 +197,7 @@ typedef struct {
     unsigned short bpp;
     unsigned short pad;
     unsigned char *bitmap;
-    unsigned long bytes;
+    unsigned int bytes;
 } bdf_bitmap_t;
 
 typedef struct {
@@ -223,7 +223,7 @@ typedef struct {
 
 typedef struct {
     char *name;                 /* Glyph name.                          */
-    long encoding;              /* Glyph encoding.                      */
+    int encoding;              /* Glyph encoding.                      */
     unsigned short swidth;      /* Scalable width.                      */
     unsigned short dwidth;      /* Device width.                        */
     bdf_bbx_t bbx;              /* Glyph bounding box.                  */
@@ -235,11 +235,11 @@ typedef struct {
 typedef struct {
     unsigned short pad;         /* Pad to 4-byte boundary.              */
     unsigned short bpp;         /* Bits per pixel.                      */
-    long start;                 /* Beginning encoding value of glyphs.  */
-    long end;                   /* Ending encoding value of glyphs.     */
+    int start;                 /* Beginning encoding value of glyphs.  */
+    int end;                   /* Ending encoding value of glyphs.     */
     bdf_glyph_t *glyphs;        /* Glyphs themselves.                   */
-    unsigned long glyphs_size;  /* Glyph structures allocated.          */
-    unsigned long glyphs_used;  /* Glyph structures used.               */
+    unsigned int glyphs_size;  /* Glyph structures allocated.          */
+    unsigned int glyphs_used;  /* Glyph structures used.               */
     bdf_bbx_t bbx;              /* Overall bounding box of glyphs.      */
 } bdf_glyphlist_t;
 
@@ -247,9 +247,9 @@ typedef struct {
     char *name;                 /* Name of the font.                     */
     bdf_bbx_t bbx;              /* Font bounding box.                    */
 
-    long point_size;            /* Point size of the font.               */
-    unsigned long resolution_x; /* Font horizontal resolution.           */
-    unsigned long resolution_y; /* Font vertical resolution.             */
+    int point_size;            /* Point size of the font.               */
+    unsigned int resolution_x; /* Font horizontal resolution.           */
+    unsigned int resolution_y; /* Font vertical resolution.             */
 
     int hbf;                    /* Font came from an HBF font.           */
 
@@ -257,46 +257,46 @@ typedef struct {
 
     unsigned short monowidth;   /* Logical width for monowidth font.     */
 
-    long default_glyph;         /* Encoding of the default glyph.        */
+    int default_glyph;         /* Encoding of the default glyph.        */
 
-    long font_ascent;           /* Font ascent.                          */
-    long font_descent;          /* Font descent.                         */
+    int font_ascent;           /* Font ascent.                          */
+    int font_descent;          /* Font descent.                         */
 
-    long glyphs_size;           /* Glyph structures allocated.           */
-    long glyphs_used;           /* Glyph structures used.                */
+    int glyphs_size;           /* Glyph structures allocated.           */
+    int glyphs_used;           /* Glyph structures used.                */
     bdf_glyph_t *glyphs;        /* Glyphs themselves.                    */
 
-    long unencoded_size;        /* Unencoded glyph structures allocated. */
-    long unencoded_used;        /* Unencoded glyph structures used.      */
+    int unencoded_size;        /* Unencoded glyph structures allocated. */
+    int unencoded_used;        /* Unencoded glyph structures used.      */
     bdf_glyph_t *unencoded;     /* Unencoded glyphs themselves.          */
 
-    unsigned long props_size;   /* Font properties allocated.            */
-    unsigned long props_used;   /* Font properties used.                 */
+    unsigned int props_size;   /* Font properties allocated.            */
+    unsigned int props_used;   /* Font properties used.                 */
     bdf_property_t *props;      /* Font properties themselves.           */
 
     char *comments;             /* Font comments.                        */
-    unsigned long comments_len; /* Length of comment string.             */
+    unsigned int comments_len; /* Length of comment string.             */
 
     char *acmsgs;               /* Auto-correction messages.             */
-    unsigned long acmsgs_len;   /* Length of auto-correction messages.   */
+    unsigned int acmsgs_len;   /* Length of auto-correction messages.   */
 
     bdf_glyphlist_t overflow;   /* Storage used for glyph insertion.     */
 
     void *internal;             /* Internal data for the font.           */
 
-    unsigned long nmod[2048];   /* Bitmap indicating modified glyphs.    */
-    unsigned long umod[2048];   /* Bitmap indicating modified unencoded. */
+    unsigned int nmod[2048];   /* Bitmap indicating modified glyphs.    */
+    unsigned int umod[2048];   /* Bitmap indicating modified unencoded. */
 
     unsigned short modified;    /* Boolean indicating font modified.     */
     unsigned short bpp;         /* Bits per pixel.                       */
 
     bdf_sbit_t *sbits;          /* Associcated SBIT metrics.             */
-    unsigned long sbits_used;   /* Number of SBIT metrics entries.       */
-    unsigned long sbits_size;   /* Amount of entries allocated.          */
+    unsigned int sbits_used;   /* Number of SBIT metrics entries.       */
+    unsigned int sbits_size;   /* Amount of entries allocated.          */
 
     bdf_undo_t *undo_stack;     /* Record of undoable operations.        */
-    unsigned long undo_used;    /* Amount of undo stack used.            */
-    unsigned long undo_size;    /* Amount of undo stack allocated.       */
+    unsigned int undo_used;    /* Amount of undo stack used.            */
+    unsigned int undo_size;    /* Amount of undo stack allocated.       */
 
     bdf_psf_unimap_t unicode;   /* PSF Unicode table.                    */
 } bdf_font_t;
@@ -309,13 +309,13 @@ typedef struct {
 
 typedef struct {
     char *name;
-    long encoding;              /* The glyph encoding.                  */
+    int encoding;              /* The glyph encoding.                  */
     unsigned short unencoded;   /* Whether the glyph was unencoded.     */
     unsigned short bpp;         /* Bits per pixel.                      */
     int spacing;                /* Font spacing.                        */
-    long resolution_x;          /* Horizontal resolution.               */
-    long resolution_y;          /* Vertical resolution.                 */
-    unsigned long point_size;   /* Font point size.                     */
+    int resolution_x;          /* Horizontal resolution.               */
+    int resolution_y;          /* Vertical resolution.                 */
+    unsigned int point_size;   /* Font point size.                     */
     unsigned short swidth;      /* Scalable width.                      */
     unsigned short dwidth;      /* Device width.                        */
     bdf_bbx_t font_bbx;         /* Font bounding box.                   */
@@ -389,10 +389,10 @@ typedef struct {
 #define BDF_INVALID_LINE      -100
 
 typedef struct {
-    unsigned long reason;
-    unsigned long current;
-    unsigned long total;
-    unsigned long errlineno;
+    unsigned int reason;
+    unsigned int current;
+    unsigned int total;
+    unsigned int errlineno;
 } bdf_callback_struct_t;
 
 typedef void (*bdf_callback_t)(bdf_callback_struct_t *call_data,
@@ -426,9 +426,9 @@ extern void bdf_default_options(bdf_options_t *opts);
 /*
  * Font load, create, save and free functions.
  */
-extern bdf_font_t *bdf_new_font(char *name, long point_size,
-                                long resolution_x, long resolution_y,
-                                long spacing, int bpp);
+extern bdf_font_t *bdf_new_font(char *name, int point_size,
+                                int resolution_x, int resolution_y,
+                                int spacing, int bpp);
 extern bdf_font_t *bdf_load_font(FILE *in, bdf_options_t *opts,
                                  bdf_callback_t callback, void *data);
 #ifdef HAVE_HBF
@@ -461,7 +461,7 @@ extern void bdf_export_hex(FILE *out, bdf_font_t *font, bdf_options_t *opts,
                            bdf_callback_t callback, void *data);
 
 extern int bdf_export_psf(FILE *out, bdf_font_t *font, bdf_options_t *opts,
-                          long start, long end);
+                          int start, int end);
 
 extern void bdf_free_font(bdf_font_t *font);
 
@@ -525,13 +525,13 @@ typedef struct _bdffnt_font_t *bdffnt_font_t;
 extern int bdffnt_open_font(char *path, bdffnt_font_t *font);
 extern void bdffnt_close_font(bdffnt_font_t font);
 extern int bdffnt_font_count(bdffnt_font_t font);
-extern int bdffnt_get_copyright(bdffnt_font_t font, unsigned long fontID,
+extern int bdffnt_get_copyright(bdffnt_font_t font, unsigned int fontID,
                                 unsigned char *string);
-extern int bdffnt_get_facename(bdffnt_font_t font, unsigned long fontID,
+extern int bdffnt_get_facename(bdffnt_font_t font, unsigned int fontID,
                                int for_xlfd, unsigned char *string);
-extern int bdffnt_char_count(bdffnt_font_t font, unsigned long fontID);
-extern int bdffnt_font_pointsize(bdffnt_font_t font, unsigned long fontID);
-extern int bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
+extern int bdffnt_char_count(bdffnt_font_t font, unsigned int fontID);
+extern int bdffnt_font_pointsize(bdffnt_font_t font, unsigned int fontID);
+extern int bdffnt_load_font(bdffnt_font_t font, unsigned int fontID,
                             bdf_callback_t callback, void *data,
                             bdf_font_t **out);
 
@@ -556,12 +556,12 @@ extern bdf_font_t *bdf_load_psf(FILE *in, unsigned char *magic,
  */
 extern void bdf_create_property(char *name, int type);
 extern bdf_property_t *bdf_get_property(char *name);
-extern unsigned long bdf_property_list(bdf_property_t **props);
+extern unsigned int bdf_property_list(bdf_property_t **props);
 
 extern void bdf_add_font_property(bdf_font_t *font, bdf_property_t *property);
 extern void bdf_delete_font_property(bdf_font_t *font, char *name);
 extern bdf_property_t *bdf_get_font_property(bdf_font_t *font, char *name);
-extern unsigned long bdf_font_property_list(bdf_font_t *font,
+extern unsigned int bdf_font_property_list(bdf_font_t *font,
                                             bdf_property_t **props);
 extern int bdf_is_xlfd_property(char *name);
 
@@ -569,7 +569,7 @@ extern int bdf_is_xlfd_property(char *name);
  * Font comment functions.
  */
 extern int bdf_replace_comments(bdf_font_t *font, char *comments,
-                                unsigned long comments_len);
+                                unsigned int comments_len);
 
 /*
  * Other miscellaneous functions.
@@ -579,24 +579,24 @@ extern void bdf_set_default_metrics(bdf_font_t *font);
 /*
  * Font glyph editing functions.
  */
-extern int bdf_glyph_modified(bdf_font_t *font, long which, int unencoded);
+extern int bdf_glyph_modified(bdf_font_t *font, int which, int unencoded);
 
-extern void bdf_copy_glyphs(bdf_font_t *font, long start, long end,
+extern void bdf_copy_glyphs(bdf_font_t *font, int start, int end,
                             bdf_glyphlist_t *glyphs, int unencoded);
 
-extern int bdf_delete_glyphs(bdf_font_t *font, long start, long end,
+extern int bdf_delete_glyphs(bdf_font_t *font, int start, int end,
                              int unencoded);
 
-extern int bdf_insert_glyphs(bdf_font_t *font, long start,
+extern int bdf_insert_glyphs(bdf_font_t *font, int start,
                              bdf_glyphlist_t *glyphs);
 
-extern int bdf_replace_glyphs(bdf_font_t *font, long start,
+extern int bdf_replace_glyphs(bdf_font_t *font, int start,
                               bdf_glyphlist_t *glyphs, int unencoded);
 
-extern int bdf_merge_glyphs(bdf_font_t *font, long start,
+extern int bdf_merge_glyphs(bdf_font_t *font, int start,
                             bdf_glyphlist_t *glyphs, int unencoded);
 
-extern int bdf_replace_mappings(bdf_font_t *font, long encoding,
+extern int bdf_replace_mappings(bdf_font_t *font, int encoding,
                                 bdf_psf_unimap_t *map, int unencoded);
 
 /**************************************************************************
@@ -633,8 +633,8 @@ extern int bdf_set_glyph_code_names(int prefix, bdf_font_t *font,
  * Routine to add Unicode mappings when editing PSF fonts.
  */
 extern int bdf_psf_add_unicode_mapping(bdf_psf_unimap_t *u,
-                                       unsigned long *mapping,
-                                       unsigned long mapping_cnt);
+                                       unsigned int *mapping,
+                                       unsigned int mapping_cnt);
 
 /**************************************************************************
  *
@@ -646,7 +646,7 @@ extern int bdf_psf_add_unicode_mapping(bdf_psf_unimap_t *u,
  * Glyph grid allocation and deallocation functions.
  */
 extern bdf_glyph_grid_t *bdf_make_glyph_grid(bdf_font_t *font,
-                                             long code,
+                                             int code,
                                              int unencoded);
 extern void bdf_free_glyph_grid(bdf_glyph_grid_t *grid);
 
@@ -704,21 +704,21 @@ extern int bdf_grid_color_at(bdf_glyph_grid_t *grid, short x, short y);
  * Graphical transformation functions.
  */
 extern int bdf_translate_glyphs(bdf_font_t *font, short dx, short dy,
-                                long start, long end,
+                                int start, int end,
                                 bdf_callback_t callback, void *data,
                                 int unencoded);
 
 extern int bdf_rotate_glyphs(bdf_font_t *font, short degrees,
-                             long start, long end,
+                             int start, int end,
                              bdf_callback_t callback, void *data,
                              int unencoded);
 
 extern int bdf_shear_glyphs(bdf_font_t *font, short degrees,
-                            long start, long end,
+                            int start, int end,
                             bdf_callback_t callback, void *data,
                             int unencoded);
 
-extern int bdf_embolden_glyphs(bdf_font_t *font, long start, long end,
+extern int bdf_embolden_glyphs(bdf_font_t *font, int start, int end,
                                bdf_callback_t callback, void *data,
                                int unencoded, int *resize);
 

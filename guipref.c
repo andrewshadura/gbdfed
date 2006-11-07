@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guipref.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guipref.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: guipref.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: guipref.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -81,7 +81,7 @@ pref_toggle(GtkWidget *w, gpointer data)
         tmp_opts.really_exit = val;
         break;
       case 10:
-        tmp_opts.pixel_size = (unsigned long)
+        tmp_opts.pixel_size = (unsigned int)
             gtk_combo_box_get_active(GTK_COMBO_BOX(w)) + 2;
         break;
     }
@@ -229,9 +229,9 @@ pref_change_size(GtkWidget *w, gpointer data)
     v = (gint) gtk_spin_button_get_value(GTK_SPIN_BUTTON(w));
 
     switch (which) {
-      case 0: tmp_opts.font_opts.point_size = (long) v; break;
-      case 1: tmp_opts.font_opts.resolution_x = (long) v; break;
-      case 2: tmp_opts.font_opts.resolution_y = (long) v; break;
+      case 0: tmp_opts.font_opts.point_size = (int) v; break;
+      case 1: tmp_opts.font_opts.resolution_x = (int) v; break;
+      case 2: tmp_opts.font_opts.resolution_y = (int) v; break;
     }
 
     /*
@@ -365,7 +365,7 @@ pref_select_colors(GtkWidget *w, gpointer data)
                                GTK_STOCK_REVERT_TO_SAVED,
                                GTK_RESPONSE_REJECT,
                                GTK_STOCK_CLOSE,
-                               GTK_RESPONSE_CLOSE, (void *) 0);
+                               GTK_RESPONSE_CLOSE, NULL);
 
         gtk_dialog_set_default_response(GTK_DIALOG(pref_color_dialog),
                                         GTK_RESPONSE_CLOSE);
@@ -977,7 +977,7 @@ pref_save(void)
       fprintf(out, "adobe_name_file %s\n\n",
               options.adobe_name_file);
 
-    fprintf(out, "pixel_size %ld\n\n", options.pixel_size);
+    fprintf(out, "pixel_size %d\n\n", options.pixel_size);
 
     if (options.show_cap_height)
       fprintf(out, "show_cap_height true\n\n");

@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guihelp.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guihelp.c 1 2006-11-02 16:47:28Z mleisher $";
 #else
-static char svnid[] = "$Id: guihelp.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: guihelp.c 1 2006-11-02 16:47:28Z mleisher $";
 #endif
 #endif
 
@@ -86,7 +86,7 @@ help_parse_start(GMarkupParseContext *ctx, const gchar *tag,
         gtk_text_buffer_insert_with_tags_by_name(hp.text, &hp.iter,
                                                  bullet, 3,
                                                  "margin",
-                                                 "large_bullet", (void *) 0);
+                                                 "large_bullet", NULL);
         hp.flags |= HTEXT_BULLET;
         hp.tag_name = 0;
     } else if (strcmp(tag, "help") == 0)
@@ -102,12 +102,12 @@ help_parse_text(GMarkupParseContext *ctx, const gchar *txt, gsize txtlen,
     if (hp.tag_name != 0)
       gtk_text_buffer_insert_with_tags_by_name(hp.text, &hp.iter,
                                                txt, txtlen,
-                                               hp.tag_name, (void *) 0);
+                                               hp.tag_name, NULL);
     else {
         if (hp.flags & HTEXT_BULLET)
           gtk_text_buffer_insert_with_tags_by_name(hp.text, &hp.iter,
                                                    txt, txtlen,
-                                                   "tabs", (void *) 0);
+                                                   "tabs", NULL);
         else
           /*
            * Plain text insert.
@@ -138,7 +138,7 @@ static GMarkupParser markup_funcs = {
     help_parse_error,
 };
 
-static GMarkupParseContext *markup_context = 0;
+static GMarkupParseContext *markup_context = NULL;
 
 /*
  * Creates all the markup tags.
@@ -149,29 +149,29 @@ help_init_markup(void)
     PangoTabArray *tabs;
 
     gtk_text_buffer_create_tag(hp.text, "center",
-                               "justification", GTK_JUSTIFY_CENTER, 0);
+                               "justification", GTK_JUSTIFY_CENTER, NULL);
     gtk_text_buffer_create_tag(hp.text, "margin",
-                               "left_margin", 20, 0);
+                               "left_margin", 20, NULL);
     gtk_text_buffer_create_tag(hp.text, "margin1",
-                               "left_margin", 30, 0);
+                               "left_margin", 30, NULL);
     gtk_text_buffer_create_tag(hp.text, "margin2",
-                               "left_margin", 45, 0);
+                               "left_margin", 45, NULL);
     gtk_text_buffer_create_tag(hp.text, "margin1.5",
                                "left_margin", 30,
                                "weight", PANGO_WEIGHT_BOLD,
-                               0);
+                               NULL);
     gtk_text_buffer_create_tag(hp.text, "margin3",
-                               "left_margin", 60, 0);
+                               "left_margin", 60, NULL);
     gtk_text_buffer_create_tag(hp.text, "large_bullet",
-                               "scale", PANGO_SCALE_X_LARGE, 0);
+                               "scale", PANGO_SCALE_X_LARGE, NULL);
     gtk_text_buffer_create_tag(hp.text, "param",
                                "weight", PANGO_WEIGHT_BOLD,
-                               "left_margin", 10, 0);
+                               "left_margin", 10, NULL);
     gtk_text_buffer_create_tag(hp.text, "ul",
-                               "underline", PANGO_UNDERLINE_SINGLE, 0);
+                               "underline", PANGO_UNDERLINE_SINGLE, NULL);
     gtk_text_buffer_create_tag(hp.text, "bul",
                                "underline", PANGO_UNDERLINE_SINGLE,
-                               "weight", PANGO_WEIGHT_BOLD, 0);
+                               "weight", PANGO_WEIGHT_BOLD, NULL);
 
     tabs = pango_tab_array_new_with_positions(2, TRUE,
                                               PANGO_TAB_LEFT, 50,
@@ -179,15 +179,15 @@ help_init_markup(void)
     gtk_text_buffer_create_tag(hp.text, "tabs",
                                "tabs", tabs,
                                "left_margin", 10,
-                               0);
+                               NULL);
 
     gtk_text_buffer_create_tag(hp.text, "i",
-                               "style", PANGO_STYLE_ITALIC, 0);
+                               "style", PANGO_STYLE_ITALIC, NULL);
     gtk_text_buffer_create_tag(hp.text, "b",
-                               "weight", PANGO_WEIGHT_BOLD, 0);
+                               "weight", PANGO_WEIGHT_BOLD, NULL);
     gtk_text_buffer_create_tag(hp.text, "bi",
                                "style", PANGO_STYLE_ITALIC,
-                               "weight", PANGO_WEIGHT_BOLD, 0);
+                               "weight", PANGO_WEIGHT_BOLD, NULL);
 }
 
 /**************************************************************
@@ -291,7 +291,7 @@ guihelp_show_help(GtkWidget *w, gpointer data)
          * was created.
          */
         (void) g_signal_connect(G_OBJECT(help_dialog), "delete_event",
-                                G_CALLBACK(gtk_widget_hide), 0);
+                                G_CALLBACK(gtk_widget_hide), NULL);
 
         hbox = gtk_hbox_new(FALSE, 5);
 
@@ -376,7 +376,8 @@ guihelp_show_help(GtkWidget *w, gpointer data)
         /*
          * Create the context for the parser.
          */
-        markup_context = g_markup_parse_context_new(&markup_funcs, 0, 0, 0);
+        markup_context = g_markup_parse_context_new(&markup_funcs, 0,
+                                                    NULL, NULL);
     }
 
     /*
@@ -398,5 +399,5 @@ guihelp_cleanup(void)
 {
     if (markup_context != NULL)
       g_markup_parse_context_free(markup_context);
-    markup_context = 0;
+    markup_context = NULL;
 }

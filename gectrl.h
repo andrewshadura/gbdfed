@@ -23,7 +23,7 @@
 #define _h_gectrl
 
 /*
- * $Id: gectrl.h 36 2006-01-16 04:29:23Z mleisher $
+ * $Id: gectrl.h 1 2006-11-02 16:47:28Z mleisher $
  */
 
 #include <gtk/gtkdrawingarea.h>

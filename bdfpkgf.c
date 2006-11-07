@@ -38,9 +38,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfpkgf.c 14 2006-01-09 15:29:07Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfpkgf.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfpkgf.c 14 2006-01-09 15:29:07Z mleisher $";
+static char svnid[] = "$Id: bdfpkgf.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -133,16 +133,16 @@ by_encoding(const void *a, const void *b)
 /*
  * Routines for scanning numbers from GF and PK files.
  */
-static long
+static int
 _bdf_mf_get16(FILE *in)
 {
     return (getc(in) << 8) | (getc(in) & 0xff);
 }
 
-static long
+static int
 _bdf_mf_get32(FILE *in)
 {
-    long hi = _bdf_mf_get16(in);
+    int hi = _bdf_mf_get16(in);
 
     if (hi > 32767)
       hi -= 65536;
@@ -150,9 +150,9 @@ _bdf_mf_get32(FILE *in)
 }
 
 static void
-printscaled(long s, unsigned char *buf)
+printscaled(int s, unsigned char *buf)
 {
-    long delta;
+    int delta;
 
     *buf++ = ' ';
     *buf++ = '(';
@@ -160,7 +160,7 @@ printscaled(long s, unsigned char *buf)
         *buf++ = '-';
         s = -s;
     }
-    sprintf((char *) buf, "%ld", s >> 16);
+    sprintf((char *) buf, "%d", s >> 16);
     buf += strlen((char *) buf);
     s = 10 * ( s & 65535 ) + 5;
     if (s != 5) {
@@ -185,8 +185,8 @@ _bdf_pk_specials(FILE *in, bdf_font_t *font, bdf_options_t *opts,
                  unsigned char *glyphname)
 {
     int c;
-    long i, n, num;
-    unsigned long comment_size;
+    int i, n, num;
+    unsigned int comment_size;
     unsigned char *comment, bytes[4];
 
     /*
@@ -269,7 +269,7 @@ _bdf_pk_specials(FILE *in, bdf_font_t *font, bdf_options_t *opts,
                           realloc((char *) comment, 64);
                     comment_size = 64;
                 }
-                sprintf((char *) comment, "%ld", num);
+                sprintf((char *) comment, "%d", num);
                 printscaled(num, comment + strlen((char *) comment));
                 _bdf_add_comment(font, (char *) comment,
                                  strlen((char *) comment));
@@ -355,7 +355,7 @@ _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
                   void *data, bdf_font_t **font)
 {
     int n, res, set, x, y, bpr, rcnt, ismono;
-    long num, plen, pend, row_size, awidth;
+    int num, plen, pend, row_size, awidth;
     short rb, maxrb, minlb, maxlb;
     double denom, dw;
     bdf_font_t *f;
@@ -415,12 +415,12 @@ _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
      * Add the comment to the font if indicated.
      */
     if (opts->keep_comments)
-      _bdf_add_comment(f, (char *) bytes, (unsigned long) n);
+      _bdf_add_comment(f, (char *) bytes, (unsigned int) n);
 
     /*
      * Get the point size and scale it down 
      */
-    f->point_size = (long) (((float) _bdf_mf_get32(in)) /
+    f->point_size = (int) (((float) _bdf_mf_get32(in)) /
                             ((float) (1 << 20)));
 
     /*
@@ -431,13 +431,13 @@ _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
     /*
      * Get the horizontal resolution.
      */
-    f->resolution_x = (long)
+    f->resolution_x = (int)
         (((((float) _bdf_mf_get32(in)) * 72.27) / ((float) (1 << 16))) + 0.5);
 
     /*
      * Get the vertical resolution.
      */
-    f->resolution_y = (long)
+    f->resolution_y = (int)
         (((((float) _bdf_mf_get32(in)) * 72.27) / ((float) (1 << 16))) + 0.5);
 
     /*
@@ -531,7 +531,7 @@ _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
              * Load the encoding byte and the first byte of the TFM width.
              */
             fread(bytes, 2, 1, in);
-            g.encoding = (long) bytes[0];
+            g.encoding = (int) bytes[0];
 
             pend = plen + ftell(in) - 1;
 
@@ -579,7 +579,7 @@ _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
             else
               plen = ((res & 0x0f) << 8) + bytes[num++];
 
-            g.encoding = (long) bytes[num++];
+            g.encoding = (int) bytes[num++];
 
             pend = plen + ftell(in) - 8;
 
@@ -851,17 +851,17 @@ _bdf_load_pk_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
     dw = (double) (f->point_size * 10);
     prop.name = "PIXEL_SIZE";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long) (((denom * dw) / 722.7) + 0.5);
+    prop.value.int32 = (int) (((denom * dw) / 722.7) + 0.5);
     bdf_add_font_property(f, &prop);
 
     prop.name = "RESOLUTION_X";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) f->resolution_x;
+    prop.value.card32 = (unsigned int) f->resolution_x;
     bdf_add_font_property(f, &prop);
 
     prop.name = "RESOLUTION_Y";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) f->resolution_y;
+    prop.value.card32 = (unsigned int) f->resolution_y;
     bdf_add_font_property(f, &prop);
 
     prop.name = "FONT_ASCENT";
@@ -921,8 +921,8 @@ _bdf_gf_specials(FILE *in, bdf_font_t *font, bdf_options_t *opts,
                  unsigned char glyphname[])
 {
     int c;
-    long i, n, num;
-    unsigned long comment_size;
+    int i, n, num;
+    unsigned int comment_size;
     unsigned char *comment, bytes[4];
 
     /*
@@ -999,7 +999,7 @@ _bdf_gf_specials(FILE *in, bdf_font_t *font, bdf_options_t *opts,
                           realloc((char *) comment, 64);
                     comment_size = 64;
                 }
-                sprintf((char *) comment, "%ld", num);
+                sprintf((char *) comment, "%d", num);
                 printscaled(num, comment + strlen((char *) comment));
                 _bdf_add_comment(font, (char *) comment,
                                  strlen((char *) comment));
@@ -1027,7 +1027,7 @@ _bdf_load_gf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
                   void *data, bdf_font_t **font)
 {
     int n, res, set, x, y, bpr, ismono;
-    long awidth, num;
+    int awidth, num;
     short rb, maxrb, minlb, maxlb;
     double denom, dw;
     bdf_font_t *f;
@@ -1084,7 +1084,7 @@ _bdf_load_gf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
      * Add the comment to the font if indicated.
      */
     if (opts->keep_comments)
-      _bdf_add_comment(f, (char *) bytes, (unsigned long) n);
+      _bdf_add_comment(f, (char *) bytes, (unsigned int) n);
 
     /*
      * Get the font info so we can set up the callback.  The callback will
@@ -1328,7 +1328,7 @@ _bdf_load_gf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
     /*
      * Get the point size and scale it down 
      */
-    f->point_size = (long) (((float) _bdf_mf_get32(in)) /
+    f->point_size = (int) (((float) _bdf_mf_get32(in)) /
                             ((float) (1 << 20)));
 
     /*
@@ -1339,13 +1339,13 @@ _bdf_load_gf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
     /*
      * Get the horizontal resolution.
      */
-    f->resolution_x = (long)
+    f->resolution_x = (int)
         (((((float) _bdf_mf_get32(in)) * 72.27) / ((float) (1 << 16))) + 0.5);
 
     /*
      * Get the vertical resolution.
      */
-    f->resolution_y = (long)
+    f->resolution_y = (int)
         (((((float) _bdf_mf_get32(in)) * 72.27) / ((float) (1 << 16))) + 0.5);
 
     /*
@@ -1425,17 +1425,17 @@ _bdf_load_gf_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
     dw = (double) (f->point_size * 10);
     prop.name = "PIXEL_SIZE";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long) (((denom * dw) / 722.7) + 0.5);
+    prop.value.int32 = (int) (((denom * dw) / 722.7) + 0.5);
     bdf_add_font_property(f, &prop);
 
     prop.name = "RESOLUTION_X";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) f->resolution_x;
+    prop.value.card32 = (unsigned int) f->resolution_x;
     bdf_add_font_property(f, &prop);
 
     prop.name = "RESOLUTION_Y";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) f->resolution_y;
+    prop.value.card32 = (unsigned int) f->resolution_y;
     bdf_add_font_property(f, &prop);
 
     prop.name = "FONT_ASCENT";

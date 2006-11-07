@@ -23,7 +23,7 @@
 #define _h_labcon
 
 /*
- * $Id: labcon.h 2 2006-01-08 00:57:53Z mleisher $
+ * $Id: labcon.h 1 2006-11-02 16:47:28Z mleisher $
  */
 
 #include <gtk/gtkcontainer.h>

@@ -23,7 +23,7 @@
 #define _h_glyphedit
 
 /*
- * $Id: glyphedit.h 33 2006-01-12 22:58:18Z mleisher $
+ * $Id: glyphedit.h 1 2006-11-02 16:47:28Z mleisher $
  */
 
 #include <gdk/gdk.h>

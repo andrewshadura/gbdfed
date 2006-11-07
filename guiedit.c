@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guiedit.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guiedit.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: guiedit.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] = "$Id: guiedit.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -233,7 +233,7 @@ guiedit_select_property(GtkTreeSelection *selection, gpointer data)
     bdf_property_t *prop;
     GtkToggleButton *tb;
     gboolean from_font = TRUE;
-    GtkListStore *store;
+    GtkTreeModel *model;
     GtkTreeIter iter;
     GValue val;
 
@@ -241,15 +241,14 @@ guiedit_select_property(GtkTreeSelection *selection, gpointer data)
      * This is called after the list is cleared as well, so return if there is
      * no selection.
      */
-    if (gtk_tree_selection_get_selected(selection, (GtkTreeModel **) &store,
-                                        &iter) == FALSE)
+    if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
       return;
 
     font = fontgrid_get_font(FONTGRID(ed->fgrid));
 
     (void) memset((char *) &val, 0, sizeof(GValue));
 
-    gtk_tree_model_get_value(GTK_TREE_MODEL(store), &iter, 0, &val);
+    gtk_tree_model_get_value(model, &iter, 0, &val);
     prop_name = (gchar *) g_value_get_string(&val);
 
     if ((prop = bdf_get_font_property(font, prop_name)) == 0) {
@@ -275,11 +274,11 @@ guiedit_select_property(GtkTreeSelection *selection, gpointer data)
                                  prop->value.atom);
             break;
           case BDF_INTEGER:
-            sprintf(buffer1, "%ld", prop->value.int32);
+            sprintf(buffer1, "%d", prop->value.int32);
             gtk_entry_set_text(GTK_ENTRY(ed->finfo_prop_value), buffer1);
             break;
           case BDF_CARDINAL:
-            sprintf(buffer1, "%ld", prop->value.card32);
+            sprintf(buffer1, "%d", prop->value.card32);
             gtk_entry_set_text(GTK_ENTRY(ed->finfo_prop_value), buffer1);
             break;
         }
@@ -407,13 +406,13 @@ guiedit_update_font_info(gbdfed_editor_t *ed)
     gtk_entry_set_text(GTK_ENTRY(ed->finfo_dwidth), buffer1);
 
     if (font)
-      sprintf(buffer1, "%ld", font->font_ascent);
+      sprintf(buffer1, "%d", font->font_ascent);
     else
       sprintf(buffer1, "0");
     gtk_entry_set_text(GTK_ENTRY(ed->finfo_ascent), buffer1);
 
     if (font)
-      sprintf(buffer1, "%ld", font->font_descent);
+      sprintf(buffer1, "%d", font->font_descent);
     else
       sprintf(buffer1, "0");
     gtk_entry_set_text(GTK_ENTRY(ed->finfo_descent), buffer1);
@@ -426,13 +425,13 @@ guiedit_update_font_info(gbdfed_editor_t *ed)
      * Finally, update the remaining information.
      */
     if (font)
-      sprintf(buffer1, "%ld", font->glyphs_used);
+      sprintf(buffer1, "%d", font->glyphs_used);
     else
       sprintf(buffer1, "0");
     gtk_label_set_text(GTK_LABEL(ed->finfo_enc_count), buffer1);
 
     if (font)
-      sprintf(buffer1, "%ld", font->unencoded_used);
+      sprintf(buffer1, "%d", font->unencoded_used);
     else
       sprintf(buffer1, "0");
     gtk_label_set_text(GTK_LABEL(ed->finfo_unenc_count), buffer1);
@@ -446,9 +445,9 @@ guiedit_update_font_info(gbdfed_editor_t *ed)
 
     if (font) {
         switch (fontgrid_get_code_base(FONTGRID(ed->fgrid))) {
-          case 8: sprintf(buffer1, "%lo", font->default_glyph); break;
-          case 10: sprintf(buffer1, "%ld", font->default_glyph); break;
-          case 16: sprintf(buffer1, "%04lx", font->default_glyph); break;
+          case 8: sprintf(buffer1, "%o", font->default_glyph); break;
+          case 10: sprintf(buffer1, "%d", font->default_glyph); break;
+          case 16: sprintf(buffer1, "%04x", font->default_glyph); break;
         }
         gtk_entry_set_text(GTK_ENTRY(ed->finfo_default_char), buffer1);
     }
@@ -473,9 +472,9 @@ guiedit_update_code_base(gbdfed_editor_t *ed)
     font = fontgrid_get_font(FONTGRID(ed->fgrid));
 
     switch (fontgrid_get_code_base(FONTGRID(ed->fgrid))) {
-      case 8: sprintf(buffer1, "%lo", font->default_glyph); break;
-      case 10: sprintf(buffer1, "%ld", font->default_glyph); break;
-      case 16: sprintf(buffer1, "%04lx", font->default_glyph); break;
+      case 8: sprintf(buffer1, "%o", font->default_glyph); break;
+      case 10: sprintf(buffer1, "%d", font->default_glyph); break;
+      case 16: sprintf(buffer1, "%04x", font->default_glyph); break;
     }
     gtk_entry_set_text(GTK_ENTRY(ed->finfo_default_char), buffer1);
 }
@@ -490,9 +489,9 @@ guiedit_update_font_details(gbdfed_editor_t *ed)
 
     font = fontgrid_get_font(FONTGRID(ed->fgrid));
 
-    sprintf(buffer1, "%ld", font->glyphs_used);
+    sprintf(buffer1, "%d", font->glyphs_used);
     gtk_label_set_text(GTK_LABEL(ed->finfo_enc_count), buffer1);
-    sprintf(buffer1, "%ld", font->unencoded_used);
+    sprintf(buffer1, "%d", font->unencoded_used);
     gtk_label_set_text(GTK_LABEL(ed->finfo_unenc_count), buffer1);
 }
 
@@ -829,7 +828,7 @@ guiedit_show_font_info(GtkWidget *w, gpointer data)
         gtk_container_set_border_width(GTK_CONTAINER(hbox), 3);
 
         ed->finfo_default_char = gtk_widget_new(gtk_entry_get_type(),
-                                                "max_length", 4, 0);
+                                                "max_length", 4, NULL);
         gtk_widget_set_size_request(ed->finfo_default_char, 75, -1);
         g_signal_connect_object(G_OBJECT(ed->finfo_default_char), "changed",
                                 G_CALLBACK(enable_apply),
@@ -926,7 +925,7 @@ guiedit_show_font_info(GtkWidget *w, gpointer data)
         gtk_container_set_border_width(GTK_CONTAINER(hbox), 3);
 
         ed->finfo_dwidth = gtk_widget_new(gtk_entry_get_type(),
-                                          "max_length", 4, 0);
+                                          "max_length", 4, NULL);
         gtk_widget_set_size_request(ed->finfo_dwidth, 75, -1);
         g_signal_connect_object(G_OBJECT(ed->finfo_dwidth), "changed",
                                 G_CALLBACK(enable_apply),
@@ -937,7 +936,7 @@ guiedit_show_font_info(GtkWidget *w, gpointer data)
         gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
         ed->finfo_ascent = gtk_widget_new(gtk_entry_get_type(),
-                                          "max_length", 4, 0);
+                                          "max_length", 4, NULL);
         gtk_widget_set_size_request(ed->finfo_ascent, 75, -1);
         g_signal_connect_object(G_OBJECT(ed->finfo_ascent), "changed",
                                 G_CALLBACK(enable_apply),
@@ -948,7 +947,7 @@ guiedit_show_font_info(GtkWidget *w, gpointer data)
         gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
         ed->finfo_descent = gtk_widget_new(gtk_entry_get_type(),
-                                           "max_length", 4, 0);
+                                           "max_length", 4, NULL);
         gtk_widget_set_size_request(ed->finfo_descent, 75, -1);
         g_signal_connect_object(G_OBJECT(ed->finfo_descent), "changed",
                                 G_CALLBACK(enable_apply),
@@ -1258,7 +1257,7 @@ guiedit_update_font_properties(gbdfed_editor_t *ed)
     guint32 i, nprops;
     bdf_font_t *font;
     bdf_property_t *props;
-    GtkListStore *store;
+    GtkTreeModel *model;
     GtkTreeSelection *selection;
     GtkTreePath *row;
     GtkTreeView *tview;
@@ -1282,10 +1281,9 @@ guiedit_update_font_properties(gbdfed_editor_t *ed)
 
     selection =
         gtk_tree_view_get_selection(GTK_TREE_VIEW(ed->finfo_font_props));
-    if (gtk_tree_selection_get_selected(selection, (GtkTreeModel **) &store,
-                                        &iter) != FALSE) {
+    if (gtk_tree_selection_get_selected(selection, &model, &iter) != FALSE) {
         memset((char *) &val, 0, sizeof(GValue));
-        gtk_tree_model_get_value(GTK_TREE_MODEL(store), &iter, 0, &val);
+        gtk_tree_model_get_value(model, &iter, 0, &val);
         prop = (gchar *) g_value_get_string(&val);
     }
 
@@ -1295,14 +1293,15 @@ guiedit_update_font_properties(gbdfed_editor_t *ed)
      */
     row = 0;
 
-    gtk_list_store_clear(store);
+    gtk_list_store_clear(GTK_LIST_STORE(model));
 
     if ((nprops = bdf_font_property_list(font, &props)) != 0) {
         for (i = 0; i < nprops; i++) {
             if (prop && strcmp(prop, props[i].name) == 0)
               row = gtk_tree_path_new_from_indices(i, -1);
-            gtk_list_store_append(store, &iter);
-            gtk_list_store_set(store, &iter, 0, props[i].name, -1);
+            gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+            gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                               0, props[i].name, -1);
         }
     }
 

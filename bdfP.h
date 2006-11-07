@@ -23,7 +23,7 @@
 #define _h_bdfP
 
 /*
- * $Id: bdfP.h 38 2006-01-17 04:01:35Z mleisher $
+ * $Id: bdfP.h 49 2007-04-12 14:46:40Z mleisher $
  */
 
 #include "bdf.h"
@@ -57,8 +57,8 @@ typedef struct {
  */
 typedef struct {
     bdf_bbx_t b;
-    long start;
-    long end;
+    int start;
+    int end;
 } _bdf_undo2_t;
 
 /*
@@ -100,17 +100,17 @@ extern unsigned char bdf_eightbpp[];
  */
 extern short _bdf_ceiling(double v);
 
-extern unsigned char *_bdf_strdup(unsigned char *s, unsigned long len);
-extern void _bdf_memmove(char *dest, char *src, unsigned long bytes);
+extern unsigned char *_bdf_strdup(unsigned char *s, unsigned int len);
+extern void _bdf_memmove(char *dest, char *src, unsigned int bytes);
 
 extern short _bdf_atos(char *s, char **end, int base);
-extern long _bdf_atol(char *s, char **end, int base);
-extern unsigned long _bdf_atoul(char *s, char **end, int base);
+extern int _bdf_atol(char *s, char **end, int base);
+extern unsigned int _bdf_atoul(char *s, char **end, int base);
 
 /*
  * Function to locate the nearest glyph to a specified encoding.
  */
-extern bdf_glyph_t *_bdf_locate_glyph(bdf_font_t *font, long encoding,
+extern bdf_glyph_t *_bdf_locate_glyph(bdf_font_t *font, int encoding,
                                       int unencoded);
 
 /*
@@ -123,13 +123,13 @@ extern bdf_glyph_t *_bdf_locate_glyph(bdf_font_t *font, long encoding,
 /*
  * Function to add a message to the font.
  */
-extern void _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned long len);
+extern void _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned int len);
 
 /*
  * Function to add a comment to the font.
  */
 extern void _bdf_add_comment(bdf_font_t *font, char *comment,
-                             unsigned long len);
+                             unsigned int len);
 
 /*
  * Function to do glyph name table cleanup when exiting.
@@ -155,7 +155,7 @@ extern char **_bdf_psf_unpack_mapping(bdf_psf_unimap_t *unimap, int *num_seq);
 /*
  * Routine to convert a string list of mappings back to PSF2 format.
  */
-extern int _bdf_psf_pack_mapping(char **list, int len, long encoding,
+extern int _bdf_psf_pack_mapping(char **list, int len, int encoding,
                                  bdf_psf_unimap_t *map);
 
 #ifdef __cplusplus

@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guiops.c 33 2006-01-12 22:58:18Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guiops.c 1 2006-11-02 16:47:28Z mleisher $";
 #else
-static char svnid[] = "$Id: guiops.c 33 2006-01-12 22:58:18Z mleisher $";
+static char svnid[] = "$Id: guiops.c 1 2006-11-02 16:47:28Z mleisher $";
 #endif
 #endif
 
@@ -188,14 +188,14 @@ ops_dialog_setup(gbdfed_editor_t *ed)
                          GTK_FILL, 0, 0);
 
         ops_dx = gtk_widget_new(gtk_entry_get_type(),
-                                "max_length", 6, 0);
+                                "max_length", 6, NULL);
         (void) g_signal_connect(G_OBJECT(ops_dx), "changed",
                                 G_CALLBACK(enable_apply),
                                 GINT_TO_POINTER(0));
         gtk_table_attach(GTK_TABLE(table), ops_dx, 1, 2, 0, 1, GTK_FILL,
                          GTK_FILL, 5, 5);
         ops_dy = gtk_widget_new(gtk_entry_get_type(),
-                                "max_length", 6, 0);
+                                "max_length", 6, NULL);
         (void) g_signal_connect(G_OBJECT(ops_dx), "changed",
                                 G_CALLBACK(enable_apply),
                                 GINT_TO_POINTER(0));
@@ -228,7 +228,7 @@ ops_dialog_setup(gbdfed_editor_t *ed)
                                      "digits", 0,
                                      "value", 0.0,
                                      "numeric", TRUE,
-                                     0);
+                                     NULL);
         gtk_widget_set_size_request(ops_degrees, 60, -1);
         (void) g_signal_connect(G_OBJECT(ops_degrees), "changed",
                                 G_CALLBACK(enable_apply),

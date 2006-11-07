@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdffnt.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdffnt.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdffnt.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] = "$Id: bdffnt.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -38,7 +38,7 @@ static char svnid[] = "$Id: bdffnt.c 2 2006-01-08 00:57:53Z mleisher $";
 typedef struct {
     unsigned short id;
     unsigned short count;
-    unsigned long reshandler;
+    unsigned int reshandler;
 } res_typeinfo_t;
 
 typedef struct {
@@ -78,7 +78,7 @@ typedef struct {
     unsigned char  linker_revision;
     unsigned short entry_tab_offset;
     unsigned short entry_tab_length;
-    unsigned long  reserved1;
+    unsigned int  reserved1;
     unsigned short format_flags;
     unsigned short auto_data_seg;
     unsigned short local_heap_length;
@@ -95,7 +95,7 @@ typedef struct {
     unsigned short rname_tab_offset;
     unsigned short moduleref_tab_offset;
     unsigned short iname_tab_offset;
-    unsigned long  nrname_tab_offset;
+    unsigned int  nrname_tab_offset;
     unsigned short n_mov_entry_points;
     unsigned short align_shift_count;
     unsigned short n_resource_seg;
@@ -109,7 +109,7 @@ typedef struct {
 
 typedef struct {
     unsigned short dfVersion;
-    unsigned long  dfSize;
+    unsigned int  dfSize;
     unsigned char  dfCopyright[60];
     unsigned short dfType;
     unsigned short dfPoints;
@@ -133,19 +133,19 @@ typedef struct {
     unsigned char  dfDefaultChar;
     unsigned char  dfBreakChar;
     unsigned short dfWidthBytes;
-    unsigned long  dfDevice;
-    unsigned long  dfFace;
-    unsigned long  dfBitsPointer;
-    unsigned long  dfBitsOffset;
+    unsigned int  dfDevice;
+    unsigned int  dfFace;
+    unsigned int  dfBitsPointer;
+    unsigned int  dfBitsOffset;
     unsigned char  dfReserved;
-    unsigned long  dfFlags;
+    unsigned int  dfFlags;
     unsigned short dfAspace;
     unsigned short dfBspace;
     unsigned short dfCspace;
     unsigned short dfColorPointer;
     unsigned char  dfReserved1[4];
 #if 0
-    unsigned long  dfColorPointer;
+    unsigned int  dfColorPointer;
     unsigned char  dfReserved1[16];
 #endif
 } fntinfo_t;
@@ -198,8 +198,8 @@ typedef struct {
 } fishadow_t;
 
 typedef struct {
-    unsigned long width;
-    unsigned long offset;
+    unsigned int width;
+    unsigned int offset;
 } chrinfo_t;
 
 /*
@@ -208,14 +208,14 @@ typedef struct {
  */
 typedef struct _bdffnt_font_t {
     FILE *in;
-    unsigned long *fonts;
-    unsigned long allocated;
-    unsigned long nfonts;
-    unsigned long first;
+    unsigned int *fonts;
+    unsigned int allocated;
+    unsigned int nfonts;
+    unsigned int first;
 
     chrinfo_t *cinfo;
-    unsigned long cinfo_used;
-    unsigned long cinfo_size;
+    unsigned int cinfo_used;
+    unsigned int cinfo_size;
 
     fntinfo_t info;
 } _bdffnt_font_t;
@@ -264,7 +264,7 @@ static win_exe_t win;
  **************************************************************************/
 
 static void
-_bdffnt_endian_shorts(unsigned short *sp, unsigned long n)
+_bdffnt_endian_shorts(unsigned short *sp, unsigned int n)
 {
     for (; n > 0; n--, sp++)
       *sp = ((*sp >> 8) & 0xff) |
@@ -272,7 +272,7 @@ _bdffnt_endian_shorts(unsigned short *sp, unsigned long n)
 }
 
 static void
-_bdffnt_endian_longs(unsigned long *lp, unsigned long n)
+_bdffnt_endian_ints(unsigned int *lp, unsigned int n)
 {
     for (; n > 0; n--, lp++)
       *lp = (((*lp & 0xff) << 24) & 0xff000000) |
@@ -289,8 +289,8 @@ _bdffnt_get_short(unsigned char *field)
     return (field[a] & 0xff) | ((field[b] & 0xff) << 8);
 }
 
-static unsigned long
-_bdffnt_get_long(unsigned char *field)
+static unsigned int
+_bdffnt_get_int(unsigned char *field)
 {
     int a = 0, b = 1, c = 2, d = 3;
 
@@ -307,7 +307,7 @@ _bdffnt_transfer_fntinfo(fntinfo_t *fi, fishadow_t *fis)
 {
     fi->dfVersion = _bdffnt_get_short(fis->dfVersion);
     (void) memcpy(fi->dfCopyright, fis->dfCopyright, 60);
-    fi->dfSize = _bdffnt_get_long(fis->dfSize);
+    fi->dfSize = _bdffnt_get_int(fis->dfSize);
     fi->dfType = _bdffnt_get_short(fis->dfType);
     fi->dfPoints = _bdffnt_get_short(fis->dfPoints);
     fi->dfVertRes = _bdffnt_get_short(fis->dfVertRes);
@@ -330,17 +330,17 @@ _bdffnt_transfer_fntinfo(fntinfo_t *fi, fishadow_t *fis)
     fi->dfDefaultChar = fis->dfDefaultChar[0];
     fi->dfBreakChar = fis->dfBreakChar[0];
     fi->dfWidthBytes = _bdffnt_get_short(fis->dfWidthBytes);
-    fi->dfDevice = _bdffnt_get_long(fis->dfDevice);
-    fi->dfFace = _bdffnt_get_long(fis->dfFace);
-    fi->dfBitsPointer = _bdffnt_get_long(fis->dfBitsPointer);
-    fi->dfBitsOffset = _bdffnt_get_long(fis->dfBitsOffset);
+    fi->dfDevice = _bdffnt_get_int(fis->dfDevice);
+    fi->dfFace = _bdffnt_get_int(fis->dfFace);
+    fi->dfBitsPointer = _bdffnt_get_int(fis->dfBitsPointer);
+    fi->dfBitsOffset = _bdffnt_get_int(fis->dfBitsOffset);
     fi->dfReserved = fis->dfReserved[0];
-    fi->dfFlags = _bdffnt_get_long(fis->dfFlags);
+    fi->dfFlags = _bdffnt_get_int(fis->dfFlags);
     fi->dfAspace = _bdffnt_get_short(fis->dfAspace);
     fi->dfBspace = _bdffnt_get_short(fis->dfBspace);
     fi->dfCspace = _bdffnt_get_short(fis->dfCspace);
 #if 0
-    fi->dfColorPointer = _bdffnt_get_long(fis->dfColorPointer);
+    fi->dfColorPointer = _bdffnt_get_int(fis->dfColorPointer);
     (void) memcpy(fi->dfReserved1, fis->dfReserved1, 16);
 #endif
     fi->dfColorPointer = _bdffnt_get_short(fis->dfColorPointer);
@@ -418,7 +418,7 @@ bdffnt_open_font(char *path, bdffnt_font_t *fnt)
 {
     unsigned short sshift, version;
     int i;
-    unsigned long off;
+    unsigned int off;
     FILE *in;
     _bdffnt_font_t *f;
     res_typeinfo_t rtype;
@@ -556,12 +556,12 @@ bdffnt_open_font(char *path, bdffnt_font_t *fnt)
                 else {
                     if (f->nfonts >= f->allocated) {
                         if (f->allocated == 0)
-                          f->fonts = (unsigned long *)
-                              malloc(sizeof(unsigned long) << 3);
+                          f->fonts = (unsigned int *)
+                              malloc(sizeof(unsigned int) << 3);
                         else
-                          f->fonts = (unsigned long *)
+                          f->fonts = (unsigned int *)
                               realloc((char *) f->fonts,
-                                      sizeof(unsigned long) *
+                                      sizeof(unsigned int) *
                                       (f->allocated + 8));
                         f->allocated += 8;
                     }
@@ -612,10 +612,10 @@ bdffnt_font_count(bdffnt_font_t font)
 }
 
 int
-bdffnt_get_copyright(bdffnt_font_t font, unsigned long fontID,
+bdffnt_get_copyright(bdffnt_font_t font, unsigned int fontID,
                      unsigned char *string)
 {
-    long off;
+    int off;
     unsigned char *sp;
     fishadow_t fi;
 
@@ -631,11 +631,11 @@ bdffnt_get_copyright(bdffnt_font_t font, unsigned long fontID,
 }
 
 int
-bdffnt_get_facename(bdffnt_font_t font, unsigned long fontID, int for_xlfd,
+bdffnt_get_facename(bdffnt_font_t font, unsigned int fontID, int for_xlfd,
                     unsigned char *string)
 {
     int wlen, c;
-    long off;
+    int off;
     unsigned char *sp, *wname;
     fishadow_t fi;
 
@@ -695,9 +695,9 @@ bdffnt_get_facename(bdffnt_font_t font, unsigned long fontID, int for_xlfd,
 }
 
 int
-bdffnt_char_count(bdffnt_font_t font, unsigned long fontID)
+bdffnt_char_count(bdffnt_font_t font, unsigned int fontID)
 {
-    long off;
+    int off;
     fishadow_t fi;
 
     if (font == 0 || fontID >= font->nfonts)
@@ -716,9 +716,9 @@ bdffnt_char_count(bdffnt_font_t font, unsigned long fontID)
 }
 
 int
-bdffnt_font_pointsize(bdffnt_font_t font, unsigned long fontID)
+bdffnt_font_pointsize(bdffnt_font_t font, unsigned int fontID)
 {
-    long off;
+    int off;
     fishadow_t fi;
 
     if (font == 0 || fontID >= font->nfonts)
@@ -737,12 +737,12 @@ bdffnt_font_pointsize(bdffnt_font_t font, unsigned long fontID)
 }
 
 int
-bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
+bdffnt_load_font(bdffnt_font_t font, unsigned int fontID,
                  bdf_callback_t callback, void *data, bdf_font_t **out)
 {
     int x, y, i, nchars;
     unsigned short tmp, bpr;
-    long off;
+    int off;
     double swscale;
     chrinfo_t *cp;
     bdf_font_t *f;
@@ -793,9 +793,9 @@ bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
           _bdffnt_endian_shorts(&tmp, 1);
         cp->width = tmp;
         if (font->info.dfVersion == 0x300) {
-            fread((char *) &cp->offset, sizeof(unsigned long), 1, font->in);
+            fread((char *) &cp->offset, sizeof(unsigned int), 1, font->in);
             if (!bdf_little_endian())
-              _bdffnt_endian_longs(&cp->offset, 1);
+              _bdffnt_endian_ints(&cp->offset, 1);
         } else {
             fread((char *) &tmp, sizeof(unsigned short), 1, font->in);
             if (!bdf_little_endian())
@@ -971,7 +971,7 @@ bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
 
     prop.name = "PIXEL_SIZE";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long)
+    prop.value.int32 = (int)
         ((((double) (f->point_size * 10) *
            (double) f->resolution_y) / 722.7) + 0.5);
     bdf_add_font_property(f, &prop);
@@ -983,12 +983,12 @@ bdffnt_load_font(bdffnt_font_t font, unsigned long fontID,
 
     prop.name = "RESOLUTION_X";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) f->resolution_x;
+    prop.value.card32 = (unsigned int) f->resolution_x;
     bdf_add_font_property(f, &prop);
 
     prop.name = "RESOLUTION_Y";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) f->resolution_y;
+    prop.value.card32 = (unsigned int) f->resolution_y;
     bdf_add_font_property(f, &prop);
 
     prop.name = "FONT_ASCENT";

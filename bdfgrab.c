@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrab.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrab.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfgrab.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] = "$Id: bdfgrab.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -69,7 +69,7 @@ static void
 _bdf_get_glyphs(Display *d, XFontStruct *f, bdf_font_t *font,
                 bdf_callback_t callback, void *data)
 {
-    unsigned long off, b1, b2, black, x, y, bpr;
+    unsigned int off, b1, b2, black, x, y, bpr;
     GC cleargc, drawgc;
     Pixmap canvas;
     XImage *image;
@@ -157,7 +157,7 @@ _bdf_get_glyphs(Display *d, XFontStruct *f, bdf_font_t *font,
                 /*
                  * Create a glyph name.
                  */
-                sprintf(name, "char%ld", gp->encoding);
+                sprintf(name, "char%d", gp->encoding);
                 gp->name = (char *) malloc(strlen(name) + 1);
                 (void) strcpy(gp->name, name);
 
@@ -243,7 +243,7 @@ bdf_font_t *
 bdf_load_server_font(Display *d, XFontStruct *f, char *name,
                      bdf_options_t *opts, bdf_callback_t callback, void *data)
 {
-    unsigned long i, len, b1, b2;
+    unsigned int i, len, b1, b2;
     bdf_font_t *font;
     XFontProp *xfp;
     XCharStruct *cp;
@@ -274,7 +274,7 @@ bdf_load_server_font(Display *d, XFontStruct *f, char *name,
      */
     font->monowidth = f->max_bounds.width;
 
-    font->default_glyph = (long) f->default_char;
+    font->default_glyph = (int) f->default_char;
 
     /*
      * Now load the font properties.
@@ -307,7 +307,7 @@ bdf_load_server_font(Display *d, XFontStruct *f, char *name,
                 prop.value.card32 = xfp->card32;
                 break;
               case BDF_INTEGER:
-                prop.value.int32 = (long) xfp->card32;
+                prop.value.int32 = (int) xfp->card32;
                 break;
             }
             bdf_add_font_property(font, &prop);
@@ -331,7 +331,7 @@ bdf_load_server_font(Display *d, XFontStruct *f, char *name,
      * set it to the name that was passed.
      */
     if (font->name == 0) {
-        len = (unsigned long) strlen(name);
+        len = (unsigned int) strlen(name);
         font->name = (char *) malloc(len + 1);
         (void) memcpy(font->name, name, len + 1);
     }
@@ -375,11 +375,11 @@ bdf_load_server_font(Display *d, XFontStruct *f, char *name,
      */
     if (font->resolution_x == 0)
       font->resolution_x =
-          (long) (((((double) DisplayWidth(d, DefaultScreen(d))) * 25.4) /
+          (int) (((((double) DisplayWidth(d, DefaultScreen(d))) * 25.4) /
                    ((double) DisplayWidthMM(d, DefaultScreen(d)))) + 0.5);
     if (font->resolution_y == 0)
       font->resolution_y =
-          (long) (((((double) DisplayHeight(d, DefaultScreen(d))) * 25.4) /
+          (int) (((((double) DisplayHeight(d, DefaultScreen(d))) * 25.4) /
                    ((double) DisplayHeightMM(d, DefaultScreen(d)))) + 0.5);
 
     /*

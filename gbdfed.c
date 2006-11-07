@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: gbdfed.c 60 2006-07-14 15:58:19Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: gbdfed.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: gbdfed.c 60 2006-07-14 15:58:19Z mleisher $";
+static char svnid[] = "$Id: gbdfed.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -509,7 +509,7 @@ update_selection_info(GtkWidget *w, gpointer sinfo, gpointer editor)
             if (si->glyphs->name != 0)
               (void) strcpy(buffer1, si->glyphs->name);
             else
-              sprintf(buffer1, "char%ld", si->glyphs->encoding);
+              sprintf(buffer1, "char%d", si->glyphs->encoding);
 
             /*
              * If the glyph test dialog is active, send it the glyph if this
@@ -1757,7 +1757,7 @@ gbdfed_make_editor(gchar *filename, gboolean cmdline)
                      0, 0);
 
     ed->fontname = gtk_widget_new(gtk_entry_get_type(),
-                                  "max_length", 128, 0);
+                                  "max_length", 128, NULL);
     mitem = labcon_new_label_defaults("Font:", ed->fontname, 0);
     gtk_container_add(GTK_CONTAINER(frame), mitem);
     g_signal_connect(G_OBJECT(ed->fontname), "activate",
@@ -1822,7 +1822,7 @@ gbdfed_make_editor(gchar *filename, gboolean cmdline)
     ed->pageno = gtk_widget_new(gtk_entry_get_type(),
                                 "max_length", 6,
                                 "width-request", 70,
-                                0);
+                                NULL);
     (void) g_signal_connect(G_OBJECT(ed->pageno), "activate",
                             G_CALLBACK(goto_page_or_code),
                             GUINT_TO_POINTER(ed->id));
@@ -1834,7 +1834,7 @@ gbdfed_make_editor(gchar *filename, gboolean cmdline)
     ed->charno = gtk_widget_new(gtk_entry_get_type(),
                                 "max_length", 6,
                                 "width-request", 70,
-                                0);
+                                NULL);
     (void) g_signal_connect(G_OBJECT(ed->charno), "activate",
                             G_CALLBACK(goto_page_or_code),
                             GUINT_TO_POINTER(ed->id));
@@ -1925,7 +1925,7 @@ gbdfed_make_editor(gchar *filename, gboolean cmdline)
 
 static int
 handle_unknown_options(bdf_options_t *opts, char **params,
-                       unsigned long nparams, void *client_data)
+                       unsigned int nparams, void *client_data)
 {
     gint idx;
     gbdfed_options_t *op;
@@ -2274,12 +2274,12 @@ editor_setup(int argc, char *argv[])
     screen = gdk_drawable_get_screen(GDK_DRAWABLE(gdk_get_default_root_window()));
     if (options.font_opts.resolution_x == 0)
       options.font_opts.resolution_x =
-          (unsigned long) ((((double) gdk_screen_get_width(screen)) * 25.4) /
+          (unsigned int) ((((double) gdk_screen_get_width(screen)) * 25.4) /
                            ((double) gdk_screen_get_width_mm(screen)) + 0.5);
 
     if (options.font_opts.resolution_y == 0)
       options.font_opts.resolution_y =
-          (unsigned long) ((((double) gdk_screen_get_height(screen)) * 25.4) /
+          (unsigned int) ((((double) gdk_screen_get_height(screen)) * 25.4) /
                            ((double) gdk_screen_get_height_mm(screen)) + 0.5);
 
     /*

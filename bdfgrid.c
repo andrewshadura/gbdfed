@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrid.c 40 2006-01-17 17:07:28Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrid.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfgrid.c 40 2006-01-17 17:07:28Z mleisher $";
+static char svnid[] = "$Id: bdfgrid.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -258,7 +258,7 @@ _bdf_grid_ink_bounds(bdf_glyph_grid_t *grid, short *x, short *y,
  * Make a glyph grid with the glyph bitmap set in the bitmap.
  */
 bdf_glyph_grid_t *
-bdf_make_glyph_grid(bdf_font_t *font, long code, int unencoded)
+bdf_make_glyph_grid(bdf_font_t *font, int code, int unencoded)
 {
     unsigned short si, di, col, colx, byte;
     short ht, as, ds, gsize, bpr, x, y, nx, ny;
@@ -391,7 +391,7 @@ bdf_make_glyph_grid(bdf_font_t *font, long code, int unencoded)
             gr->name = (char *) malloc(strlen(glp->name) + 1);
             (void) memcpy(gr->name, glp->name, strlen(glp->name) + 1);
         } else {
-            sprintf(name, "char%ld", code);
+            sprintf(name, "char%d", code);
             gr->name = (char *) malloc(strlen(name) + 1);
             (void) memcpy(gr->name, name, strlen(name) + 1);
         }
@@ -424,9 +424,9 @@ bdf_make_glyph_grid(bdf_font_t *font, long code, int unencoded)
          * The glyph doesn't exist, so make up a name for it.
          */
         if (unencoded)
-          sprintf(name, "unencoded%ld", code);
+          sprintf(name, "unencoded%d", code);
         else
-          sprintf(name, "char%ld", code);
+          sprintf(name, "char%d", code);
         gr->name = (char *) malloc(strlen(name) + 1);
         (void) memcpy(gr->name, name, strlen(name) + 1);
     }

@@ -23,7 +23,7 @@
 #define _h_gectrlbmaps
 
 /*
- * $Id: gectrlbmaps.h 2 2006-01-08 00:57:53Z mleisher $
+ * $Id: gectrlbmaps.h 1 2006-11-02 16:47:28Z mleisher $
  */
 
 static const gchar *copy_xpm[] = {

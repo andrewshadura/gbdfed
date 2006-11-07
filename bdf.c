@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdf.c 60 2006-07-14 15:58:19Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdf.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdf.c 60 2006-07-14 15:58:19Z mleisher $";
+static char svnid[] = "$Id: bdf.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -176,14 +176,14 @@ static bdf_property_t _bdf_properties[] = {
     {"_XMBDFED_INFO",           BDF_ATOM,     1},
 };
 
-static unsigned long _num_bdf_properties =
+static unsigned int _num_bdf_properties =
 sizeof(_bdf_properties) / sizeof(_bdf_properties[0]);
 
 /*
  * User defined properties.
  */
 static bdf_property_t *user_props;
-static unsigned long nuser_props = 0;
+static unsigned int nuser_props = 0;
 
 /**************************************************************************
  *
@@ -211,7 +211,7 @@ static hashnode *
 hash_bucket(char *key, hashtable *ht)
 {
     char *kp = key;
-    unsigned long res = 0;
+    unsigned int res = 0;
     hashnode *bp = ht->table, *ndp;
 
     /*
@@ -331,8 +331,8 @@ static hashtable proptbl;
  */
 typedef int (*_bdf_line_func_t)(
     char *line,
-    unsigned long linelen,
-    unsigned long lineno,
+    unsigned int linelen,
+    unsigned int lineno,
     void *call_data,
     void *client_data
 );
@@ -342,21 +342,21 @@ typedef int (*_bdf_line_func_t)(
  */
 typedef struct {
     char **field;
-    unsigned long size;
-    unsigned long used;
+    unsigned int size;
+    unsigned int used;
     char *bfield;
-    unsigned long bsize;
-    unsigned long bused;
+    unsigned int bsize;
+    unsigned int bused;
 } _bdf_list_t;
 
 /*
  * Structure used while loading BDF fonts.
  */
 typedef struct {
-    unsigned long flags;
-    unsigned long cnt;
-    unsigned long row;
-    unsigned long bpr;
+    unsigned int flags;
+    unsigned int cnt;
+    unsigned int row;
+    unsigned int bpr;
     short minlb;
     short maxlb;
     short maxrb;
@@ -364,13 +364,13 @@ typedef struct {
     short maxds;
     short rbearing;
     char *glyph_name;
-    long glyph_enc;
+    int glyph_enc;
     bdf_font_t *font;
     bdf_options_t *opts;
     void *client_data;
     bdf_callback_t callback;
     bdf_callback_struct_t cb;
-    unsigned long have[2048];
+    unsigned int have[2048];
     _bdf_list_t list;
 } _bdf_parse_t;
 
@@ -387,7 +387,7 @@ static char empty[1] = { 0 };
  * initialized the first time it was used.
  */
 static void
-_bdf_split(char *separators, char *line, unsigned long linelen,
+_bdf_split(char *separators, char *line, unsigned int linelen,
            _bdf_list_t *list)
 {
     int mult, final_empty;
@@ -516,9 +516,9 @@ _bdf_split(char *separators, char *line, unsigned long linelen,
 }
 
 static void
-_bdf_shift(unsigned long n, _bdf_list_t *list)
+_bdf_shift(unsigned int n, _bdf_list_t *list)
 {
-    unsigned long i, u;
+    unsigned int i, u;
 
     if (list == 0 || list->used == 0 || n == 0)
       return;
@@ -533,9 +533,9 @@ _bdf_shift(unsigned long n, _bdf_list_t *list)
 }
 
 static char *
-_bdf_join(int c, unsigned long *len, _bdf_list_t *list)
+_bdf_join(int c, unsigned int *len, _bdf_list_t *list)
 {
-    unsigned long i, j;
+    unsigned int i, j;
     char *fp, *dp;
 
     if (list == 0 || list->used == 0)
@@ -562,10 +562,10 @@ _bdf_join(int c, unsigned long *len, _bdf_list_t *list)
  */
 static int
 _bdf_readlines(int fd, _bdf_line_func_t callback, void *client_data,
-               unsigned long *lno)
+               unsigned int *lno)
 {
     _bdf_line_func_t cb;
-    unsigned long lineno;
+    unsigned int lineno;
     int n, res, done, refill, bytes, hold;
     char *ls, *le, *pp, *pe, *hp;
     char buf[65536];
@@ -646,7 +646,7 @@ _bdf_readlines(int fd, _bdf_line_func_t callback, void *client_data,
 }
 
 unsigned char *
-_bdf_strdup(unsigned char *s, unsigned long len)
+_bdf_strdup(unsigned char *s, unsigned int len)
 {
     unsigned char *ns;
 
@@ -659,11 +659,11 @@ _bdf_strdup(unsigned char *s, unsigned long len)
 }
 
 void
-_bdf_memmove(char *dest, char *src, unsigned long bytes)
+_bdf_memmove(char *dest, char *src, unsigned int bytes)
 {
-    long i, j;
+    int i, j;
 
-    i = (long) bytes;
+    i = (int) bytes;
     j = i & 7;
     i = (i + 7) >> 3;
 
@@ -740,12 +740,12 @@ static unsigned char hdigits[32] = {
 #define isdigok(m, d) (m[(d) >> 3] & (1 << ((d) & 7)))
 
 /*
- * Routine to convert an ASCII string into an unsigned long integer.
+ * Routine to convert an ASCII string into an unsigned int integer.
  */
-unsigned long
+unsigned int
 _bdf_atoul(char *s, char **end, int base)
 {
-    unsigned long v;
+    unsigned int v;
     unsigned char *dmap;
 
     if (s == 0 || *s == 0)
@@ -780,12 +780,12 @@ _bdf_atoul(char *s, char **end, int base)
 }
 
 /*
- * Routine to convert an ASCII string into an signed long integer.
+ * Routine to convert an ASCII string into an signed int integer.
  */
-long
+int
 _bdf_atol(char *s, char **end, int base)
 {
-    long v, neg;
+    int v, neg;
     unsigned char *dmap;
 
     if (s == 0 || *s == 0)
@@ -934,23 +934,23 @@ by_encoding(const void *a, const void *b)
 #define ACMSG6 "Font descent != actual descent.  Old: %hd New: %hd."
 #define ACMSG7 "Font height != actual height. Old: %hd New: %hd."
 #define ACMSG8 "Glyph scalable width (SWIDTH) adjustments made."
-#define ACMSG9 "SWIDTH field missing at line %ld.  Set automatically."
-#define ACMSG10 "DWIDTH field missing at line %ld.  Set to glyph width."
+#define ACMSG9 "SWIDTH field missing at line %d.  Set automatically."
+#define ACMSG10 "DWIDTH field missing at line %d.  Set to glyph width."
 #define ACMSG11 "SIZE bits per pixel field adjusted to %hd."
-#define ACMSG12 "Duplicate encoding %ld (%s) changed to unencoded."
-#define ACMSG13 "Glyph %ld extra rows removed."
-#define ACMSG14 "Glyph %ld extra columns removed."
-#define ACMSG15 "Incorrect glyph count: %ld indicated but %ld found."
+#define ACMSG12 "Duplicate encoding %d (%s) changed to unencoded."
+#define ACMSG13 "Glyph %d extra rows removed."
+#define ACMSG14 "Glyph %d extra columns removed."
+#define ACMSG15 "Incorrect glyph count: %d indicated but %d found."
 
 /*
  * Error messages.
  */
-#define ERRMSG1 "[line %ld] Missing \"%s\" line."
-#define ERRMSG2 "[line %ld] Font header corrupted or missing fields."
-#define ERRMSG3 "[line %ld] Font glyphs corrupted or missing fields."
+#define ERRMSG1 "[line %d] Missing \"%s\" line."
+#define ERRMSG2 "[line %d] Font header corrupted or missing fields."
+#define ERRMSG3 "[line %d] Font glyphs corrupted or missing fields."
 
 void
-_bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned long len)
+_bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned int len)
 {
     char *cp;
 
@@ -969,7 +969,7 @@ _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned long len)
 }
 
 void
-_bdf_add_comment(bdf_font_t *font, char *comment, unsigned long len)
+_bdf_add_comment(bdf_font_t *font, char *comment, unsigned int len)
 {
     char *cp;
 
@@ -994,7 +994,7 @@ _bdf_add_comment(bdf_font_t *font, char *comment, unsigned long len)
 static void
 _bdf_set_default_spacing(bdf_font_t *font, bdf_options_t *opts)
 {
-    unsigned long len;
+    unsigned int len;
     char name[128];
     _bdf_list_t list;
 
@@ -1003,7 +1003,7 @@ _bdf_set_default_spacing(bdf_font_t *font, bdf_options_t *opts)
 
     font->spacing = opts->font_spacing;
 
-    len = (unsigned long) (strlen(font->name) + 1);
+    len = (unsigned int) (strlen(font->name) + 1);
     (void) memcpy(name, font->name, len);
     list.size = list.used = 0;
     _bdf_split("-", name, len, &list);
@@ -1023,7 +1023,7 @@ _bdf_set_default_spacing(bdf_font_t *font, bdf_options_t *opts)
  * the double quotes are removed if they exist.
  */
 static int
-_bdf_is_atom(char *line, unsigned long linelen, char **name, char **value)
+_bdf_is_atom(char *line, unsigned int linelen, char **name, char **value)
 {
     int hold;
     char *sp, *ep;
@@ -1092,7 +1092,7 @@ _bdf_is_atom(char *line, unsigned long linelen, char **name, char **value)
 static void
 _bdf_add_property(bdf_font_t *font, char *name, char *value)
 {
-    unsigned long propid;
+    unsigned int propid;
     hashnode hn;
     int len;
     bdf_property_t *prop, *fp;
@@ -1105,7 +1105,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
          * The property already exists in the font, so simply replace
          * the value of the property with the current value.
          */
-        fp = font->props + (unsigned long) hn->data;
+        fp = font->props + (unsigned int) hn->data;
 
         switch (fp->format) {
           case BDF_ATOM:
@@ -1159,7 +1159,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
         font->props_size++;
     }
 
-    propid = (unsigned long) hn->data;
+    propid = (unsigned int) hn->data;
     if (propid >= _num_bdf_properties)
       prop = user_props + (propid - _num_bdf_properties);
     else
@@ -1230,13 +1230,13 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
  * Actually parse the glyph info and bitmaps.
  */
 static int
-_bdf_parse_glyphs(char *line, unsigned long linelen, unsigned long lineno,
+_bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
                   void *call_data, void *client_data)
 {
     int c;
     char *s;
     unsigned char *bp;
-    unsigned long i, slen, nibbles;
+    unsigned int i, slen, nibbles;
     double ps, rx, dw, sw;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
@@ -1651,10 +1651,10 @@ _bdf_parse_glyphs(char *line, unsigned long linelen, unsigned long lineno,
  * Load the font properties.
  */
 static int
-_bdf_parse_properties(char *line, unsigned long linelen, unsigned long lineno,
+_bdf_parse_properties(char *line, unsigned int linelen, unsigned int lineno,
                       void *call_data, void *client_data)
 {
-    unsigned long vlen;
+    unsigned int vlen;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
     char *name, *value, nbuf[128];
@@ -1728,10 +1728,10 @@ _bdf_parse_properties(char *line, unsigned long linelen, unsigned long lineno,
  * Load the font header.
  */
 static int
-_bdf_parse_start(char *line, unsigned long linelen, unsigned long lineno,
+_bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
                  void *call_data, void *client_data)
 {
-    unsigned long slen;
+    unsigned int slen;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
     bdf_font_t *font;
@@ -1883,7 +1883,7 @@ _bdf_parse_start(char *line, unsigned long linelen, unsigned long lineno,
 void
 bdf_setup(void)
 {
-    unsigned long i;
+    unsigned int i;
     bdf_property_t *prop;
 
     hash_init(&proptbl);
@@ -1894,7 +1894,7 @@ bdf_setup(void)
 void
 bdf_cleanup(void)
 {
-    unsigned long i;
+    unsigned int i;
     bdf_property_t *prop;
 
     hash_free(&proptbl);
@@ -1918,7 +1918,7 @@ bdf_load_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
               void *data)
 {
     int n;
-    unsigned long lineno;
+    unsigned int lineno;
     char msgbuf[128];
     _bdf_parse_t p;
 
@@ -2065,10 +2065,10 @@ bdf_load_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
 #ifdef HAVE_HBF
 
 static int
-_bdf_parse_hbf_header(char *line, unsigned long linelen, unsigned long lineno,
+_bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
                       void *call_data, void *client_data)
 {
-    unsigned long vlen;
+    unsigned int vlen;
     char *name, *value;
     _bdf_parse_t *p;
     _bdf_line_func_t *next;
@@ -2275,7 +2275,7 @@ static void
 _bdf_add_hbf_glyph(HBF *hbf, unsigned int code, void *callback_data)
 {
     CONST unsigned char *bmap;
-    unsigned long n;
+    unsigned int n;
     bdf_glyph_t *gp;
     bdf_font_t *font;
     _bdf_parse_t *p;
@@ -2320,14 +2320,14 @@ _bdf_add_hbf_glyph(HBF *hbf, unsigned int code, void *callback_data)
      * Set the glyph name.
      */
     sprintf(nbuf, "char%d", code);
-    n = (unsigned long) strlen(nbuf);
+    n = (unsigned int) strlen(nbuf);
     gp->name = (char *) malloc(n + 1);
     (void) memcpy(gp->name, nbuf, n + 1);
 
     /*
      * Set encoding.
      */
-    gp->encoding = (long) code;
+    gp->encoding = (int) code;
 
     /*
      * Set the device width.
@@ -2376,7 +2376,7 @@ bdf_load_hbf_font(char *filename, bdf_options_t *opts, bdf_callback_t callback,
                   void *data)
 {
     int n, diff;
-    unsigned long lineno;
+    unsigned int lineno;
     FILE *in;
     HBF *hbf;
     bdf_property_t *pp;
@@ -2509,7 +2509,7 @@ _bdf_crop_glyph(bdf_font_t *font, bdf_glyph_t *glyph)
     int byte;
     unsigned short x, y, bpr, nbpr, col, colx, si, di;
     unsigned short minx, maxx, miny, maxy;
-    unsigned long bytes;
+    unsigned int bytes;
     unsigned char *bmap, *masks;
     bdf_bbx_t nbbx;
 
@@ -2691,7 +2691,8 @@ void
 bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
               bdf_callback_t callback, void *data)
 {
-    unsigned long i, j, bpr, pcnt;
+    int len;
+    unsigned int i, j, bpr, pcnt;
     double dw, ps, rx;
     char *sp, *ep, *eol;
     bdf_property_t *p;
@@ -2733,7 +2734,8 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
             ep = sp;
             while (*ep && *ep != '\n')
               ep++;
-            fprintf(out, "COMMENT %.*s%s", ep - sp, sp, eol);
+            len = (int) (ep - sp);
+            fprintf(out, "COMMENT %.*s%s", len, sp, eol);
             sp = ep;
         }
     }
@@ -2747,10 +2749,10 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
      * Emit the size info.
      */
     if (font->bpp == 1)
-      fprintf(out, "SIZE %ld %ld %ld%s", font->point_size,
+      fprintf(out, "SIZE %d %d %d%s", font->point_size,
               font->resolution_x, font->resolution_y, eol);
     else
-      fprintf(out, "SIZE %ld %ld %ld %hd%s", font->point_size,
+      fprintf(out, "SIZE %d %d %d %hd%s", font->point_size,
               font->resolution_x, font->resolution_y, font->bpp, eol);
 
     /*
@@ -2769,7 +2771,7 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
           pcnt++;
     }
 
-    fprintf(out, "STARTPROPERTIES %ld%s", pcnt, eol);
+    fprintf(out, "STARTPROPERTIES %d%s", pcnt, eol);
     for (i = 0, p = font->props; i < font->props_used; i++, p++) {
         fprintf(out, "%s ", p->name);
         if (p->format == BDF_ATOM) {
@@ -2778,7 +2780,7 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
             else
               fprintf(out, "\"%s\"%s", p->value.atom, eol);
         } else
-          fprintf(out, "%ld%s", p->value.int32, eol);
+          fprintf(out, "%d%s", p->value.int32, eol);
     }
 
     fprintf(out, "ENDPROPERTIES%s", eol);
@@ -2786,7 +2788,7 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
     /*
      * Emit the number of bitmaps in the font.
      */
-    fprintf(out, "CHARS %ld%s", font->unencoded_used + font->glyphs_used, eol);
+    fprintf(out, "CHARS %d%s", font->unencoded_used + font->glyphs_used, eol);
 
     /*
      * Call the callback if it was passed to start the save.
@@ -2837,7 +2839,7 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
             c->swidth = (unsigned short) ((dw * 72000.0) / (ps * rx));
         }
         if (c->name == 0)
-          fprintf(out, "STARTCHAR unencoded%ld%sENCODING -1%s", i, eol, eol);
+          fprintf(out, "STARTCHAR unencoded%d%sENCODING -1%s", i, eol, eol);
         else
           fprintf(out, "STARTCHAR %s%sENCODING -1%s", c->name, eol, eol);
         fprintf(out, "SWIDTH %hd 0%sDWIDTH %hd 0%s",
@@ -2907,10 +2909,10 @@ bdf_save_font(FILE *out, bdf_font_t *font, bdf_options_t *opts,
             c->swidth = (unsigned short) ((dw * 72000.0) / (ps * rx));
         }
         if (c->name == 0)
-          fprintf(out, "STARTCHAR char%ld%sENCODING %ld%s",
+          fprintf(out, "STARTCHAR char%d%sENCODING %d%s",
                   c->encoding, eol, c->encoding, eol);
         else
-          fprintf(out, "STARTCHAR %s%sENCODING %ld%s",
+          fprintf(out, "STARTCHAR %s%sENCODING %d%s",
                   c->name, eol, c->encoding, eol);
         fprintf(out, "SWIDTH %hd 0%sDWIDTH %hd 0%s",
                 c->swidth, eol, c->dwidth, eol);
@@ -2989,7 +2991,7 @@ bdf_save_sbit_metrics(FILE *out, bdf_font_t *font, bdf_options_t *opts,
      * Save PPEM.
      */
     fprintf(out, ";%s; Pixels Per Em.%s;%s", eol, eol, eol);
-    fprintf(out, "PPEM %ld%s%s", font->point_size, eol, eol);
+    fprintf(out, "PPEM %d%s%s", font->point_size, eol, eol);
 
     /*
      * If the font is character cell or monowidth, set this boolean.
@@ -3011,7 +3013,7 @@ bdf_save_sbit_metrics(FILE *out, bdf_font_t *font, bdf_options_t *opts,
      */
     fprintf(out, ";%s; Horizontal line metrics.%s;%s", eol, eol, eol);
 
-    fprintf(out, "H_ASCENDER %ld%sH_DESCENDER %ld%s", font->font_ascent, eol,
+    fprintf(out, "H_ASCENDER %d%sH_DESCENDER %d%s", font->font_ascent, eol,
             font->font_descent, eol);
     fprintf(out, "H_WIDTHMAX %hd%s", font->bbx.width, eol);
     fprintf(out, "H_MINORIGINSB %hd%sH_MINADVANCEBL %hd%s",
@@ -3050,7 +3052,7 @@ bdf_export_hex(FILE *out, bdf_font_t *font, bdf_options_t *opts,
                bdf_callback_t callback, void *data)
 {
     int bpr, fbpr, j, k;
-    unsigned long i, ng;
+    unsigned int i, ng;
     bdf_glyph_t *gp, cell;
     bdf_callback_struct_t cb;
 
@@ -3077,7 +3079,7 @@ bdf_export_hex(FILE *out, bdf_font_t *font, bdf_options_t *opts,
 
     for (i = 0, ng = font->glyphs_used, gp = font->glyphs; i < ng; i++, gp++) {
         _bdf_pad_cell(font, gp, &cell);
-        fprintf(out, "%04lX:", gp->encoding & 0xffff);
+        fprintf(out, "%04X:", gp->encoding & 0xffff);
         if (gp->bbx.width <= (font->bbx.width >> 1)) {
             for (j = 0; j < cell.bytes; j += fbpr) {
                 for (k = 0; k < bpr; k++)
@@ -3119,7 +3121,7 @@ bdf_export_hex(FILE *out, bdf_font_t *font, bdf_options_t *opts,
 void
 bdf_free_font(bdf_font_t *font)
 {
-    unsigned long i;
+    unsigned int i;
     bdf_glyph_t *glyphs;
 
     if (font == 0)
@@ -3204,7 +3206,7 @@ bdf_free_font(bdf_font_t *font)
 void
 bdf_create_property(char *name, int format)
 {
-    unsigned long n;
+    unsigned int n;
     bdf_property_t *p;
 
     /*
@@ -3225,7 +3227,7 @@ bdf_create_property(char *name, int format)
 
     p = user_props + nuser_props;
     (void) memset((char *) p, 0, sizeof(bdf_property_t));
-    n = (unsigned long) (strlen(name) + 1);
+    n = (unsigned int) (strlen(name) + 1);
     p->name = (char *) malloc(n);
     (void) memcpy(p->name, name, n);
     p->format = format;
@@ -3241,7 +3243,7 @@ bdf_property_t *
 bdf_get_property(char *name)
 {
     hashnode hn;
-    unsigned long propid;
+    unsigned int propid;
 
     if (name == 0 || *name == 0)
       return 0;
@@ -3249,7 +3251,7 @@ bdf_get_property(char *name)
     if ((hn = hash_lookup(name, &proptbl)) == 0)
       return 0;
 
-    propid = (unsigned long) hn->data;
+    propid = (unsigned int) hn->data;
     if (propid >= _num_bdf_properties)
       return user_props + (propid - _num_bdf_properties);
     return _bdf_properties + propid;
@@ -3269,10 +3271,10 @@ by_prop_name(const void *a, const void *b)
     return strcmp(p1->name, p2->name);
 }
 
-unsigned long
+unsigned int
 bdf_property_list(bdf_property_t **props)
 {
-    unsigned long n;
+    unsigned int n;
     bdf_property_t *p;
 
     n = _num_bdf_properties + nuser_props;
@@ -3290,7 +3292,7 @@ bdf_property_list(bdf_property_t **props)
 
 int
 bdf_replace_comments(bdf_font_t *font, char *comments,
-                     unsigned long comments_len)
+                     unsigned int comments_len)
 {
     if (font == 0 || comments_len == 0)
       return 0;
@@ -3306,7 +3308,7 @@ bdf_replace_comments(bdf_font_t *font, char *comments,
     return 1;
 }
 
-unsigned long
+unsigned int
 bdf_font_property_list(bdf_font_t *font, bdf_property_t **props)
 {
     bdf_property_t *p;
@@ -3331,7 +3333,7 @@ void
 bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
 {
     int len;
-    unsigned long propid;
+    unsigned int propid;
     hashnode hn;
     bdf_property_t *p, *ip;
 
@@ -3358,7 +3360,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
          * If the property exists and is a user defined property, make sure
          * its format is updated to match the property being added.
          */
-        propid = (unsigned long) hn->data;
+        propid = (unsigned int) hn->data;
         if (propid >= _num_bdf_properties) {
             p = user_props + (propid - _num_bdf_properties);
             if (p->format != property->format)
@@ -3374,7 +3376,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
         /*
          * Changing an existing property value.
          */
-        p = font->props + ((unsigned long) hn->data);
+        p = font->props + ((unsigned int) hn->data);
 
         /*
          * If the format changed, then free the atom value if the original
@@ -3431,7 +3433,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
          * name of the property.
          */
         hn = hash_lookup(property->name, &proptbl);
-        propid = (unsigned long) hn->data;
+        propid = (unsigned int) hn->data;
         if (propid >= _num_bdf_properties)
           ip = user_props + (propid - _num_bdf_properties);
         else
@@ -3550,7 +3552,7 @@ void
 bdf_delete_font_property(bdf_font_t *font, char *name)
 {
     hashnode hn;
-    unsigned long off;
+    unsigned int off;
     bdf_property_t *p;
 
     if (font == 0 || name == 0 || *name == 0 || font->props_used == 0)
@@ -3559,7 +3561,7 @@ bdf_delete_font_property(bdf_font_t *font, char *name)
     if ((hn = hash_lookup(name, (hashtable *) font->internal)) == 0)
       return;
 
-    off = (unsigned long) hn->data;
+    off = (unsigned int) hn->data;
     p = font->props + off;
 
     /*
@@ -3614,7 +3616,7 @@ bdf_get_font_property(bdf_font_t *font, char *name)
       return 0;
 
     hn = hash_lookup(name, (hashtable *) font->internal);
-    return (hn) ? (font->props + ((unsigned long) hn->data)) : 0;
+    return (hn) ? (font->props + ((unsigned int) hn->data)) : 0;
 }
 
 typedef struct {
@@ -3641,12 +3643,12 @@ _bdf_get_boolean(char *val)
 }
 
 static int
-_bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
+_bdf_parse_options(char *line, unsigned int linelen, unsigned int lineno,
                    void *call_data, void *client_data)
 {
     _bdf_list_t *lp;
     _bdf_opts_parse_t *p;
-    long bpp;
+    int bpp;
 
     p = (_bdf_opts_parse_t *) client_data;
     lp = &p->list;
@@ -3660,19 +3662,19 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "bits_per_pixel", 14) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: bits_per_pixel <1, 2, or 4>.\n",
+                    "bdf: warning: %d: bits_per_pixel <1, 2, or 4>.\n",
                     lineno);
         } else {
             bpp = _bdf_atol(lp->field[1], 0, 10);
             if (!(bpp == 1 || bpp == 2 || bpp == 4)) {
                 fprintf(stderr,
-                        "bdf: warning: %ld: invalid bits per pixel %ld.\n",
+                        "bdf: warning: %d: invalid bits per pixel %d.\n",
                         lineno, bpp);
                 fprintf(stderr,
-                        "bdf: warning: %ld: bits_per_pixel <1, 2, or 4>.\n",
+                        "bdf: warning: %d: bits_per_pixel <1, 2, or 4>.\n",
                         lineno);
             } else
               p->opts->bits_per_pixel = bpp;
@@ -3683,10 +3685,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
     if (lp->field[0][0] == 'e' && memcmp(lp->field[0], "eol", 3) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: eol <eolname>.\n", lineno);
+                    "bdf: warning: %d: eol <eolname>.\n", lineno);
         } else {
             switch (lp->field[1][0]) {
               case 'u': case 'U': p->opts->eol = BDF_UNIX_EOL; break;
@@ -3701,10 +3703,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "correct_metrics", 15) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: correct_metrics <boolean>.\n", lineno);
+                    "bdf: warning: %d: correct_metrics <boolean>.\n", lineno);
         } else
           p->opts->correct_metrics = _bdf_get_boolean(lp->field[1]);
 
@@ -3715,10 +3717,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "keep_unencoded", 14) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: keep_unencoded <boolean>.\n", lineno);
+                    "bdf: warning: %d: keep_unencoded <boolean>.\n", lineno);
         } else
           p->opts->keep_unencoded = _bdf_get_boolean(lp->field[1]);
 
@@ -3729,10 +3731,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "keep_comments", 13) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: keep_comments <boolean>.\n", lineno);
+                    "bdf: warning: %d: keep_comments <boolean>.\n", lineno);
         } else
           p->opts->keep_comments = _bdf_get_boolean(lp->field[1]);
 
@@ -3743,10 +3745,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "pad_character_cells", 19) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: pad_character_cells <boolean>.\n",
+                    "bdf: warning: %d: pad_character_cells <boolean>.\n",
                     lineno);
         } else
           p->opts->pad_cells = _bdf_get_boolean(lp->field[1]);
@@ -3758,10 +3760,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "point_size", 10) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: point_size <integer>.\n", lineno);
+                    "bdf: warning: %d: point_size <integer>.\n", lineno);
         } else
           p->opts->point_size = _bdf_atol(lp->field[1], 0, 10);
         return 0;
@@ -3771,10 +3773,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "horizontal_resolution", 21) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: horizontal_resolution <cardinal>.\n",
+                    "bdf: warning: %d: horizontal_resolution <cardinal>.\n",
                     lineno);
         } else
           p->opts->resolution_x = _bdf_atoul(lp->field[1], 0, 10);
@@ -3785,10 +3787,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "vertical_resolution", 19) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: vertical_resolution <cardinal>.\n",
+                    "bdf: warning: %d: vertical_resolution <cardinal>.\n",
                     lineno);
         } else
           p->opts->resolution_y = _bdf_atoul(lp->field[1], 0, 10);
@@ -3799,10 +3801,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "font_spacing", 12) == 0) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: font_spacing <spacing name>.\n",
+                    "bdf: warning: %d: font_spacing <spacing name>.\n",
                     lineno);
         } else {
             switch (lp->field[1][0]) {
@@ -3817,7 +3819,7 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
                 break;
               default:
                 fprintf(stderr,
-                        "bdf: warning: %ld: unknown font spacing '%s'.\n",
+                        "bdf: warning: %d: unknown font spacing '%s'.\n",
                         lineno, lp->field[1]);
             }
         }
@@ -3828,10 +3830,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         memcmp(lp->field[0], "property", 8) == 0) {
         if (lp->used < 3) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: property <name> <type>.\n",
+                    "bdf: warning: %d: property <name> <type>.\n",
                     lineno);
         } else {
             switch (lp->field[2][0]) {
@@ -3846,7 +3848,7 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
                 break;
               default:
                 fprintf(stderr,
-                        "bdf: warning: %ld: unknown property type '%s'.\n",
+                        "bdf: warning: %d: unknown property type '%s'.\n",
                         lineno, lp->field[2]);
             }
         }
@@ -3858,10 +3860,10 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
          memcmp(lp->field[0], "hint_opentype_glyphs", 20) == 0)) {
         if (lp->used < 2) {
             fprintf(stderr,
-                    "bdf: warning: %ld: incorrect number of fields %ld.\n",
+                    "bdf: warning: %d: incorrect number of fields %d.\n",
                     lineno, lp->used);
             fprintf(stderr,
-                    "bdf: warning: %ld: hint_opentype_glyphs <boolean>.\n",
+                    "bdf: warning: %d: hint_opentype_glyphs <boolean>.\n",
                     lineno);
         } else {
 #ifdef HAVE_FREETYPE
@@ -3892,7 +3894,7 @@ _bdf_parse_options(char *line, unsigned long linelen, unsigned long lineno,
         (*p->callback)(p->opts, lp->field, lp->used, p->client_data) != 0)
       return 0;
 
-    fprintf(stderr, "bdf: warning: %ld: unknown configuration option '%s'.\n",
+    fprintf(stderr, "bdf: warning: %d: unknown configuration option '%s'.\n",
             lineno, lp->field[0]);
     return 0;
 }
@@ -3901,7 +3903,7 @@ void
 bdf_load_options(FILE *in, bdf_options_t *opts,
                  bdf_options_callback_t callback, void *client_data)
 {
-    unsigned long lineno;
+    unsigned int lineno;
     _bdf_opts_parse_t p;
 
     /*
@@ -3928,7 +3930,7 @@ bdf_load_options(FILE *in, bdf_options_t *opts,
 void
 bdf_save_options(FILE *out, bdf_options_t *opts)
 {
-    unsigned long i;
+    unsigned int i;
 
     if (out == 0 || opts == 0)
       return;
@@ -3964,14 +3966,14 @@ bdf_save_options(FILE *out, bdf_options_t *opts)
       case BDF_CHARCELL: fprintf(out, "charactercell\n\n"); break;
     }
 
-    fprintf(out, "#\n# Point size.\n#\npoint_size %ld\n\n", opts->point_size);
+    fprintf(out, "#\n# Point size.\n#\npoint_size %d\n\n", opts->point_size);
 
     fprintf(out,
-            "#\n# Horizontal resolution.\n#\nhorizontal_resolution %ld\n\n",
+            "#\n# Horizontal resolution.\n#\nhorizontal_resolution %d\n\n",
             opts->resolution_x);
 
     fprintf(out,
-            "#\n# Vertical resolution.\n#\nvertical_resolution %ld\n\n",
+            "#\n# Vertical resolution.\n#\nvertical_resolution %d\n\n",
             opts->resolution_x);
 
     fprintf(out,
@@ -4023,10 +4025,10 @@ bdf_default_options(bdf_options_t *opts)
 }
 
 bdf_font_t *
-bdf_new_font(char *name, long point_size, long resolution_x, long resolution_y,
-             long spacing, int bpp)
+bdf_new_font(char *name, int point_size, int resolution_x, int resolution_y,
+             int spacing, int bpp)
 {
-    long psize;
+    int psize;
     char sp[2];
     bdf_font_t *font;
     double dp, dr;
@@ -4049,7 +4051,7 @@ bdf_new_font(char *name, long point_size, long resolution_x, long resolution_y,
      */
     dr = (double) resolution_y;
     dp = (double) (point_size * 10);
-    psize = (long) (((dp * dr) / 722.7) + 0.5);
+    psize = (int) (((dp * dr) / 722.7) + 0.5);
 
     /*
      * Make the default width about 1.5 smaller than the height.
@@ -4090,22 +4092,22 @@ bdf_new_font(char *name, long point_size, long resolution_x, long resolution_y,
 
     prop.name = "RESOLUTION_X";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) font->resolution_x;
+    prop.value.card32 = (unsigned int) font->resolution_x;
     bdf_add_font_property(font, &prop);
 
     prop.name = "RESOLUTION_Y";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) font->resolution_y;
+    prop.value.card32 = (unsigned int) font->resolution_y;
     bdf_add_font_property(font, &prop);
 
     prop.name = "FONT_ASCENT";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long) font->bbx.ascent;
+    prop.value.int32 = (int) font->bbx.ascent;
     bdf_add_font_property(font, &prop);
 
     prop.name = "FONT_DESCENT";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long) font->bbx.descent;
+    prop.value.int32 = (int) font->bbx.descent;
     bdf_add_font_property(font, &prop);
 
     prop.name = "AVERAGE_WIDTH";
@@ -4136,7 +4138,7 @@ bdf_new_font(char *name, long point_size, long resolution_x, long resolution_y,
 void
 bdf_set_default_metrics(bdf_font_t *font)
 {
-    long psize;
+    int psize;
     double dp, dr;
     bdf_property_t prop;
 
@@ -4146,7 +4148,7 @@ bdf_set_default_metrics(bdf_font_t *font)
      */
     dr = (double) font->resolution_y;
     dp = (double) (font->point_size * 10);
-    psize = (long) (((dp * dr) / 722.7) + 0.5);
+    psize = (int) (((dp * dr) / 722.7) + 0.5);
 
     /*
      * Make the default width about 1.5 smaller than the height.
@@ -4170,12 +4172,12 @@ bdf_set_default_metrics(bdf_font_t *font)
      */
     prop.name = "FONT_ASCENT";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long) font->bbx.ascent;
+    prop.value.int32 = (int) font->bbx.ascent;
     bdf_add_font_property(font, &prop);
 
     prop.name = "FONT_DESCENT";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long) font->bbx.descent;
+    prop.value.int32 = (int) font->bbx.descent;
     bdf_add_font_property(font, &prop);
 
     prop.name = "AVERAGE_WIDTH";
@@ -4185,7 +4187,7 @@ bdf_set_default_metrics(bdf_font_t *font)
 }
 
 int
-bdf_glyph_modified(bdf_font_t *font, long which, int unencoded)
+bdf_glyph_modified(bdf_font_t *font, int which, int unencoded)
 {
     if (font == 0 || which < 0)
       return 0;
@@ -4197,10 +4199,10 @@ bdf_glyph_modified(bdf_font_t *font, long which, int unencoded)
 }
 
 void
-bdf_copy_glyphs(bdf_font_t *font, long start, long end,
+bdf_copy_glyphs(bdf_font_t *font, int start, int end,
                 bdf_glyphlist_t *glyphs, int unencoded)
 {
-    long tmp, i, nc;
+    int tmp, i, nc;
     bdf_glyph_t *cp, *dp;
     short maxas, maxds, maxrb, minlb, maxlb, rb;
 
@@ -4316,9 +4318,9 @@ bdf_copy_glyphs(bdf_font_t *font, long start, long end,
 }
 
 bdf_glyph_t *
-_bdf_locate_glyph(bdf_font_t *font, long code, int unencoded)
+_bdf_locate_glyph(bdf_font_t *font, int code, int unencoded)
 {
-    long l, r, m, nc;
+    int l, r, m, nc;
     bdf_glyph_t *gl;
 
     if (code < 0 || font == 0)
@@ -4364,9 +4366,9 @@ _bdf_locate_glyph(bdf_font_t *font, long code, int unencoded)
 }
 
 int
-bdf_delete_glyphs(bdf_font_t *font, long start, long end, int unencoded)
+bdf_delete_glyphs(bdf_font_t *font, int start, int end, int unencoded)
 {
-    long i, n, nc, cnt, mod;
+    int i, n, nc, cnt, mod;
     bdf_glyph_t *cp, *sp, *ep;
 
     mod = 0;
@@ -4492,7 +4494,7 @@ static unsigned char eightbpp_ones[] = {0x01};
 static void
 _bdf_one_to_n(bdf_glyphlist_t *gl, int n)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, sx, sy;
     unsigned char *nbmap, *ones = 0;
     bdf_glyph_t *gp;
@@ -4532,7 +4534,7 @@ _bdf_one_to_n(bdf_glyphlist_t *gl, int n)
 static void
 _bdf_n_to_one(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4574,7 +4576,7 @@ _bdf_n_to_one(bdf_glyphlist_t *gl)
 static void
 _bdf_two_to_four(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4617,7 +4619,7 @@ _bdf_two_to_four(bdf_glyphlist_t *gl)
 static void
 _bdf_four_to_two(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4675,7 +4677,7 @@ _bdf_four_to_two(bdf_glyphlist_t *gl)
 static void
 _bdf_two_to_eight(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4724,7 +4726,7 @@ _bdf_two_to_eight(bdf_glyphlist_t *gl)
 static void
 _bdf_eight_to_two(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4767,7 +4769,7 @@ _bdf_eight_to_two(bdf_glyphlist_t *gl)
 static void
 _bdf_four_to_eight(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4809,7 +4811,7 @@ _bdf_four_to_eight(bdf_glyphlist_t *gl)
 static void
 _bdf_eight_to_four(bdf_glyphlist_t *gl)
 {
-    long i;
+    int i;
     unsigned short bpr, sbpr, bytes, col, si, byte, sx, sy;
     unsigned char *nbmap, *masks;
     bdf_glyph_t *gp;
@@ -4858,7 +4860,7 @@ _bdf_eight_to_four(bdf_glyphlist_t *gl)
  * This only works on glyphs that exist.
  */
 int
-bdf_replace_mappings(bdf_font_t *font, long encoding, bdf_psf_unimap_t *map,
+bdf_replace_mappings(bdf_font_t *font, int encoding, bdf_psf_unimap_t *map,
                      int unencoded)
 {
     bdf_glyph_t *gp;
@@ -4895,11 +4897,11 @@ bdf_replace_mappings(bdf_font_t *font, long encoding, bdf_psf_unimap_t *map,
 }
 
 int
-bdf_replace_glyphs(bdf_font_t *font, long start, bdf_glyphlist_t *glyphs,
+bdf_replace_glyphs(bdf_font_t *font, int start, bdf_glyphlist_t *glyphs,
                    int unencoded)
 {
     int resize, appending;
-    long i, n, ng, end, del, remaining, off[2];
+    int i, n, ng, end, del, remaining, off[2];
     bdf_glyph_t *sgp, *gp, *dgp;
     short maxas, maxds, maxrb, minlb, maxlb, rb;
     double ps, rx, dw;
@@ -5177,10 +5179,10 @@ bdf_replace_glyphs(bdf_font_t *font, long start, bdf_glyphlist_t *glyphs,
 }
 
 int
-bdf_insert_glyphs(bdf_font_t *font, long start, bdf_glyphlist_t *glyphs)
+bdf_insert_glyphs(bdf_font_t *font, int start, bdf_glyphlist_t *glyphs)
 {
     int resize;
-    unsigned long i, ng, n, which;
+    unsigned int i, ng, n, which;
     bdf_glyph_t *gp;
 
     resize = 0;
@@ -5441,11 +5443,11 @@ _bdf_combine_glyphs(bdf_font_t *font, bdf_glyph_t *f, bdf_glyph_t *g)
 }
 
 int
-bdf_merge_glyphs(bdf_font_t *font, long start, bdf_glyphlist_t *glyphs,
+bdf_merge_glyphs(bdf_font_t *font, int start, bdf_glyphlist_t *glyphs,
                  int unencoded)
 {
     int resize;
-    long i, n, ng, end, add, enc, off;
+    int i, n, ng, end, add, enc, off;
     bdf_glyph_t *sgp, *gp, *dgp, *base;
     short maxas, maxds, maxrb, minlb, maxlb, rb;
     double ps, rx, dw;
@@ -5673,8 +5675,8 @@ bdf_set_modified(bdf_font_t *font, int modified)
         /*
          * Clear out the modified bitmaps.
          */
-        (void) memset((char *) font->nmod, 0, sizeof(unsigned long) * 2048);
-        (void) memset((char *) font->umod, 0, sizeof(unsigned long) * 2048);
+        (void) memset((char *) font->nmod, 0, sizeof(unsigned int) * 2048);
+        (void) memset((char *) font->umod, 0, sizeof(unsigned int) * 2048);
     }
     font->modified = modified;
 }
@@ -5717,14 +5719,14 @@ bdf_is_xlfd_property(char *name)
 int
 bdf_has_xlfd_name(bdf_font_t *font)
 {
-    unsigned long len;
+    unsigned int len;
     char name[256];
     _bdf_list_t list;
 
     if (font == 0 || font->name == 0 || font->name[0] == 0)
       return 0;
 
-    len = (unsigned long) (strlen(font->name) + 1);
+    len = (unsigned int) (strlen(font->name) + 1);
     (void) memcpy(name, font->name, len);
     list.size = list.used = 0;
     _bdf_split("-", name, len, &list);
@@ -5739,7 +5741,7 @@ bdf_make_xlfd_name(bdf_font_t *font, char *foundry, char *family)
 {
     int len;
     double dp, dr;
-    unsigned long i, width, used;
+    unsigned int i, width, used;
     unsigned short awidth, pxsize;
     bdf_property_t *pp;
     bdf_glyph_t *gp;
@@ -5810,7 +5812,7 @@ bdf_make_xlfd_name(bdf_font_t *font, char *foundry, char *family)
      * Add the PIXEL_SIZE field.
      */
     if ((pp = bdf_get_font_property(font, "PIXEL_SIZE")) != 0)
-      sprintf(np, "-%ld", pp->value.int32);
+      sprintf(np, "-%d", pp->value.int32);
     else {
         /*
          * Determine the pixel size.
@@ -5826,27 +5828,27 @@ bdf_make_xlfd_name(bdf_font_t *font, char *foundry, char *family)
      * Add the POINT_SIZE field.
      */
     if ((pp = bdf_get_font_property(font, "POINT_SIZE")) != 0)
-      sprintf(np, "-%ld", pp->value.int32);
+      sprintf(np, "-%d", pp->value.int32);
     else
-      sprintf(np, "-%ld", font->point_size * 10);
+      sprintf(np, "-%d", font->point_size * 10);
     np += strlen(np);
 
     /*
      * Add the RESOLUTION_X field.
      */
     if ((pp = bdf_get_font_property(font, "RESOLUTION_X")) != 0)
-      sprintf(np, "-%ld", pp->value.card32);
+      sprintf(np, "-%d", pp->value.card32);
     else
-      sprintf(np, "-%ld", font->resolution_x);
+      sprintf(np, "-%d", font->resolution_x);
     np += strlen(np);
 
     /*
      * Add the RESOLUTION_Y field.
      */
     if ((pp = bdf_get_font_property(font, "RESOLUTION_Y")) != 0)
-      sprintf(np, "-%ld", pp->value.card32);
+      sprintf(np, "-%d", pp->value.card32);
     else
-      sprintf(np, "-%ld", font->resolution_y);
+      sprintf(np, "-%d", font->resolution_y);
     np += strlen(np);
 
     /*
@@ -5869,7 +5871,7 @@ bdf_make_xlfd_name(bdf_font_t *font, char *foundry, char *family)
      * Add the AVERAGE_WIDTH field.
      */
     if ((pp = bdf_get_font_property(font, "AVERAGE_WIDTH")) != 0)
-      sprintf(np, "-%ld", pp->value.int32);
+      sprintf(np, "-%d", pp->value.int32);
     else {
         /*
          * Determine the average width of all the glyphs in the font.
@@ -5915,7 +5917,7 @@ bdf_make_xlfd_name(bdf_font_t *font, char *foundry, char *family)
 void
 bdf_update_name_from_properties(bdf_font_t *font)
 {
-    unsigned long i;
+    unsigned int i;
     bdf_property_t *p;
     _bdf_list_t list;
     char *np, name[128], nname[128];
@@ -5929,7 +5931,7 @@ bdf_update_name_from_properties(bdf_font_t *font)
      * Split the name into fields and shift out the first empty field.
      * This assumes that the font has a name.
      */
-    i = (unsigned long) strlen(font->name);
+    i = (unsigned int) strlen(font->name);
     (void) memcpy(name, font->name, i + 1);
     _bdf_split("-", name, i, &list);
     _bdf_shift(1, &list);
@@ -5952,10 +5954,10 @@ bdf_update_name_from_properties(bdf_font_t *font)
                   sprintf(np, "%s", p->value.atom);
                 break;
               case BDF_CARDINAL:
-                sprintf(np, "%ld", p->value.card32);
+                sprintf(np, "%d", p->value.card32);
                 break;
               case BDF_INTEGER:
-                sprintf(np, "%ld", p->value.int32);
+                sprintf(np, "%d", p->value.int32);
                 break;
             }
         } else
@@ -5975,7 +5977,7 @@ bdf_update_name_from_properties(bdf_font_t *font)
      * Replace the existing font name with the new one.
      */
     free(font->name);
-    i = (unsigned long) (strlen(nname) + 1);
+    i = (unsigned int) (strlen(nname) + 1);
     font->name = (char *) malloc(i);
     (void) memcpy(font->name, nname, i);
 
@@ -5991,7 +5993,7 @@ bdf_update_name_from_properties(bdf_font_t *font)
 int
 bdf_update_properties_from_name(bdf_font_t *font)
 {
-    unsigned long i;
+    unsigned int i;
     bdf_property_t *p, prop;
     _bdf_list_t list;
     char name[128];
@@ -6004,7 +6006,7 @@ bdf_update_properties_from_name(bdf_font_t *font)
     /*
      * Split the name into fields and shift out the first empty field.
      */
-    i = (unsigned long) strlen(font->name);
+    i = (unsigned int) strlen(font->name);
     (void) memcpy(name, font->name, i + 1);
     _bdf_split("-", name, i, &list);
     _bdf_shift(1, &list);
@@ -6042,8 +6044,8 @@ int
 bdf_update_average_width(bdf_font_t *font)
 {
     int changed;
-    unsigned long i;
-    long oaw, awidth, used;
+    unsigned int i;
+    int oaw, awidth, used;
     bdf_glyph_t *gp;
     _bdf_list_t list;
     bdf_property_t *pp, prop;
@@ -6060,7 +6062,7 @@ bdf_update_average_width(bdf_font_t *font)
           awidth += gp->dwidth;
         for (i = 0, gp = font->glyphs; i < font->glyphs_used; i++, gp++)
           awidth += gp->dwidth;
-        awidth = (long) ((((double) awidth) / ((double) used)) * 10.0);
+        awidth = (int) ((((double) awidth) / ((double) used)) * 10.0);
     }
 
     /*
@@ -6069,7 +6071,7 @@ bdf_update_average_width(bdf_font_t *font)
      */
     if (bdf_has_xlfd_name(font)) {
         (void) memset((char *) &list, 0, sizeof(_bdf_list_t));
-        i = (unsigned long) strlen(font->name);
+        i = (unsigned int) strlen(font->name);
         (void) memcpy(nbuf, font->name, i + 1);
         _bdf_split("-", nbuf, i, &list);
         oaw = _bdf_atol(list.field[12], 0, 10);
@@ -6078,7 +6080,7 @@ bdf_update_average_width(bdf_font_t *font)
              * Construct a new font name with the new average width.
              */
             changed = 1;
-            sprintf(num, "%ld", awidth);
+            sprintf(num, "%d", awidth);
             used = strlen(num) - strlen(list.field[12]);
             if (used > 0) {
                 /*
@@ -6172,8 +6174,8 @@ bdf_set_font_bbx(bdf_font_t *font, bdf_metrics_t *metrics)
 }
 
 int
-bdf_translate_glyphs(bdf_font_t *font, short dx, short dy, long start,
-                     long end, bdf_callback_t callback, void *data,
+bdf_translate_glyphs(bdf_font_t *font, short dx, short dy, int start,
+                     int end, bdf_callback_t callback, void *data,
                      int unencoded)
 {
     int resize, diff;
@@ -6415,8 +6417,8 @@ _bdf_resize_rotation(bdf_font_t *font, int mul90, short degrees,
 }
 
 int
-bdf_rotate_glyphs(bdf_font_t *font, short degrees, long start,
-                  long end, bdf_callback_t callback, void *data,
+bdf_rotate_glyphs(bdf_font_t *font, short degrees, int start,
+                  int end, bdf_callback_t callback, void *data,
                   int unencoded)
 {
     int mul90, bpr, sbpr;
@@ -6690,8 +6692,8 @@ _bdf_resize_shear(bdf_font_t *font, int neg, short degrees,
 }
 
 int
-bdf_shear_glyphs(bdf_font_t *font, short degrees, long start,
-                 long end, bdf_callback_t callback, void *data,
+bdf_shear_glyphs(bdf_font_t *font, short degrees, int start,
+                 int end, bdf_callback_t callback, void *data,
                  int unencoded)
 {
     int neg, bpr, sbpr;
@@ -6915,7 +6917,7 @@ _bdf_widen_by(bdf_font_t *f, bdf_glyph_t *g, bdf_bitmap_t *s, int n)
 }
 
 int
-bdf_embolden_glyphs(bdf_font_t *font, long start, long end,
+bdf_embolden_glyphs(bdf_font_t *font, int start, int end,
                     bdf_callback_t callback, void *data, int unencoded,
                     int *resize)
 {

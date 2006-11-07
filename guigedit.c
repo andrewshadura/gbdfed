@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guigedit.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guigedit.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: guigedit.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: guigedit.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -427,9 +427,9 @@ update_glyphedit(gbdfed_editor_t *ed, GlypheditRec *ge, bdf_glyph_grid_t *grid)
       sprintf(buffer1, "-1");
     else {
         switch (fontgrid_get_code_base(FONTGRID(ed->fgrid))) {
-          case 8: sprintf(buffer1, "%lo", grid->encoding); break;
-          case 10: sprintf(buffer1, "%ld", grid->encoding); break;
-          case 16: sprintf(buffer1, "%04lX", grid->encoding); break;
+          case 8: sprintf(buffer1, "%o", grid->encoding); break;
+          case 10: sprintf(buffer1, "%d", grid->encoding); break;
+          case 16: sprintf(buffer1, "%04X", grid->encoding); break;
         }
     }
     gtk_label_set_text(GTK_LABEL(ge->encoding), buffer1);
@@ -1316,7 +1316,7 @@ operations_dialog_setup(GlypheditRec *ge)
                                      "digits", 0,
                                      "value", 0.0,
                                      "numeric", TRUE,
-                                     0);
+                                     NULL);
     g_signal_connect(G_OBJECT(ge->ops.degrees), "changed",
                      G_CALLBACK(degrees_changed), GUINT_TO_POINTER(ge->id));
 
@@ -1402,7 +1402,7 @@ operations_dialog_setup(GlypheditRec *ge)
 
 
     cell_renderer = gtk_cell_renderer_text_new();
-    g_object_set(G_OBJECT(cell_renderer), "editable", TRUE, (void *) 0);
+    g_object_set(G_OBJECT(cell_renderer), "editable", TRUE, NULL);
     g_signal_connect_object(G_OBJECT(cell_renderer), "edited",
                             G_CALLBACK(change_unimap), (gpointer) store,
                             G_CONNECT_SWAPPED);
@@ -1430,7 +1430,7 @@ operations_dialog_setup(GlypheditRec *ge)
                      G_CALLBACK(add_mapping), GUINT_TO_POINTER(ge->id));
 
     ge->ops.psf_input = gtk_widget_new(gtk_entry_get_type(),
-                                       "max_length", 8, 0);
+                                       "max_length", 8, NULL);
     g_signal_connect(G_OBJECT(ge->ops.psf_input), "activate",
                      G_CALLBACK(add_mapping), GUINT_TO_POINTER(ge->id));
     g_signal_connect(G_OBJECT(ge->ops.psf_input), "changed",
@@ -1887,7 +1887,7 @@ _guigedit_build_editor(GlypheditRec *ge, bdf_glyph_grid_t *grid, guint base,
     gtk_container_add(GTK_CONTAINER(frame), vbox1);
 
     ge->name = gtk_widget_new(gtk_entry_get_type(),
-                              "max_length", 128, 0);
+                              "max_length", 128, NULL);
     mitem = labcon_new_label_defaults("Glyph Name:", ge->name, 0);
     gtk_box_pack_start(GTK_BOX(vbox1), mitem, TRUE, TRUE, 0);
 
@@ -1908,7 +1908,7 @@ _guigedit_build_editor(GlypheditRec *ge, bdf_glyph_grid_t *grid, guint base,
 
     ge->dwidth = gtk_widget_new(gtk_entry_get_type(),
                                 "max_length", 6,
-                                0);
+                                NULL);
     ge->handler = g_signal_connect(G_OBJECT(ge->dwidth), "changed",
                                    G_CALLBACK(enable_update),
                                    GUINT_TO_POINTER(ge->id));
@@ -2027,9 +2027,9 @@ guigedit_edit_glyph(gbdfed_editor_t *ed, FontgridSelectionInfo *si)
       sprintf(buffer1, "-1");
     else {
         switch (base) {
-          case 8: sprintf(buffer1, "%lo", grid->encoding); break;
-          case 10: sprintf(buffer1, "%ld", grid->encoding); break;
-          case 16: sprintf(buffer1, "%04lX", grid->encoding); break;
+          case 8: sprintf(buffer1, "%o", grid->encoding); break;
+          case 10: sprintf(buffer1, "%d", grid->encoding); break;
+          case 16: sprintf(buffer1, "%04X", grid->encoding); break;
         }
     }
     gtk_label_set_text(GTK_LABEL(ge->encoding), buffer1);
@@ -2132,20 +2132,20 @@ guigedit_set_font_spacing(gint spacing, guint16 monowidth)
 void
 guigedit_set_code_base(gint base)
 {
-    gulong i, enc;
+    guint i, enc;
 
     for (i = 0; i < num_glyph_editors; i++) {
         if (glyph_editors[i].owner != ~0) {
-            enc = (gulong) glyphedit_get_encoding(GLYPHEDIT(glyph_editors[i].gedit));
+            enc = (guint) glyphedit_get_encoding(GLYPHEDIT(glyph_editors[i].gedit));
             switch (base) {
               case 8:
-                sprintf(buffer1, "%lo", enc);
+                sprintf(buffer1, "%o", enc);
                 break;
               case 10:
-                sprintf(buffer1, "%ld", enc);
+                sprintf(buffer1, "%d", enc);
                 break;
               case 16:
-                sprintf(buffer1, "%04lX", enc);
+                sprintf(buffer1, "%04X", enc);
                 break;
             }
             gtk_label_set_text(GTK_LABEL(glyph_editors[i].encoding), buffer1);

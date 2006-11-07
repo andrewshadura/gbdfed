@@ -21,24 +21,24 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfgname.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfgname.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfgname.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] = "$Id: bdfgname.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
 #include "bdfP.h"
 
 typedef struct {
-    long code;
-    long start;
-    long end;
-    long pad;
+    int code;
+    int start;
+    int end;
+    int pad;
 } _bdf_adobe_name_t;
 
 static _bdf_adobe_name_t *adobe_names;
-static unsigned long adobe_names_size;
-static unsigned long adobe_names_used;
+static unsigned int adobe_names_size;
+static unsigned int adobe_names_used;
 
 /*
  * Provide a maximum length for glyph names just to make things clearer.
@@ -77,10 +77,10 @@ getline(FILE *in, char *buf, int limit)
     return i;
 }
 
-static long
-_bdf_find_name(long code, char *name, FILE *in)
+static int
+_bdf_find_name(int code, char *name, FILE *in)
 {
-    long c, i, pos;
+    int c, i, pos;
     char *sp, buf[256];
 
     while (!feof(in)) {
@@ -135,7 +135,7 @@ by_encoding(const void *a, const void *b)
 static void
 _bdf_load_adobe_names(FILE *in)
 {
-    long c, pos;
+    int c, pos;
     char *sp, buf[256];
 
     /*
@@ -191,21 +191,21 @@ _bdf_load_adobe_names(FILE *in)
           by_encoding);
 }
 
-static long
-_bdf_find_adobe_name(long code, char *name, FILE *in)
+static int
+_bdf_find_adobe_name(int code, char *name, FILE *in)
 {
-    long len;
+    int len;
     int l, r, m;
 
     if (code < 0x20 || (code >= 0x7f && code <= 0x9f) ||
         code == 0xfffe || code == 0xffff) {
-        sprintf(name, "char%lu", code);
-        return (long) strlen(name);
+        sprintf(name, "char%u", code);
+        return (int) strlen(name);
     }
 
     if (code >= 0xe000 && code <= 0xf8ff) {
-        sprintf(name, "uni%04lX", code & 0xffff);
-        return (long) strlen(name);
+        sprintf(name, "uni%04X", code & 0xffff);
+        return (int) strlen(name);
     }
 
     if (adobe_names_size == 0)
@@ -224,14 +224,14 @@ _bdf_find_adobe_name(long code, char *name, FILE *in)
             len = adobe_names[m].end - adobe_names[m].start;
             if (len > MAX_GLYPH_NAME_LEN)
               len = MAX_GLYPH_NAME_LEN;
-            len = (long) fread(name, sizeof(char), len, in);
+            len = (int) fread(name, sizeof(char), len, in);
             name[len] = 0;
             return len;
         }
     }
 
-    sprintf(name, "uni%04lX", code & 0xffff);
-    return (long) strlen(name);
+    sprintf(name, "uni%04X", code & 0xffff);
+    return (int) strlen(name);
 }
 
 static int
@@ -239,7 +239,7 @@ _bdf_set_glyph_names(FILE *in, bdf_font_t *font, bdf_callback_t callback,
                      int adobe)
 {
     int changed;
-    long i, size, len;
+    int i, size, len;
     bdf_glyph_t *gp;
     bdf_callback_struct_t cb;
     char name[MAX_GLYPH_NAME_LEN + 1];
@@ -306,7 +306,7 @@ int
 bdf_set_glyph_code_names(int prefix, bdf_font_t *font, bdf_callback_t callback)
 {
     int changed;
-    long i, size, len;
+    int i, size, len;
     bdf_glyph_t *gp;
     bdf_callback_struct_t cb;
     char name[128];
@@ -320,10 +320,10 @@ bdf_set_glyph_code_names(int prefix, bdf_font_t *font, bdf_callback_t callback)
     for (changed = 0, i = 0, gp = font->glyphs; i < font->glyphs_used;
          i++, gp++) {
         switch (prefix) {
-          case 'u': sprintf(name, "uni%04lX", gp->encoding & 0xffff); break;
-          case 'x': sprintf(name, "0x%04lX", gp->encoding & 0xffff); break;
-          case '+': sprintf(name, "U+%04lX", gp->encoding & 0xffff); break;
-          case '\\': sprintf(name, "\\u%04lX", gp->encoding & 0xffff); break;
+          case 'u': sprintf(name, "uni%04X", gp->encoding & 0xffff); break;
+          case 'x': sprintf(name, "0x%04X", gp->encoding & 0xffff); break;
+          case '+': sprintf(name, "U+%04X", gp->encoding & 0xffff); break;
+          case '\\': sprintf(name, "\\u%04X", gp->encoding & 0xffff); break;
         }
         size = 6;
 
