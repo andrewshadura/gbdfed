@@ -1,4 +1,4 @@
-dnl $Id: configure.in 60 2006-07-14 15:58:19Z mleisher $
+dnl $Id: configure.in 1 2006-11-02 16:47:28Z mleisher $
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(gbdfed.c)

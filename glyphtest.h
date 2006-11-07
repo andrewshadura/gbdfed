@@ -23,7 +23,7 @@
 #define _h_glyphtest
 
 /*
- * $Id: glyphtest.h 5 2006-01-08 01:39:22Z mleisher $
+ * $Id: glyphtest.h 1 2006-11-02 16:47:28Z mleisher $
  */
 
 #include <gdk/gdk.h>

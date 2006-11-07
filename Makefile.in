@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.in 66 2006-10-24 13:43:41Z mleisher $
+# $Id: Makefile.in 11 2006-11-07 21:41:40Z mleisher $
 #
 
 #
@@ -99,7 +99,7 @@ distclean: clean
 	$(CC) $(DEFINES) $(CFLAGS) $(INCS) -c $< -o $@
 
 install: gbdfed
-	$(MKINSTALLDIRS) $(DESTDIR)$(bindir) $(mandir)/man1
+	$(MKINSTALLDIRS) $(DESTDIR)$(bindir) $(DESTDIR)$(mandir)/man1
 	$(CP) gbdfed $(DESTDIR)$(bindir)/gbdfed
 	$(CP) gbdfed.man $(DESTDIR)$(mandir)/man1/gbdfed.1
 

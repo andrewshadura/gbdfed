@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guiutil.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guiutil.c 1 2006-11-02 16:47:28Z mleisher $";
 #else
-static char svnid[] = "$Id: guiutil.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: guiutil.c 1 2006-11-02 16:47:28Z mleisher $";
 #endif
 #endif
 
@@ -158,7 +158,7 @@ guiutil_yes_or_no(GtkWidget *parent, gchar *text, gboolean default_answer)
 
         gtk_dialog_add_buttons(GTK_DIALOG(questd),
                                GTK_STOCK_YES, GTK_RESPONSE_ACCEPT,
-                               GTK_STOCK_NO, GTK_RESPONSE_CANCEL, (void *) 0);
+                               GTK_STOCK_NO, GTK_RESPONSE_CANCEL, NULL);
 
         /*
          * Get the two children buttons out now so focus can be set on either

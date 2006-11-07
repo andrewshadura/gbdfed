@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfpsf.c 5 2006-01-08 01:39:22Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfpsf.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfpsf.c 5 2006-01-08 01:39:22Z mleisher $";
+static char svnid[] = "$Id: bdfpsf.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -101,10 +101,10 @@ typedef struct {
 #define _swap_endian(n) ((n) >> 16) | (((n) & 0xffff) << 16)
 
 static int
-_bdf_psf_load_map(FILE *in, bdf_font_t *font, int psf2, long *res)
+_bdf_psf_load_map(FILE *in, bdf_font_t *font, int psf2, int *res)
 {
     int i, more, c0, c1, cnt;
-    unsigned long code;
+    unsigned int code;
     unsigned char buf[4];
     bdf_glyph_t *gp;
 
@@ -113,7 +113,7 @@ _bdf_psf_load_map(FILE *in, bdf_font_t *font, int psf2, long *res)
     while ((c0 = getc(in)) >= 0) {
         /*
          * If we are still reading bytes after the end of the glyphs,
-         * the table is too long.
+         * the table is too int.
          */
         if (gp == font->glyphs + font->glyphs_used)
           return BDF_PSF_LONG_TABLE;
@@ -213,8 +213,8 @@ static int
 _bdf_psf_dump_map(FILE *out, bdf_font_t *font, bdf_glyphlist_t *glyphs)
 {
     int seq;
-    unsigned long i, nglyphs, n;
-    long code = -1;
+    unsigned int i, nglyphs, n;
+    int code = -1;
     unsigned char *map, *map_end;
     bdf_glyph_t *gp;
 
@@ -222,9 +222,9 @@ _bdf_psf_dump_map(FILE *out, bdf_font_t *font, bdf_glyphlist_t *glyphs)
     for (i = 0, gp = glyphs->glyphs; i < nglyphs; i++, gp++) {
 
         if (nglyphs > 256)
-          fprintf(out, "0x%03lx", i);
+          fprintf(out, "0x%03x", i);
         else
-          fprintf(out, "0x%02lx", i);
+          fprintf(out, "0x%02x", i);
 
         map = gp->unicode.map;
         map_end = map + gp->unicode.map_used;
@@ -310,9 +310,9 @@ _bdf_psf_dump_map(FILE *out, bdf_font_t *font, bdf_glyphlist_t *glyphs)
             else
               putc(((seq == 1) ? ',' : ' '), out);
             if (n < 5)
-              fprintf(out, "U+%04lX", code);
+              fprintf(out, "U+%04X", code);
             else
-              fprintf(out, "U+%06lX", code);
+              fprintf(out, "U+%06X", code);
             map += n;
             seq -= (seq == 2);
         }
@@ -356,7 +356,7 @@ char **
 _bdf_psf_unpack_mapping(bdf_psf_unimap_t *unimap, int *num_seq)
 {
     int ns, nc, sum, c;
-    long code = -1;
+    int code = -1;
     unsigned char *mp, *ep;
     char **list, *lp;
 
@@ -507,9 +507,9 @@ _bdf_psf_unpack_mapping(bdf_psf_unimap_t *unimap, int *num_seq)
         if (lp > list[ns])
           *lp++ = ' ';
         if (nc < 5)
-          sprintf(lp, "U+%04lX", code);
+          sprintf(lp, "U+%04X", code);
         else
-          sprintf(lp, "U+%06lX", code);
+          sprintf(lp, "U+%06X", code);
         lp += 7;
 
         mp += nc;
@@ -540,12 +540,12 @@ cmplen(const void *a, const void *b)
  * be stored back into a Unicode map.
  */
 int
-_bdf_psf_pack_mapping(char **list, int len, long encoding,
+_bdf_psf_pack_mapping(char **list, int len, int encoding,
                       bdf_psf_unimap_t *map)
 {
     int i, j, ncodes, bytes = 3;
     char *lp, *elp;
-    unsigned long codes[128];
+    unsigned int codes[128];
 
     if (list == 0 || len == 0 || map == 0)
       return 0;
@@ -656,7 +656,7 @@ bdf_font_t *
 bdf_load_psf(FILE *in, unsigned char *magic, bdf_options_t *opts,
              bdf_callback_t callback, void *data, int *awidth)
 {
-    long i, enc;
+    int i, enc;
     unsigned short dwidth, swidth;
     bdf_glyph_t *gp;
     bdf_font_t *fp;
@@ -674,7 +674,7 @@ bdf_load_psf(FILE *in, unsigned char *magic, bdf_options_t *opts,
          */
         hdr.version = 0;
         hdr.width = 8;
-        hdr.height = hdr.bpc = (long) magic[_BDF_PSF1HEIGHT];
+        hdr.height = hdr.bpc = (int) magic[_BDF_PSF1HEIGHT];
         hdr.length = (magic[_BDF_PSF1MODE] & _BDF_PSF1_HAS512) ? 512 : 256;
         hdr.flags = (magic[_BDF_PSF1MODE] & _BDF_PSF1_HASTAB) ?
             _BDF_PSF2_HASTAB : 0;
@@ -701,7 +701,7 @@ bdf_load_psf(FILE *in, unsigned char *magic, bdf_options_t *opts,
      * The point size of the font will be the height, the resolution will
      * default to 72dpi, and the spacing will default to character cell.
      */
-    fp = bdf_new_font(0, (long) hdr.height, 72, 72, BDF_CHARCELL, 1);
+    fp = bdf_new_font(0, (int) hdr.height, 72, 72, BDF_CHARCELL, 1);
 
     /*
      * Force the bits per pixel to be 1.
@@ -797,18 +797,18 @@ bdf_load_psf(FILE *in, unsigned char *magic, bdf_options_t *opts,
         msgbuf[0] = 0;
         switch (_bdf_psf_load_map(in, fp, (*magic == 0x72), &enc)) {
           case BDF_PSF_SHORT_TABLE:
-            sprintf(msgbuf, "PSF Unicode table too short at 0x%04X (%ld).",
+            sprintf(msgbuf, "PSF Unicode table too short at 0x%04X (%d).",
                     (unsigned short) (enc & 0xffff), enc);
             break;
           case BDF_PSF_LONG_TABLE:
-            strcpy(msgbuf, "PSF Unicode table too long.");
+            strcpy(msgbuf, "PSF Unicode table too int.");
             break;
           case BDF_PSF_CORRUPT_UTF8:
-            sprintf(msgbuf, "PSF UTF-8 sequence corrupt at 0x%04X (%ld).",
+            sprintf(msgbuf, "PSF UTF-8 sequence corrupt at 0x%04X (%d).",
                     (unsigned short) (enc & 0xffff), enc);
             break;
           case BDF_PSF_BUFFER_OVRFL:
-            sprintf(msgbuf, "PSF mapping buffer overflow at 0x%04X (%ld).",
+            sprintf(msgbuf, "PSF mapping buffer overflow at 0x%04X (%d).",
                     (unsigned short) (enc & 0xffff), enc);
             break;
         }
@@ -829,8 +829,8 @@ bdf_load_psf(FILE *in, unsigned char *magic, bdf_options_t *opts,
  * supplied when a partial font needs to be created.
  */
 int
-bdf_export_psf(FILE *out, bdf_font_t *font, bdf_options_t *opts, long start,
-               long end)
+bdf_export_psf(FILE *out, bdf_font_t *font, bdf_options_t *opts, int start,
+               int end)
 {
     unsigned int i, nglyphs, flags;
     _bdf_psfhdr_t hdr;

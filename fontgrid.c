@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: fontgrid.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: fontgrid.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: fontgrid.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: fontgrid.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -396,7 +396,7 @@ fontgrid_set_property(GObject *obj, guint prop_id, const GValue *value,
         fontgrid_set_rows_cols(fw, 0);
         break;
       case PROP_POINT_SIZE:
-        fw->point_size = g_value_get_ulong(value);
+        fw->point_size = g_value_get_uint(value);
         break;
       case PROP_SPACING:
         fw->spacing = g_value_get_int(value);
@@ -411,16 +411,16 @@ fontgrid_set_property(GObject *obj, guint prop_id, const GValue *value,
         fw->colors = (guint16 *) g_value_get_pointer(value);
         break;
       case PROP_INITIAL_GLYPH:
-        fw->initial_glyph = g_value_get_long(value);
+        fw->initial_glyph = g_value_get_int(value);
         break;
       case PROP_BPP:
-        fw->bpp = g_value_get_long(value);
+        fw->bpp = g_value_get_int(value);
         break;
       case PROP_HRES:
-        fw->hres = g_value_get_long(value);
+        fw->hres = g_value_get_int(value);
         break;
       case PROP_VRES:
-        fw->vres = g_value_get_long(value);
+        fw->vres = g_value_get_int(value);
         break;
     }
 }
@@ -447,7 +447,7 @@ fontgrid_get_property(GObject *obj, guint prop_id, GValue *value,
         g_value_set_pointer(value, f->font);
         break;
       case PROP_POINT_SIZE:
-        g_value_set_ulong(value, f->point_size);
+        g_value_set_uint(value, f->point_size);
         break;
       case PROP_SPACING:
         g_value_set_int(value, f->spacing);
@@ -459,16 +459,16 @@ fontgrid_get_property(GObject *obj, guint prop_id, GValue *value,
         g_value_set_pointer(value, f->colors);
         break;
       case PROP_INITIAL_GLYPH:
-        g_value_set_long(value, f->initial_glyph);
+        g_value_set_int(value, f->initial_glyph);
         break;
       case PROP_BPP:
-        g_value_set_long(value, f->bpp);
+        g_value_set_int(value, f->bpp);
         break;
       case PROP_HRES:
-        g_value_set_long(value, f->hres);
+        g_value_set_int(value, f->hres);
         break;
       case PROP_VRES:
-        g_value_set_long(value, f->vres);
+        g_value_set_int(value, f->vres);
         break;
     }
 }
@@ -1263,7 +1263,7 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
      */
     gtk_widget_style_get(widget,
                          "focus-line-width", &fwidth,
-                         "focus-padding", &fpad, (void *) 0);
+                         "focus-padding", &fpad, NULL);
 
     gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
 
@@ -2316,7 +2316,7 @@ fontgrid_class_init(gpointer g_class, gpointer class_data)
                                                          G_PARAM_READWRITE));
 
     g_object_class_install_property(gocp, PROP_POINT_SIZE,
-                                    g_param_spec_ulong("pointSize",
+                                    g_param_spec_uint("pointSize",
                                                        _("Point size"),
                                                        _("Set the default point size for new fonts."),
                                                        2,
@@ -2354,7 +2354,7 @@ fontgrid_class_init(gpointer g_class, gpointer class_data)
                                                          G_PARAM_READWRITE));
 
     g_object_class_install_property(gocp, PROP_INITIAL_GLYPH,
-                                    g_param_spec_long("initialGlyph",
+                                    g_param_spec_int("initialGlyph",
                                                       _("Initial glyph"),
                                                       _("Code of the glyph to be displayed first."),
                                                       -1,
@@ -2363,7 +2363,7 @@ fontgrid_class_init(gpointer g_class, gpointer class_data)
                                                       G_PARAM_READWRITE));
 
     g_object_class_install_property(gocp, PROP_BPP,
-                                    g_param_spec_long("bitsPerPixel",
+                                    g_param_spec_int("bitsPerPixel",
                                                       _("Bits per pixel"),
                                                       _("Number of bits per pixel for grayscale glyphs."),
                                                       1,
@@ -2372,7 +2372,7 @@ fontgrid_class_init(gpointer g_class, gpointer class_data)
                                                       G_PARAM_READWRITE));
 
     g_object_class_install_property(gocp, PROP_HRES,
-                                    g_param_spec_long("horizontalResolution",
+                                    g_param_spec_int("horizontalResolution",
                                                       _("Horizontal resolution"),
                                                       _("Set the default horizontal resolution for new fonts."),
                                                       1,
@@ -2381,7 +2381,7 @@ fontgrid_class_init(gpointer g_class, gpointer class_data)
                                                       G_PARAM_READWRITE));
 
     g_object_class_install_property(gocp, PROP_VRES,
-                                    g_param_spec_long("verticalResolution",
+                                    g_param_spec_int("verticalResolution",
                                                       _("Vertical resolution"),
                                                       _("Set the default vertical resolution for new fonts."),
                                                       1,
@@ -2467,7 +2467,7 @@ fontgrid_init(GTypeInstance *obj, gpointer g_class)
     gtk_widget_style_get(GTK_WIDGET(fw),
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad,
-                         (void *) 0);
+                         NULL);
 
     fw->base = 16;
     fw->power2 = TRUE;
@@ -2587,7 +2587,7 @@ fontgrid_newv(bdf_font_t *font, guint32 pointSize, gint32 spacing,
               gint32 bitsPerPixel, gint32 horizontalResolution,
               gint32 verticalResolution, FontgridPageInfo *initialPageInfo)
 {
-    Fontgrid *fw = FONTGRID(g_object_new(fontgrid_get_type(), (void *) 0));
+    Fontgrid *fw = FONTGRID(g_object_new(fontgrid_get_type(), NULL));
     gint32 i, boundary;
     FontgridInternalPageInfo *pi;
 
@@ -3535,11 +3535,11 @@ void
 fontgrid_set_font_comments(Fontgrid *fw, gchar *comments)
 {
     FontgridModificationInfo minfo;
-    unsigned long len;
+    unsigned int len;
 
     g_return_if_fail(fw != 0);
 
-    len = (comments) ? (unsigned long) strlen(comments) : 0;
+    len = (comments) ? (unsigned int) strlen(comments) : 0;
     if (bdf_replace_comments(fw->font, comments, len)) {
         minfo.reason = FONTGRID_COMMENTS_MODIFIED;
         g_signal_emit(G_OBJECT(fw), fontgrid_signals[MODIFIED], 0, &minfo);
@@ -3923,8 +3923,8 @@ fontgrid_encode_selection(Fontgrid *fw, guint32 *bytes)
      * Calculate the number of bytes that will be needed for everything except
      * the name strings and the bitmap data.
      */
-    bcount = (sizeof(unsigned long) << 1) + (6 * sizeof(unsigned short)) +
-        (((6 * sizeof(unsigned short)) + sizeof(unsigned long)) *
+    bcount = (sizeof(unsigned int) << 1) + (6 * sizeof(unsigned short)) +
+        (((6 * sizeof(unsigned short)) + sizeof(unsigned int)) *
          gl->glyphs_used);
 
     /*
@@ -4106,10 +4106,10 @@ fontgrid_decode_selection(Fontgrid *fw, guchar *sel)
     /*
      * Extract the glyph list starting and ending encodings.
      */
-    gl->start = (long) GETLONG(sel);
+    gl->start = (int) GETLONG(sel);
     sel += 4;
 
-    gl->end = (long) GETLONG(sel);
+    gl->end = (int) GETLONG(sel);
     sel += 4;
 
     /*
@@ -4160,7 +4160,7 @@ fontgrid_decode_selection(Fontgrid *fw, guchar *sel)
         /*
          * Get the glyph encoding.
          */
-        gp->encoding = (long) GETLONG(sel);
+        gp->encoding = (int) GETLONG(sel);
         sel += 4;
 
         /*
@@ -4341,7 +4341,7 @@ fontgrid_paste_selection(Fontgrid *fw, FontgridPasteType paste_type)
     GdkAtom atype;
     gint afmt, nitems, unenc, doresize;
     gint32 i;
-    unsigned long ng;
+    unsigned int ng;
     guchar *data;
     bdf_font_t *font;
     bdf_glyph_t *gp;

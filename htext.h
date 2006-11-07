@@ -1,11 +1,11 @@
 /*
- * $Id: htext.h 67 2006-10-24 13:52:57Z mleisher $
+ * $Id: htext.h 1 2006-11-02 16:47:28Z mleisher $
  */
 static gchar *about_text = ""
 "<help>"
 "<center><b>GBDFEditor 1.2</b>\n"
 "mleisher@crl.nmsu.edu\n"
-"24 October 2006</center>\n"
+"26 October 2006</center>\n"
 "\n"
 "GBDFEditor is a BDF font editor that supports "
 "these main features:\n"

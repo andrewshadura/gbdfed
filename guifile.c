@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guifile.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: guifile.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: guifile.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: guifile.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -419,7 +419,7 @@ static void
 handle_import_messages(bdf_callback_struct_t *call_data, void *client_data)
 {
     if (call_data->reason == BDF_ERROR) {
-        sprintf(buffer1, "Import Font:%ld: error: See the font messages.",
+        sprintf(buffer1, "Import Font:%d: error: See the font messages.",
                 call_data->errlineno);
         guiutil_error_message(GTK_WIDGET(client_data), buffer1);
     }
@@ -522,7 +522,7 @@ load_console_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
 {
     FILE *in;
     gbdfed_editor_t *ep;
-    gint i, j, nfonts;
+    gint i, j, nfonts, len;
     gchar *np;
     bdf_font_t *fonts[3];
 
@@ -601,23 +601,25 @@ load_console_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
             bdf_make_xlfd_name(fonts[i], "Unknown", buffer2);
         bdf_update_properties_from_name(fonts[i]);
 
+        len = (gint) (dot - file);
+
         /*
          * Create the default name for the font file.
          */
         if (nfonts == 3) {
             switch (i) {
               case 0:
-                sprintf(buffer1, "%.*s-16.bdf", dot - file, file);
+                sprintf(buffer1, "%.*s-16.bdf", len, file);
                 break;
               case 1:
-                sprintf(buffer1, "%.*s-14.bdf", dot - file, file);
+                sprintf(buffer1, "%.*s-14.bdf", len, file);
                 break;
               case 2:
-                sprintf(buffer1, "%.*s-08.bdf", dot - file, file);
+                sprintf(buffer1, "%.*s-08.bdf", len, file);
                 break;
             }
         } else
-          sprintf(buffer1, "%.*s.bdf", dot - file, file);
+          sprintf(buffer1, "%.*s.bdf", len, file);
 
         /*
          * Set the filename for the editor.
@@ -706,7 +708,7 @@ load_pkgf_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
     /*
      * Now set up a file name.
      */
-    sprintf(buffer1, "%.*s.bdf", dot - file, file);
+    sprintf(buffer1, "%.*s.bdf", (int) (dot - file), file);
 
     /*
      * Delete the file and path names so they can be updated.
@@ -923,8 +925,8 @@ fnt_load_selected_fonts(GtkWidget *w, gpointer data)
         /*
          * Make the BDF file name for the font.
          */
-        sprintf(buffer1, "%.*s%ld.bdf", cdata->dot - cdata->file, cdata->file,
-                fonts[i]->point_size);
+        sprintf(buffer1, "%.*s%d.bdf", (int) (cdata->dot - cdata->file),
+                cdata->file, fonts[i]->point_size);
 
         ep->file = strdup(buffer1);
         ep->path = strdup(cdata->dir);
@@ -1039,7 +1041,7 @@ load_windows_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
         /*
          * Now set up a file name.
          */
-        sprintf(buffer1, "%.*s.bdf", dot - file, file);
+        sprintf(buffer1, "%.*s.bdf", (int) (dot - file), file);
 
         /*
          * Delete the file and path names so they can be updated.
@@ -1250,17 +1252,16 @@ static void
 choose_otf_encoding(GtkTreeSelection *selection, gpointer data)
 {
     gint *rows;
-    GtkListStore *store;
+    GtkTreeModel *model;
     GtkTreeIter iter;
     GtkTreePath *tpath;
 
     /*
      * Get the row of the current selection.
      */
-    if (gtk_tree_selection_get_selected(selection, (GtkTreeModel **) &store,
-                                        &iter) == FALSE)
+    if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
       return;
-    tpath = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &iter);
+    tpath = gtk_tree_model_get_path(model, &iter);
     rows = gtk_tree_path_get_indices(tpath);
     otf_eid_pos = (gint16) rows[0];
 }
@@ -1271,6 +1272,7 @@ choose_otf_platform(GtkTreeSelection *selection, gpointer data)
     gchar *name;
     gint i, ncmaps, sel, *rows;
     gint16 pid, eid, lasteid;
+    GtkTreeModel *model;
     GtkListStore *store;
     GtkTreeIter iter;
     GtkTreePath *tpath;
@@ -1279,10 +1281,9 @@ choose_otf_platform(GtkTreeSelection *selection, gpointer data)
     /*
      * Get the row of the current selection.
      */
-    if (gtk_tree_selection_get_selected(selection, (GtkTreeModel **) &store,
-                                        &iter) == FALSE)
+    if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
       return;
-    tpath = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &iter);
+    tpath = gtk_tree_model_get_path(model, &iter);
     rows = gtk_tree_path_get_indices(tpath);
     otf_pid_pos = (gint16) rows[0];
 
@@ -1332,6 +1333,7 @@ choose_otf(GtkTreeSelection *selection, gpointer data)
     gchar *name;
     gint i, ncmaps, sel, row, *rows;
     gint16 pid, eid, lastpid;
+    GtkTreeModel *model;
     GtkListStore *store;
     GtkTreeIter iter;
     GtkTreePath *tpath;
@@ -1342,8 +1344,7 @@ choose_otf(GtkTreeSelection *selection, gpointer data)
      * This is called after the list is cleared as well, so return if there is
      * no selection.
      */
-    if (gtk_tree_selection_get_selected(selection, (GtkTreeModel **) &store,
-                                        &iter) == FALSE)
+    if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
       return;
 
     /*
@@ -1351,7 +1352,7 @@ choose_otf(GtkTreeSelection *selection, gpointer data)
      * way more complicated than it should be.
      */
     (void) memset((char *) &val, 0, sizeof(GValue));
-    tpath = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &iter);
+    tpath = gtk_tree_model_get_path(model, &iter);
     rows = gtk_tree_path_get_indices(tpath);
     row = rows[0];
 
@@ -1366,10 +1367,8 @@ choose_otf(GtkTreeSelection *selection, gpointer data)
           FT_Done_Face(face);
         if (FT_New_Face(library, otf_fullpath, row, &face)) {
             otf_face_open = FALSE;
-            gtk_tree_selection_get_selected(selection,
-                                            (GtkTreeModel **) &store,
-                                            &iter);
-            gtk_tree_model_get_value(GTK_TREE_MODEL(store), &iter, 0, &val);
+            gtk_tree_selection_get_selected(selection, &model, &iter);
+            gtk_tree_model_get_value(model, &iter, 0, &val);
             name = (gchar *) g_value_get_string(&val);
             sprintf(buffer1,
                     "Import Font: Unable to open OpenType collection %s.",
@@ -1939,7 +1938,7 @@ load_hbf_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
     /*
      * Now set up a file name.
      */
-    sprintf(buffer1, "%.*s.bdf", dot - file, file);
+    sprintf(buffer1, "%.*s.bdf", (int) (dot - file), file);
 
     /*
      * Delete the file and path names so they can be updated.
