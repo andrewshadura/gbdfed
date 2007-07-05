@@ -23,7 +23,7 @@
 #define _h_fontgrid
 
 /*
- * $Id: fontgrid.h 33 2006-01-12 22:58:18Z mleisher $
+ * $Id: fontgrid.h 1 2006-11-02 16:47:28Z mleisher $
  */
 
 #include <gdk/gdk.h>

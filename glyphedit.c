@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: glyphedit.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: glyphedit.c 1 2006-11-02 16:47:28Z mleisher $";
 #else
-static char svnid[] = "$Id: glyphedit.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: glyphedit.c 1 2006-11-02 16:47:28Z mleisher $";
 #endif
 #endif
 
@@ -340,7 +340,7 @@ glyphedit_draw_focus(GtkWidget *widget, GdkRectangle *area)
      */
     gtk_widget_style_get(widget,
                          "focus-line-width", &fwidth,
-                         "focus-padding", &fpad, (void *) 0);
+                         "focus-padding", &fpad, NULL);
 
     gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
 
@@ -898,7 +898,7 @@ glyphedit_init(GTypeInstance *obj, gpointer g_class)
     gtk_widget_style_get(GTK_WIDGET(gw),
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad,
-                         (void *) 0);
+                         NULL);
 
     /*
      * Padding that will appear before and after the focus rectangle.
@@ -974,7 +974,7 @@ glyphedit_newv(bdf_glyph_grid_t *grid, guint16 default_pixel_size,
                                  "showXHeight", show_x_height,
                                  "showCapHeight", show_cap_height,
                                  "colorList", colors,
-                                 (void *) 0);
+                                 NULL);
 
     return GTK_WIDGET(ge);
 }

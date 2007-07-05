@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfcons.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfcons.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfcons.c 2 2006-01-08 00:57:53Z mleisher $";
+static char svnid[] = "$Id: bdfcons.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -76,7 +76,7 @@ _bdf_load_vfont(FILE *in, vfhdr_t *hdr, bdf_callback_t callback, void *data,
                 int *awidth)
 {
     int first, ismono;
-    long i, pos;
+    int i, pos;
     bdf_font_t *fp;
     bdf_glyph_t *gp;
     bdf_callback_struct_t cb;
@@ -98,7 +98,7 @@ _bdf_load_vfont(FILE *in, vfhdr_t *hdr, bdf_callback_t callback, void *data,
      * The point size of the font will be the height, the resolution will
      * default to 72dpi, and the spacing will default to proportional.
      */
-    fp = bdf_new_font(0, (long) hdr->max_height, 72, 72, BDF_PROPORTIONAL, 1);
+    fp = bdf_new_font(0, (int) hdr->max_height, 72, 72, BDF_PROPORTIONAL, 1);
 
     /*
      * Force the bits per pixel to 1.
@@ -237,7 +237,7 @@ _bdf_load_vfont(FILE *in, vfhdr_t *hdr, bdf_callback_t callback, void *data,
         gp->bytes = metrics[i].bytes;
         gp->bitmap = (unsigned char *) malloc(gp->bytes);
 
-        fseek(in, (long) metrics[i].offset, 1L);
+        fseek(in, (int) metrics[i].offset, 1L);
         fread((char *) gp->bitmap, gp->bytes, 1, in);
 
         /*
@@ -270,7 +270,7 @@ static bdf_font_t *
 _bdf_load_simple(FILE *in, int height, bdf_callback_t callback, void *data,
                  int type, int *awidth)
 {
-    long i;
+    int i;
     unsigned short dwidth, swidth;
     bdf_font_t *fp;
     bdf_glyph_t *gp;
@@ -280,7 +280,7 @@ _bdf_load_simple(FILE *in, int height, bdf_callback_t callback, void *data,
      * The point size of the font will be the height, the resolution will
      * default to 72dpi, and the spacing will default to character cell.
      */
-    fp = bdf_new_font(0, (long) height, 72, 72, BDF_CHARCELL, 1);
+    fp = bdf_new_font(0, (int) height, 72, 72, BDF_CHARCELL, 1);
 
     /*
      * Force the bits per pixel to be one.
@@ -379,9 +379,9 @@ _bdf_load_simple(FILE *in, int height, bdf_callback_t callback, void *data,
  * A structure to pass around in update callbacks.
  */
 typedef struct {
-    unsigned long total;
-    unsigned long curr;
-    unsigned long lcurr;
+    unsigned int total;
+    unsigned int curr;
+    unsigned int lcurr;
     bdf_callback_t cback;
     void *data;
 } _bdf_update_rec_t;
@@ -558,27 +558,27 @@ bdf_load_console_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
         dp = (double) (fonts[res]->point_size * 10);
         prop.name = "PIXEL_SIZE";
         prop.format = BDF_INTEGER;
-        prop.value.int32 = (long) (((dp * dr) / 722.7) + 0.5);
+        prop.value.int32 = (int) (((dp * dr) / 722.7) + 0.5);
         bdf_add_font_property(fonts[res], &prop);
 
         prop.name = "RESOLUTION_X";
         prop.format = BDF_CARDINAL;
-        prop.value.card32 = (unsigned long) fonts[res]->resolution_x;
+        prop.value.card32 = (unsigned int) fonts[res]->resolution_x;
         bdf_add_font_property(fonts[res], &prop);
 
         prop.name = "RESOLUTION_Y";
         prop.format = BDF_CARDINAL;
-        prop.value.card32 = (unsigned long) fonts[res]->resolution_y;
+        prop.value.card32 = (unsigned int) fonts[res]->resolution_y;
         bdf_add_font_property(fonts[res], &prop);
 
         prop.name = "FONT_ASCENT";
         prop.format = BDF_INTEGER;
-        prop.value.int32 = (long) fonts[res]->bbx.ascent;
+        prop.value.int32 = (int) fonts[res]->bbx.ascent;
         bdf_add_font_property(fonts[res], &prop);
 
         prop.name = "FONT_DESCENT";
         prop.format = BDF_INTEGER;
-        prop.value.int32 = (long) fonts[res]->bbx.descent;
+        prop.value.int32 = (int) fonts[res]->bbx.descent;
         bdf_add_font_property(fonts[res], &prop);
 
         prop.name = "AVERAGE_WIDTH";

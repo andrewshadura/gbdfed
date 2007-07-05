@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: grayswatch.c 32 2006-01-12 04:26:23Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: grayswatch.c 1 2006-11-02 16:47:28Z mleisher $";
 #else
-static char svnid[] = "$Id: grayswatch.c 32 2006-01-12 04:26:23Z mleisher $";
+static char svnid[] = "$Id: grayswatch.c 1 2006-11-02 16:47:28Z mleisher $";
 #endif
 #endif
 
@@ -304,7 +304,7 @@ GtkWidget *
 grayswatch_new(guint gray)
 {
     return gtk_widget_new(grayswatch_get_type(),
-                          "grayLevel", gray, 0);
+                          "grayLevel", gray, NULL);
 }
 
 void

@@ -27,9 +27,9 @@
 
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfotf.c 5 2006-01-08 01:39:22Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: bdfotf.c 49 2007-04-12 14:46:40Z mleisher $";
 #else
-static char svnid[] = "$Id: bdfotf.c 5 2006-01-08 01:39:22Z mleisher $";
+static char svnid[] = "$Id: bdfotf.c 49 2007-04-12 14:46:40Z mleisher $";
 #endif
 #endif
 
@@ -250,7 +250,7 @@ _bdfotf_generate(FT_Face face, int nocmap, bdf_options_t *opts,
                  bdf_callback_t callback, void *data, bdf_font_t *fp)
 {
     int ismono;
-    long awidth, code, idx;
+    int awidth, code, idx;
     short maxrb, maxlb, minlb, y, x;
     short x_off, y_off, maxas, maxds;
     unsigned short upm, bpr, wd, ht, sx, ex, sy, ey;
@@ -442,7 +442,7 @@ _bdfotf_generate(FT_Face face, int nocmap, bdf_options_t *opts,
      * Calculate the font average width.
      */
     awidth =
-        (long) ((((double) awidth / (double) fp->glyphs_used) + 0.5) * 10.0);
+        (int) ((((double) awidth / (double) fp->glyphs_used) + 0.5) * 10.0);
 
     /*
      * Set the font bounding box.
@@ -480,19 +480,19 @@ _bdfotf_generate(FT_Face face, int nocmap, bdf_options_t *opts,
 
     prop.name = "PIXEL_SIZE";
     prop.format = BDF_INTEGER;
-    prop.value.int32 = (long)
+    prop.value.int32 = (int)
         ((((double) (fp->point_size * 10) *
            (double) fp->resolution_y) / 722.7) + 0.5);
     bdf_add_font_property(fp, &prop);
 
     prop.name = "RESOLUTION_X";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) fp->resolution_x;
+    prop.value.card32 = (unsigned int) fp->resolution_x;
     bdf_add_font_property(fp, &prop);
 
     prop.name = "RESOLUTION_Y";
     prop.format = BDF_CARDINAL;
-    prop.value.card32 = (unsigned long) fp->resolution_y;
+    prop.value.card32 = (unsigned int) fp->resolution_y;
     bdf_add_font_property(fp, &prop);
 
     prop.name = "FONT_ASCENT";

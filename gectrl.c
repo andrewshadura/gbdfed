@@ -21,9 +21,9 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: gectrl.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] __attribute__ ((unused)) = "$Id: gectrl.c 1 2006-11-02 16:47:28Z mleisher $";
 #else
-static char svnid[] = "$Id: gectrl.c 64 2006-09-11 16:39:52Z mleisher $";
+static char svnid[] = "$Id: gectrl.c 1 2006-11-02 16:47:28Z mleisher $";
 #endif
 #endif
 
@@ -1521,7 +1521,7 @@ gecontrol_newv(GtkWidget *tip_label, bdf_bitmap_t *image, guint16 *colors)
                                  "tipLabel", tip_label,
                                  "glyphImage", image,
                                  "colorList", colors,
-                                 (void *) 0);
+                                 NULL);
 
     return GTK_WIDGET(ge);
 }
