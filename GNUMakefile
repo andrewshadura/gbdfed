@@ -1,0 +1,81 @@
+#
+# $Id$
+#
+CC = gcc
+CFLAGS = -Wall -g
+DEFS = -DHAVE_XLIB -DHAVE_HBF -DHAVE_FREETYPE -DG_DISABLE_DEPRECATED \
+	-DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED \
+	-DGTK_DISABLE_DEPRECATED
+INCS = -I. `pkg-config gtk+-2.0 --cflags freetype2 --cflags`
+LIBS = `pkg-config gtk+-2.0 --libs freetype2 --libs`
+
+HBF=
+
+SRCS = bdf.c bdfcons.c bdffnt.c bdfgname.c bdfgrab.c bdfgrid.c bdfotf.c \
+       bdfpkgf.c bdfpsf.c $(HBF) \
+       labcon.c \
+       grayswatch.c \
+       glyphedit.c \
+       glyphtest.c \
+       fontgrid.c \
+       gectrl.c \
+       gbdfed.c \
+       guiedit.c \
+       guigedit.c \
+       guifile.c \
+       guihelp.c \
+       guiops.c \
+       guipref.c \
+       guiutil.c
+
+OBJS = $(SRCS:%.c=%.o)
+
+all: gbdfed
+
+gbdfed: $(OBJS)
+	$(CC) $(STATIC) $(CFLAGS) $(OBJS) -o gbdfed $(LIBS)
+
+.c.o:
+	$(CC) $(CFLAGS) $(DEFS) $(INCS) -c $< -o $@
+
+clean:
+	/bin/rm -f *~ *BAK *CKP *.o
+
+distclean: clean
+	/bin/rm -f gbdfed
+
+realclean: distclean
+
+deps:
+	gcc -I. -MM $(SRCS) > deps
+
+#
+# Dependencies.
+#
+bdf.o: bdf.c bdfP.h bdf.h
+bdfcons.o: bdfcons.c bdfP.h bdf.h
+bdffnt.o: bdffnt.c bdfP.h bdf.h
+bdfgname.o: bdfgname.c bdfP.h bdf.h
+bdfgrab.o: bdfgrab.c bdfP.h bdf.h
+bdfgrid.o: bdfgrid.c bdfP.h bdf.h
+bdfotf.o: bdfotf.c
+bdfpkgf.o: bdfpkgf.c bdfP.h bdf.h
+bdfpsf.o: bdfpsf.c bdfP.h bdf.h
+hbf.o: hbf.c hbf.h
+labcon.o: labcon.c labcon.h
+grayswatch.o: grayswatch.c grayswatch.h
+glyphedit.o: glyphedit.c glyphedit.h bdfP.h bdf.h
+glyphtest.o: glyphtest.c glyphtest.h bdfP.h bdf.h
+fontgrid.o: fontgrid.c fontgrid.h bdfP.h bdf.h
+gectrl.o: gectrl.c gectrl.h bdfP.h bdf.h gectrlbmaps.h
+gbdfed.o: gbdfed.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h labcon.h
+guiedit.o: guiedit.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h \
+  labcon.h
+guigedit.o: guigedit.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h \
+  glyphedit.h labcon.h gectrl.h
+guifile.o: guifile.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h \
+  labcon.h
+guihelp.o: guihelp.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h htext.h
+guiops.o: guiops.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h
+guipref.o: guipref.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h
+guiutil.o: guiutil.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h

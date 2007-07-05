@@ -1,0 +1,52 @@
+#
+# $Id: NEWS 66 2006-10-24 13:43:41Z mleisher $
+#
+
+Changes from 1.1 to 1.2
+-----------------------
+1. Some fixes for 64-bit systems.
+
+2. Some improvements in the help text.
+
+3. Added HBF support.
+
+Changes from 1.0 to 1.1
+-----------------------
+1. Fixed a problem opening other editors when multiple fonts are provided
+   on the command line.
+
+2. Fixed a memory allocation problem.
+
+3. Fixed a problem with setting and inverting pixels in the glyph editor.
+
+4. Added the missing Delete and BackSpace keys for deleting selections.
+
+5. Big improvements to the on-line help text. More readable now.
+
+Changes from 1.0 Beta to 1.0
+----------------------------
+1. Fixed a compilation error and a problem displaying the -1 encoding for the
+   unencoded pages.
+
+2. Changed several dialogs to make more regular use of the existing GTK dialog
+   facilities.
+
+3. Added a default icon list in 48x48, 32x32, and 16x16 order. (gbdfed.c)
+
+4. Added support for 2, 4 and 8 bits per pixel fonts back in.
+
+5. Reduced the size of an empty fontgrid. It looked too big. (fontgrid.c)
+
+6. Removed some unecessary code. (gbdfed.c)
+
+7. Disabled the cursor font preference until the automask generation code
+   and hotspot selection is done.
+
+8. Changed the fontgrid_new() function to accept a vararg list.
+
+9. Changed the glyphedit_new() function to accept a vararg list.
+
+10. Fixed a problem with the glyph image not being updated sometimes
+   (guigedit.c).
+
+11. Several dialog changes to work more naturally.

@@ -1,0 +1,238 @@
+#
+# $Id: README 66 2006-10-24 13:43:41Z mleisher $
+#
+
+gbdfed 1.2
+
+INTRO
+-----
+
+gbdfed is a GTK-based BDF font editor with the following features:
+
+  o  Multiple fonts can be loaded from the command line.
+  o  Multiple fonts can be open at the same time.
+  o  Cutting and pasting glyphs between fonts.
+  o  Multiple glyph bitmap editors can be open at the same time.
+  o  Cutting and pasting between glyph bitmap editors.
+  o  Export of XBM files from glyph bitmap editors.
+  o  Automatic correction of certain metrics when a font is loaded.
+  o  Generation of XLFD font names for fonts without XLFD names.
+  o  Update an XLFD font name from the font properties.
+  o  Update the font properties from an XLFD font name.
+  o  Font property editor.
+  o  Font comment editor.
+  o  Supports unencoded glyphs (ENCODING of -1).
+  o  Display of glyph encodings in octal, decimal, or hex.
+  o  Builtin on-line help.
+  o  Imports PK/GF fonts.
+  o  Imports HBF (Han Bitmap Font) fonts.
+  o  Imports Linux console fonts (PSF, CP, and FNT).
+  o  Imports Sun console fonts (vfont format).
+  o  Imports fonts from the X server.
+  o  Imports Windows FON/FNT fonts.
+  o  Imports OpenType/TrueType fonts and collections.
+  o  Exports PSF fonts.
+  o  Exports HEX fonts.
+
+HBF support:
+
+  o  If you need HBF support, you need to find the hbf.[ch] files somewhere on
+     the net and put them in the gbdfed-1.1 directory. Run configure again so
+     the HBF files will be found, do "make clean" and build gbdfed again.
+
+A few things missing from this font editor:
+
+  o  No way to create space glyphs in monowidth or character cell fonts.
+  o  No support for scaling fonts.
+  o  Fonts with right-to-left direction (negative widths) not supported.
+  o  No way to edit comments appearing in the properties list.
+
+Known problems:
+
+  o  Selecting the original font editor from the "Windows" menu does not
+     deiconify, set focus, and place it on top like it should.
+  o  Deleting glyphs from or inserting glyphs into a font grid do not update
+     the glyph editors if they happen to be editing a deleted glyph or a glyph
+     that moved due to an insertion.
+
+COMMAND LINE OPTIONS
+--------------------
+  gbdfed [options] [font1 font2 ...]
+
+  -nc      - do not preserve comments
+  -nu      - do not preserve unencoded glyphs
+  -nm      - do not make metrics corrections
+  -np      - do not pad character-cell bitmaps
+  -bp      - allow blank pages
+  -ed      - do not present the "Really Exit?" dialog
+  -ps n    - set default point size
+  -hres n  - set default horizontal resolution
+  -vres n  - set default vertical resolution
+  -res n   - set both default resolutions
+  -sp s    - set font spacing ("p" for proportional, "m" for monospace,
+             or "c" for charcell).
+  -eol e   - set the default end-of-line char(s) ("u" for Unix, "d" for DOS,
+             or "m" for Mac).
+  -g code  - set the initial glyph code (in decimal, hex or octal).
+  -cb base - set the code base for display of glyph codes, can be "octal,"
+             "decimal," or "hexadecimal." The first letter of these names
+             work as well.
+
+  By default, gbdfed will set its point size to 12, the horizontal and
+  vertical resolution to that of the display (e.g. 90x90 dpi for Sun's), and
+  the font spacing to proportional.  Also by default, gbdfed will preserve
+  comments, preserve unencoded glyphs, and make metrics corrections when
+  loading fonts.
+
+COMPILING
+---------
+
+To build gbdfed, GTK 2.6 or greater is required. It may be that versions as
+early as 2.3 will work, but only various versions of 2.7 and 2.8 have been
+tested.
+
+Optional:
+
+  Freetype2 support is optional and can be found at:
+
+    http://www.freetype.org
+
+Step 1.
+
+  Run the "configure" script to generate the Makefile. By default, the program
+  installs in /usr/local. You can change that by using the --prefix option of
+  the "configure" script.
+
+Step 2.
+
+  Compile the program
+
+WARNINGS
+--------
+
+1. When compiling on HP/UX, the htext.h file has long concatenated strings that
+   require the -H option (noted by W. Chao).
+
+2. Compiling with the gcc -pedantic option complains about strings being too
+   long in the help text file. The help system will be changed in later
+   versions.
+
+ACKNOWLEDGEMENTS
+----------------
+
+Thanks go to the following people:
+
+  Ross Patterson for his HBF code.
+
+  der Mouse for his "getbdf" code.
+
+  K. Carothers and A. Korobka for their "fnt2bdf" code in Wine.
+
+  Mike Stroyan <mike_stroyan@fc.hp.com> for patches.
+
+  Primoz Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si> for the man page and
+  some changes for building on HP/UX.
+
+  Danny Backx <u27113@kb.be> for the LessTif Imakefile.
+
+  Donald Page <donaldp@sco.com> for patches.
+
+  Michal Szymanski <msz@sirius.astrouw.edu.pl> for problem reports.
+
+  Werner Lemberg <a7971428@unet.univie.ac.at> for pointing out a problem
+  with the HBF code and other problem reports.
+
+  William F. Maton <wmaton@enterprise.ic.gc.ca> for pointing out a
+  problem with padding character cell fonts.
+
+  Ivan Nejgebauer <ian@uns.ns.ac.yu> for reporting a problem with glyph
+  names on imported console fonts.
+
+  Solofo <solofo@mpi-sb.mpg.de> for reporting a problem when creating an
+  XLFD name.  The old name was saved in the FONT property and some
+  versions of "mkfontdir" use that instead of the first FONT field.  Also
+  for recommending that the Ctrl+F4 accelerator be configurable if
+  it does not suit the user.
+
+  Dave Bodenstab <imdave@mcs.net> for providing a patch for a problem
+  with the HBF code that was not allowing gzipped HBF files to be
+  loaded, and a patch to get rid of some extraneous code.  Also a patch to fix
+  some size problems with GlyphEditors.
+
+  W. Chao <wchao@HRZ.Uni-Bielefeld.DE> for providing the Makefile changes
+  needed to compile on HP/UX and pointing out a problem with the builtin
+  documentation.
+
+  Andreas Reuter <ar205@bonzo.geowiss.nat.tu-bs.de> for pointing out a problem
+  with importing TrueType fonts.
+
+  Leonard Dickens <leonard@saul.hipgraphics.com> for providing the Makefile
+  changes needed for IRIX 6.3.
+
+  Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk> for a handful of good suggestions.
+
+  Jim Knoble <jmknoble@pobox.com> for some geometry improvements in some
+  dialogs.
+
+  Darren Stuart Embry <dsembr01@ox.slug.louisville.edu> for the donation of
+  another HP/UX 10.20 X11R6 compilation setup.
+
+  Vladimir Volovich <vvv@vvv.vsu.ru> for pointing out something I forgot to
+  test.
+
+  Ben Fry <fry@media.mit.edu> for IRIX 6.5.2 variables for the Makefile.
+
+  J.H.M. Dassen (Ray) <jdassen@debian.org> for fixing bugs with the PK/GF
+  import feature.
+
+  Robert Brady <rwb197@ecs.soton.ac.uk> for pointing out a problem with the
+  length of _XFREE86_GLYPH_RANGES properties and an Exceed font compiler.
+
+  Stefan Monnier <monnier@cs.yale.edu> for a bug report on highlight thickness
+  of 0.
+
+  Humphrey Clerx <humphrey.clerx@eurocontrol.be> for pointing out some
+  compilation problem on Digit Unix 4.0 and some compilation problems with
+  Traditional C compilers.
+
+  Rudolf Cejka <cejkar@dcse.fee.vutbr.cz> for providing patches to fix
+  problems with grabbing fonts from the X server and alerting me to
+  uninitialized variable warnings.
+
+  Baruch Even <baruch@ev-en.org> for providing a fix for a bug that should
+  have shown up long ago dealing with font properties.
+
+  Sergey Vlasov <vsu@mivlgu.murom.ru> for pointing out a serious problem with
+  naming glyphs from the Unicode Character Database and for providing a fix
+  for a potential buffer overflow problem.
+
+  Daniel Neuburger <daniel.neuburger@lmco.com> for providing a patch that
+  fixes a display problem in the Font Grid.
+
+  Pierre HANSER <Pierre.Hanser@sxb.bsf.alcatel.fr> for a patch to fix a
+  problem loading font names that are not NULL terminated from the end of
+  FON/FNT files.
+
+  Patrick Hagglund <patrik.hagglund@bredband.net> for providing the patches to
+  use FreeType 2.
+
+  James Cloos <cloos@jhcloos.com> for finding problems with gbdfed.
+
+  Ming Hua <minghua@rice.edu> for locating a problem with editing glyphs.
+
+  Sergio Martins <smartins@students.dei.uc.pt> for finding a typo and several
+  dialog related bugs.
+
+  Viktor Urban <viktor@icc-atcsolutions.com> for locating a problem when
+  saving and moving to the next or previous glyph.
+
+  Jiri "BlueBear" Dluhos <modry.medved@seznam.cz> for producing crash fixes on
+  64-bit machines.
+
+  Jan Engelhardt <jengelh@linux01.gwdg.de> for providing an improvement on the
+  help text, a missing prototype, and an improvement in Makefile.in.
+
+AUTHOR
+------
+  Mark Leisher <mleisher@crl.nmsu.edu>
+  24 October 2006
