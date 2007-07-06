@@ -1293,7 +1293,6 @@ operations_dialog_setup(GlypheditRec *ge)
      * until we explicitly get rid of it later.
      */
     g_object_ref(G_OBJECT(ge->ops.rotate_adj));
-    gtk_object_sink(GTK_OBJECT(ge->ops.rotate_adj));
 
     ge->ops.shear_adj =
         (GtkAdjustment *) gtk_adjustment_new(0.0, -20.0, 20.0, 1.0,
@@ -1303,7 +1302,6 @@ operations_dialog_setup(GlypheditRec *ge)
      * until we explicitly get rid of it later.
      */
     g_object_ref(G_OBJECT(ge->ops.shear_adj));
-    gtk_object_sink(GTK_OBJECT(ge->ops.shear_adj));
 
     hbox = gtk_hbox_new(FALSE, 0);
     label = gtk_label_new("Degrees:");

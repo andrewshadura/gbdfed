@@ -1092,7 +1092,7 @@ _bdf_is_atom(char *line, unsigned int linelen, char **name, char **value)
 static void
 _bdf_add_property(bdf_font_t *font, char *name, char *value)
 {
-    unsigned int propid;
+    unsigned long propid;
     hashnode hn;
     int len;
     bdf_property_t *prop, *fp;
@@ -1105,7 +1105,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
          * The property already exists in the font, so simply replace
          * the value of the property with the current value.
          */
-        fp = font->props + (unsigned int) hn->data;
+        fp = font->props + (unsigned long) hn->data;
 
         switch (fp->format) {
           case BDF_ATOM:
@@ -1159,7 +1159,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
         font->props_size++;
     }
 
-    propid = (unsigned int) hn->data;
+    propid = (unsigned long) hn->data;
     if (propid >= _num_bdf_properties)
       prop = user_props + (propid - _num_bdf_properties);
     else
@@ -1199,7 +1199,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
       /*
        * Add the property to the font property table.
        */
-      hash_insert(fp->name, (void *) font->props_used,
+      hash_insert(fp->name, (void *) ((unsigned long) font->props_used),
                   (hashtable *) font->internal);
 
     font->props_used++;
@@ -1883,7 +1883,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
 void
 bdf_setup(void)
 {
-    unsigned int i;
+    unsigned long i;
     bdf_property_t *prop;
 
     hash_init(&proptbl);
@@ -3206,7 +3206,7 @@ bdf_free_font(bdf_font_t *font)
 void
 bdf_create_property(char *name, int format)
 {
-    unsigned int n;
+    unsigned long n;
     bdf_property_t *p;
 
     /*
@@ -3243,7 +3243,7 @@ bdf_property_t *
 bdf_get_property(char *name)
 {
     hashnode hn;
-    unsigned int propid;
+    unsigned long propid;
 
     if (name == 0 || *name == 0)
       return 0;
@@ -3251,7 +3251,7 @@ bdf_get_property(char *name)
     if ((hn = hash_lookup(name, &proptbl)) == 0)
       return 0;
 
-    propid = (unsigned int) hn->data;
+    propid = (unsigned long) hn->data;
     if (propid >= _num_bdf_properties)
       return user_props + (propid - _num_bdf_properties);
     return _bdf_properties + propid;
@@ -3333,7 +3333,7 @@ void
 bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
 {
     int len;
-    unsigned int propid;
+    unsigned long propid;
     hashnode hn;
     bdf_property_t *p, *ip;
 
@@ -3360,7 +3360,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
          * If the property exists and is a user defined property, make sure
          * its format is updated to match the property being added.
          */
-        propid = (unsigned int) hn->data;
+        propid = (unsigned long) hn->data;
         if (propid >= _num_bdf_properties) {
             p = user_props + (propid - _num_bdf_properties);
             if (p->format != property->format)
@@ -3376,7 +3376,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
         /*
          * Changing an existing property value.
          */
-        p = font->props + ((unsigned int) hn->data);
+        p = font->props + ((unsigned long) hn->data);
 
         /*
          * If the format changed, then free the atom value if the original
@@ -3433,7 +3433,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
          * name of the property.
          */
         hn = hash_lookup(property->name, &proptbl);
-        propid = (unsigned int) hn->data;
+        propid = (unsigned long) hn->data;
         if (propid >= _num_bdf_properties)
           ip = user_props + (propid - _num_bdf_properties);
         else
@@ -3480,7 +3480,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
         /*
          * Now insert it into the internal hash table.
          */
-        hash_insert(p->name, (void *) font->props_used,
+        hash_insert(p->name, (void *) ((unsigned long) font->props_used),
                     (hashtable *) font->internal);
         font->props_used++;
     }
@@ -3552,7 +3552,7 @@ void
 bdf_delete_font_property(bdf_font_t *font, char *name)
 {
     hashnode hn;
-    unsigned int off;
+    unsigned long off;
     bdf_property_t *p;
 
     if (font == 0 || name == 0 || *name == 0 || font->props_used == 0)
@@ -3561,7 +3561,7 @@ bdf_delete_font_property(bdf_font_t *font, char *name)
     if ((hn = hash_lookup(name, (hashtable *) font->internal)) == 0)
       return;
 
-    off = (unsigned int) hn->data;
+    off = (unsigned long) hn->data;
     p = font->props + off;
 
     /*
@@ -3616,7 +3616,7 @@ bdf_get_font_property(bdf_font_t *font, char *name)
       return 0;
 
     hn = hash_lookup(name, (hashtable *) font->internal);
-    return (hn) ? (font->props + ((unsigned int) hn->data)) : 0;
+    return (hn) ? (font->props + ((unsigned long) hn->data)) : 0;
 }
 
 typedef struct {

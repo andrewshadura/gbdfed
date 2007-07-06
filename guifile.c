@@ -1858,7 +1858,7 @@ load_otf_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
     /*
      * Now set up a file name.
      */
-    sprintf(buffer1, "%.*s.bdf", dot - file, file);
+    sprintf(buffer1, "%.*s.bdf", (int) (dot - file), file);
 
     /*
      * Delete the file and path names so they can be updated.

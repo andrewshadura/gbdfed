@@ -105,7 +105,7 @@ _bdf_psf_load_map(FILE *in, bdf_font_t *font, int psf2, int *res)
 {
     int i, more, c0, c1, cnt;
     unsigned int code;
-    unsigned char buf[4];
+    unsigned char buf[6];
     bdf_glyph_t *gp;
 
     gp = font->glyphs;
