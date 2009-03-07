@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,19 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdf.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: bdf.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
-
 #include "bdfP.h"
 
 #ifdef HAVE_HBF
@@ -1236,7 +1228,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     int c;
     char *s;
     unsigned char *bp;
-    unsigned int i, slen, nibbles;
+    unsigned int i, slen = 0, nibbles;
     double ps, rx, dw, sw;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
@@ -1696,9 +1688,10 @@ _bdf_parse_properties(char *line, unsigned int linelen, unsigned int lineno,
     }
 
     /*
-     * Ignore the _XFREE86_GLYPH_RANGES properties.
+     * Ignore the _XFREE86_GLYPH_RANGES and _XMBDFED_INFO properties.
      */
-    if (memcmp(line, "_XFREE86_GLYPH_RANGES", 21) == 0)
+    if (memcmp(line, "_XFREE86_GLYPH_RANGES", 21) == 0 ||
+        memcmp(line, "_XMBDFED_INFO", 13) == 0)
       return 0;
 
     /*
@@ -1731,7 +1724,7 @@ static int
 _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
                  void *call_data, void *client_data)
 {
-    unsigned int slen;
+    unsigned int slen = 0;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
     bdf_font_t *font;
@@ -2068,7 +2061,7 @@ static int
 _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
                       void *call_data, void *client_data)
 {
-    unsigned int vlen;
+    unsigned int vlen = 0;
     char *name, *value;
     _bdf_parse_t *p;
     _bdf_line_func_t *next;

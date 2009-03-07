@@ -1,11 +1,10 @@
-dnl $Id: configure.in 1 2006-11-02 16:47:28Z mleisher $
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(gbdfed.c)
 
 AC_PROG_CC
 
-dnl get Compiler flags right.
+dnl Get Compiler flags right.
 
 if test "x$CC" = xgcc; then
 	XX_CFLAGS="-Wall -pedantic"
@@ -49,11 +48,15 @@ if test "$have_x" != yes; then
   AC_MSG_NOTICE(X11 not found. Disabling server font grabbing.)
 else
   DEFINES="$DEFINES -DHAVE_XLIB"
+  BDFGRABSRC="bdfgrab.c"
+  BDFGRABOBJ="bdfgrab.o"
 fi
 
 AC_SUBST(DEFINES)
 AC_SUBST(HBFSRC)
 AC_SUBST(HBFOBJ)
+AC_SUBST(BDFGRABSRC)
+AC_SUBST(BDFGRABOBJ)
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

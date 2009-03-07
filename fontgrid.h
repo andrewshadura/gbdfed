@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,17 +14,13 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #ifndef _h_fontgrid
 #define _h_fontgrid
-
-/*
- * $Id: fontgrid.h 1 2006-11-02 16:47:28Z mleisher $
- */
 
 #include <gdk/gdk.h>
 #include <gtk/gtkwidget.h>
@@ -312,8 +308,8 @@ extern void fontgrid_goto_last_page(Fontgrid *fw);
 extern void fontgrid_goto_next_page(Fontgrid *fw);
 extern void fontgrid_goto_previous_page(Fontgrid *fw);
 extern void fontgrid_get_page_info(Fontgrid *fw, FontgridPageInfo *pageinfo);
-extern gboolean fontgrid_select_next_glyph(Fontgrid *fw);
-extern gboolean fontgrid_select_previous_glyph(Fontgrid *fw);
+extern gboolean fontgrid_select_next_glyph(Fontgrid *fw, gint32 code);
+extern gboolean fontgrid_select_previous_glyph(Fontgrid *fw, gint32 code);
 
 /*
  * Font name functions.

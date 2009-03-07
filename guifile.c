@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guifile.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: guifile.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "gbdfed.h"
 #include "labcon.h"
@@ -128,6 +121,12 @@ static GtkWidget *xsrv_selection_text;
 static GtkWidget *xsrv_font_list;
 static GtkWidget *xsrv_import;
 
+/*
+ * Because the grab dialog is shared amongst the editors, this tracks which
+ * editor has control of the font list.
+ */
+static guint xsrv_active_editor;
+
 #endif /* HAVE_XLIB */
 
 /*
@@ -169,7 +168,9 @@ static gbdfed_editor_t *active_editor;
 static void
 make_file_chooser_filters(void)
 {
-    if (filename_filters[0] != 0)
+    int i;
+
+    if (filename_filters[0] != NULL)
       return;
 
     filename_filters[BDF_FORMAT] = gtk_file_filter_new();
@@ -216,6 +217,15 @@ make_file_chooser_filters(void)
 #endif /* HAVE_FREETYPE */
 
     filename_filters[0] = (GtkFileFilter *) 1;
+
+    /*
+     * Add a reference to all the filters so they don't cause a delayed crash
+     * when popping up the import dialog multiple times.
+     */
+    for (i = 1; i < 10; i++) {
+        if (filename_filters[i] != NULL)
+          g_object_ref(filename_filters[i]);
+    }
 }
 
 static gboolean
@@ -383,6 +393,9 @@ really_save_font(guint ed_id)
     gbdfed_editor_t *ed = editors + ed_id;
     gchar *fname;
     FILE *have;
+#if (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 10)
+    GtkRecentManager *recent;
+#endif
 
     fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(ed->save_dialog));
 
@@ -407,6 +420,14 @@ really_save_font(guint ed_id)
     if (export_font(fname, ed, TRUE)) {
         save_dialog_done = TRUE;
         gtk_widget_hide(ed->save_dialog);
+#if (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 10)
+        recent = gtk_recent_manager_get_default();
+        sprintf(buffer1, "file://%s", fname);
+        if (gtk_recent_manager_has_item(recent,
+                                        (const gchar *) buffer1) == FALSE)
+          gtk_recent_manager_add_item(recent,
+                                      (const gchar *) buffer1);
+#endif
     }
     g_free(fname);
 }
@@ -432,7 +453,8 @@ handle_import_messages(bdf_callback_struct_t *call_data, void *client_data)
  **************************************************************************/
 
 static void
-load_bdf_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dir, gchar *file)
+load_bdf_font(gbdfed_editor_t *ed, const gchar *fullpath, const gchar *dir,
+              const gchar *file)
 {
     FILE *in;
     bdf_font_t *font;
@@ -447,13 +469,15 @@ load_bdf_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dir, gchar *file)
     }
 
     guiutil_busy_cursor(ed->shell, TRUE);
-    guiutil_busy_cursor(ed->open_dialog, TRUE);
+    if (ed->open_dialog != NULL)
+      guiutil_busy_cursor(ed->open_dialog, TRUE);
 
     font = bdf_load_font(in, &options.font_opts,
                          handle_import_messages, (void *) ed->shell);
 
     guiutil_busy_cursor(ed->shell, FALSE);
-    guiutil_busy_cursor(ed->open_dialog, FALSE);
+    if (ed->open_dialog != NULL)
+      guiutil_busy_cursor(ed->open_dialog, FALSE);
 
     if (font == 0) {
         fclose(in);
@@ -463,7 +487,8 @@ load_bdf_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dir, gchar *file)
     }
 
     fclose(in);
-    gtk_widget_hide(ed->open_dialog);
+    if (ed->open_dialog != NULL)
+      gtk_widget_hide(ed->open_dialog);
 
     /*
      * Delete the file and path names so they can be updated.
@@ -1990,6 +2015,9 @@ really_open_font(guint ed_id)
     gbdfed_editor_t *ed = editors + ed_id;
     gchar *filename, *path, *file, *dot;
     GtkFileChooser *fs;
+#if (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 10)
+    GtkRecentManager *recent;
+#endif
 
     fs = GTK_FILE_CHOOSER(ed->open_dialog);
     filename = gtk_file_chooser_get_filename(fs);
@@ -2019,9 +2047,19 @@ really_open_font(guint ed_id)
         return;
     }
 
+#if (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 10)
+    recent = gtk_recent_manager_get_default();
+    sprintf(buffer1, "file://%s", filename);
+    if (gtk_recent_manager_has_item(recent,
+                                    (const gchar *) buffer1) == FALSE)
+      gtk_recent_manager_add_item(recent,
+                                  (const gchar *) buffer1);
+#endif
+
     switch (ed->import_format) {
       case BDF_FORMAT:
-        load_bdf_font(ed, filename, path, file);
+        load_bdf_font(ed, (const gchar *) filename, (const gchar *) path,
+                      (const gchar *) file);
         break;
       case CONSOLE_FORMAT:
         load_console_font(ed, filename, dot, path, file);
@@ -2609,7 +2647,7 @@ xsrv_clear_selection_text(GtkWidget *w, gpointer data)
 static void
 xsrv_import_font(GtkWidget *w, gpointer data)
 {
-    gbdfed_editor_t *ed = editors + GPOINTER_TO_UINT(data);
+    gbdfed_editor_t *ed = editors + xsrv_active_editor;
     XFontStruct *xfont;
     bdf_font_t *font;
     gchar *name;
@@ -2722,6 +2760,8 @@ guifile_import_xserver_font(GtkWidget *w, gpointer data)
         }
     }
 
+    xsrv_active_editor = ed->id;
+
     if (xsrv_dialog == 0) {
         xsrv_dialog = gtk_dialog_new();
         gtk_window_set_title(GTK_WINDOW(xsrv_dialog),
@@ -2756,7 +2796,7 @@ guifile_import_xserver_font(GtkWidget *w, gpointer data)
                                 GUINT_TO_POINTER(ed->id));
 
         cell_renderer = gtk_cell_renderer_text_new();
-        column = gtk_tree_view_column_new_with_attributes ("Font List: 0",
+        column = gtk_tree_view_column_new_with_attributes ("Fonts Found: 0",
                                                            cell_renderer,
                                                            "text", 0,
                                                            NULL);
@@ -2839,7 +2879,7 @@ guifile_import_xserver_font(GtkWidget *w, gpointer data)
     /*
      * Update the label on the font list with the number of fonts.
      */
-    sprintf(buffer1, "Font List: %d", nfonts);
+    sprintf(buffer1, "Fonts Found: %d", nfonts);
     gtk_tree_view_column_set_title(column, buffer1);
 
     gtk_list_store_clear(store);
@@ -2946,4 +2986,24 @@ guifile_new_editor(GtkWidget *w, gpointer data)
     n = gbdfed_make_editor(0, FALSE);
 
     gtk_widget_show_all(editors[n].shell);
+}
+
+/*
+ * A routine to load a BDF font directly.
+ */
+void
+guifile_load_bdf_font(gbdfed_editor_t *ed, const gchar *fullpath)
+{
+    gchar *dir, *file;
+
+    if (fullpath == NULL)
+      return;
+
+    file = g_path_get_basename(fullpath);
+    dir = g_path_get_dirname(fullpath);
+    load_bdf_font(ed, fullpath, dir, file);
+    if (dir != NULL)
+      g_free(dir);
+    if (file != NULL)
+      g_free(file);
 }

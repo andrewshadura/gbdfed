@@ -1,30 +1,5 @@
-/*
- * Copyright 2006 Computing Research Lab, New Mexico State University
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
 #ifndef _h_gbdfed
 #define _h_gbdfed
-
-/*
- * $Id: gbdfed.h 49 2007-04-12 14:46:40Z mleisher $
- */
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -32,7 +7,7 @@
 
 G_BEGIN_DECLS
 
-#define GBDFED_VERSION "1.3"
+#define GBDFED_VERSION "1.5"
 
 /*************************************************************************
  *
@@ -313,7 +288,9 @@ extern void guifile_import_console_font(GtkWidget *, gpointer);
 extern void guifile_import_pkgf_font(GtkWidget *, gpointer);
 extern void guifile_import_windows_font(GtkWidget *, gpointer);
 
+#ifdef HAVE_HBF
 extern void guifile_import_hbf_font(GtkWidget *, gpointer);
+#endif
 
 #ifdef HAVE_FREETYPE
 extern void guifile_import_otf_font(GtkWidget *, gpointer);
@@ -331,6 +308,11 @@ extern void guifile_save_as_wait(GtkWidget *, gpointer);
 extern void guifile_save(GtkWidget *, gpointer);
 extern void guifile_export_psf_font(GtkWidget *, gpointer);
 extern void guifile_export_hex_font(GtkWidget *, gpointer);
+
+/*
+ * Special direct BDF font load call for recent fonts menu.
+ */
+extern void guifile_load_bdf_font(gbdfed_editor_t *ed, const gchar *filename);
 
 /*************************************************************************
  *
