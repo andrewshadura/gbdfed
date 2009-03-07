@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: glyphtest.c 1 2006-11-02 16:47:28Z mleisher $";
-#else
-static char svnid[] = "$Id: glyphtest.c 1 2006-11-02 16:47:28Z mleisher $";
-#endif
-#endif
 
 #include "glyphtest.h"
 
@@ -540,7 +533,7 @@ glyphtest_class_init(gpointer g_class, gpointer class_data)
     /*
      * Set the class global variables.
      */
-    parent_class = gtk_type_class(GTK_TYPE_WIDGET);
+    parent_class = g_type_class_peek_parent(g_class);
 
     ocp->destroy = glyphtest_destroy;
     gocp->set_property = glyphtest_set_property;

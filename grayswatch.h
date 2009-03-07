@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,10 +14,10 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #ifndef _h_grayswatch
 #define _h_grayswatch
@@ -29,14 +29,14 @@ G_BEGIN_DECLS
 /*
  * The macros for accessing various parts of the widget class.
  */
-#define GRAYSWATCH(obj)(GTK_CHECK_CAST(obj, grayswatch_get_type(), Grayswatch))
+#define GRAYSWATCH(obj)(G_TYPE_CHECK_INSTANCE_CAST(obj, grayswatch_get_type(), Grayswatch))
 #define GRAYSWATCH_CLASS(klass) \
-        (GTK_CHECK_CLASS_CAST(klass, grayswatch_get_type(), GrayswatchClass))
-#define IS_GRAYSWATCH(obj) GTK_CHECK_TYPE(obj, grayswatch_get_type())
+        (G_TYPE_CHECK_CLASS_CAST(klass, grayswatch_get_type(), GrayswatchClass))
+#define IS_GRAYSWATCH(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, grayswatch_get_type())
 #define IS_GRAYSWATCH_CLASS(klass) \
-        (GTK_CHECK_CLASS_TYPE(klass, grayswatch_get_type()))
+        (G_TYPE_CHECK_CLASS_TYPE(klass, grayswatch_get_type()))
 #define GRAYSWATCH_GET_CLASS(obj) \
-        (GTK_CHECK_GET_CLASS(obj, grayswatch_get_type(), GrayswatchClass))
+        (G_TYPE_INSTANCE_GET_CLASS(obj, grayswatch_get_type(), GrayswatchClass))
 
 typedef struct _Grayswatch      Grayswatch;
 typedef struct _GrayswatchClass GrayswatchClass;
@@ -82,7 +82,7 @@ struct _GrayswatchClass {
  *
  **************************************************************************/
 
-extern GtkType grayswatch_get_type(void);
+extern GType grayswatch_get_type(void);
 
 extern GtkWidget *grayswatch_new(guint gray);
 

@@ -1,7 +1,4 @@
-.\"
-.\" $Id: gbdfed.man 1 2006-11-02 16:47:28Z mleisher $
-.\"
-.TH GBDFED 1 "26 October 2006" "GTK2"
+.TH GBDFED 1 "15 January 2009" "GTK2"
 .SH NAME 
 gbdfed \- GTK-based BDF font editor
 
@@ -484,6 +481,9 @@ menu has the following entries:
 .TP 4
 .I Update <Ctrl+S>
 This will update the Font Grid with the modified glyph.
+.br
+To the right of the Glyph Name field is a button that performs the same
+function.
 .PP
 .TP 4
 .I Update and Next <Ctrl+U>
@@ -534,12 +534,18 @@ This will select the whole glyph bitmap.
 This will move the Glyph Editor to the next glyph position in the Font Grid.
 If the current glyph has been modified, a save prompt will appear before
 moving to the next glyph.
+.br
+To the right of the Glyph Name field is a button that performs the same
+function.
 .PP
 .TP 4
 .I Previous Glyph <Ctrl+P>
 This will move the Glyph Editor to the previous glyph position in the Font
 Grid.  If the current glyph has been modified, a save prompt will appear
 before moving to the previous glyph.
+.br
+To the right of the Glyph Name field is a button that performs the same
+function.
 .PP
 The
 .I Operation
@@ -588,7 +594,7 @@ will be exported as PSF fonts. The code valued entered are expected to be
 in hexadecimal.
 
 .SH Glyph Editor Other Features
-When the mouse is used to shift the bitmap by one of the buttons, holding
+When the mouse is used to shift the bitmap using one of the buttons, holding
 the mouse down will cause the activity to repeat.
 
 .SH PROPERTIES
@@ -681,12 +687,21 @@ prototype.
 Daniel Richard G. <skunk@iSKUNK.ORG> for help on 64-bit architectures.
 .br
 Baruch Even <baruch@ev-en.org> for help on 64-bit architectures.
+.br
+Ming Hua <minghua.debian@gmail.com> for an unsuspected warning.
+.br
+Ryan Hill <dirtyepic@gentoo.org> for import dialog crash report.
+.br
+Don Knuth (https://bugs.launchpad.net/ubuntu/+source/gbdfed/+bug/172836) for
+reporting spelling, gramatical and behavior problems.
+.br
+Tim Allen <screwtape@froup.com> for discovering glyph and font spacing bugs.
+.br
+Daniel Quarras <dqarras@yahoo.com> for discovering a PSF unicode map editing
+problem.
+.br
+Bertrand Janin <tamentis@neopulsar.org> for improving the GlyphEditor user
+interface.
 
 .SH AUTHOR
-Mark Leisher
-.br
-Computing Research Lab
-.br
-New Mexico State University
-.br
-Email: mleisher@crl.nmsu.edu
+Mark Leisher <mleisher@gmail.com>

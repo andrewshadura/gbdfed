@@ -1,9 +1,5 @@
 #
-# $Id: Makefile.in 11 2006-11-07 21:41:40Z mleisher $
-#
-
-#
-# Copyright 2006 Computing Research Labs, New Mexico State University
+# Copyright 2008 Department of Mathematical Sciences, New Mexico State University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -18,10 +14,10 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-# THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-# OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
-# THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
 RM = @RM@
@@ -35,39 +31,55 @@ DEFINES = @DEFINES@ -DG_DISABLE_DEPRECATED \
 	-DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED \
 	-DGTK_DISABLE_DEPRECATED
 
-SRCS = bdf.c bdfcons.c bdffnt.c bdfgname.c bdfgrab.c bdfgrid.c bdfotf.c \
-       bdfpkgf.c bdfpsf.c @HBFSRC@ \
-       labcon.c \
-       grayswatch.c \
+SRCS = bdf.c \
+       bdfcons.c \
+       bdffnt.c \
+       bdfgname.c \
+       @BDFGRABSRC@ \
+       bdfgrid.c \
+       bdfotf.c \
+       bdfpkgf.c \
+       bdfpsf.c \
+       fontgrid.c \
+       gbdfed.c \
+       gectrl.c \
        glyphedit.c \
        glyphtest.c \
-       fontgrid.c \
-       gectrl.c \
-       gbdfed.c \
+       grayswatch.c \
        guiedit.c \
-       guigedit.c \
        guifile.c \
+       guigedit.c \
        guihelp.c \
        guiops.c \
        guipref.c \
-       guiutil.c
+       guiutil.c \
+       @HBFSRC@ \
+       labcon.c
 
-OBJS = bdf.o bdfcons.o bdffnt.o bdfgname.o bdfgrab.o bdfgrid.o bdfotf.o \
-       bdfpkgf.o bdfpsf.o @HBFOBJ@ \
-       labcon.o \
-       grayswatch.o \
+OBJS = bdf.o \
+       bdfcons.o \
+       bdffnt.o \
+       bdfgname.o \
+       @BDFGRABOBJ@ \
+       bdfgrid.o \
+       bdfotf.o \
+       bdfpkgf.o \
+       bdfpsf.o \
+       fontgrid.o \
+       gbdfed.o \
+       gectrl.o \
        glyphedit.o \
        glyphtest.o \
-       fontgrid.o \
-       gectrl.o \
-       gbdfed.o \
+       grayswatch.o \
        guiedit.o \
-       guigedit.o \
        guifile.o \
+       guigedit.o \
        guihelp.o \
        guiops.o \
        guipref.o \
-       guiutil.o
+       guiutil.o \
+       @HBFOBJ@ \
+       labcon.o
 
 #
 # Point these at the FreeType source directories.
@@ -79,6 +91,7 @@ LDFLAGS = @LDFLAGS@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
+datarootdir = @datarootdir@
 mandir = @mandir@
 
 all: gbdfed
@@ -93,7 +106,7 @@ realclean: clean
 	$(RM) -f gbdfed
 
 distclean: clean
-	$(RM) -f gbdfed config.* Makefile
+	$(RM) -rf gbdfed config.* Makefile autom4te.cache
 
 .c.o:
 	$(CC) $(DEFINES) $(CFLAGS) $(INCS) -c $< -o $@
@@ -119,23 +132,21 @@ bdfgrid.o: bdfgrid.c bdfP.h bdf.h
 bdfotf.o: bdfotf.c
 bdfpkgf.o: bdfpkgf.c bdfP.h bdf.h
 bdfpsf.o: bdfpsf.c bdfP.h bdf.h
-hbf.o: hbf.c hbf.h
-labcon.o: labcon.c labcon.h
-grayswatch.o: grayswatch.c grayswatch.h
+fontgrid.o: fontgrid.c fontgrid.h bdfP.h bdf.h
+gbdfed.o: gbdfed.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h labcon.h
+gectrl.o: gectrl.c gectrl.h bdfP.h bdf.h gectrlbmaps.h
 glyphedit.o: glyphedit.c glyphedit.h bdfP.h bdf.h
 glyphtest.o: glyphtest.c glyphtest.h bdfP.h bdf.h
-fontgrid.o: fontgrid.c fontgrid.h bdfP.h bdf.h
-gectrl.o: gectrl.c gectrl.h bdfP.h bdf.h gectrlbmaps.h
-gbdfed.o: gbdfed.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h labcon.h
-guiedit.o: guiedit.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h \
-  labcon.h
+grayswatch.o: grayswatch.c grayswatch.h
+guiedit.o: guiedit.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h labcon.h
+guifile.o: guifile.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h labcon.h
 guigedit.o: guigedit.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h \
-  glyphedit.h labcon.h gectrl.h
-guifile.o: guifile.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h \
-  labcon.h
+glyphedit.h labcon.h gectrl.h
 guihelp.o: guihelp.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h htext.h
 guiops.o: guiops.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h
 guipref.o: guipref.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h
 guiutil.o: guiutil.c gbdfed.h bdf.h fontgrid.h bdfP.h glyphtest.h
+hbf.o: hbf.c hbf.h
+labcon.o: labcon.c labcon.h
 
 # end of Makefile

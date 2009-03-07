@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guiedit.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: guiedit.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "gbdfed.h"
 #include "labcon.h"
@@ -654,6 +647,7 @@ guiedit_apply_details(GtkWidget *w, gpointer data)
     gbdfed_editor_t *ed = editors + GPOINTER_TO_UINT(data);
     GtkToggleButton *tb;
     const gchar *v;
+    bdf_property_t sp;
     FontgridFontInfo finfo;
 
     v = gtk_entry_get_text(GTK_ENTRY(ed->finfo_dwidth));
@@ -662,6 +656,7 @@ guiedit_apply_details(GtkWidget *w, gpointer data)
     /*
      * Get the current spacing value.
      */
+    finfo.spacing = 0;
     tb = GTK_TOGGLE_BUTTON(ed->finfo_spacing[BDF_PROPORTIONAL >> 4]);
     if (gtk_toggle_button_get_active(tb))
       finfo.spacing = BDF_PROPORTIONAL;
@@ -671,6 +666,19 @@ guiedit_apply_details(GtkWidget *w, gpointer data)
     tb = GTK_TOGGLE_BUTTON(ed->finfo_spacing[BDF_CHARCELL >> 4]);
     if (gtk_toggle_button_get_active(tb))
       finfo.spacing = BDF_CHARCELL;
+
+    /*
+     * Make sure a property gets added to the font as well so it
+     * gets saved in the event there is no XLFD name.
+     */
+    sp.name = "SPACING";
+    sp.format = BDF_ATOM;
+    switch (finfo.spacing) {
+      case BDF_PROPORTIONAL: sp.value.atom = "P"; break;
+      case BDF_MONOWIDTH: sp.value.atom = "M"; break;
+      case BDF_CHARCELL: sp.value.atom = "C"; break;
+    }
+    bdf_add_font_property(fontgrid_get_font(FONTGRID(ed->fgrid)), &sp);
 
     /*
      * Set the font spacing values on all of the visible glyph editors.

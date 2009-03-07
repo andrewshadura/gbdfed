@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: gbdfed.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: gbdfed.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "gbdfed.h"
 #include "labcon.h"
@@ -883,6 +876,58 @@ menu_popup(GtkWidget *w, GdkEvent *event, gpointer data)
     return FALSE;
 }
 
+#if (GTK_MAJOR_VERSION >= 2 && GTK_MINOR_VERSION >= 10)
+static void
+open_recent_font(GtkWidget *w, gpointer data)
+{
+    gchar *p, *uri = gtk_recent_chooser_get_current_uri(GTK_RECENT_CHOOSER(w));
+    gbdfed_editor_t *ed = editors + GPOINTER_TO_UINT(data);
+
+    if (uri == NULL)
+      return;
+
+    /*
+     * Skip the URI prefix to get to the path. The URI's are strictly local
+     * at the moment.
+     */
+    for (p = uri; *p && *p != ':'; p++);
+    if (*p != ':')
+      return;
+    p++;
+    if (*p == '/' && *(p + 1) == '/')
+      p += 2;
+    guifile_load_bdf_font(ed, (const gchar *) p);
+    g_free(uri);
+}
+
+static GtkWidget *
+make_recent_menu(guint ed_id)
+{
+    GtkWidget *menu;
+    GtkRecentFilter *filter;
+    GtkRecentManager *manager;
+
+    manager = gtk_recent_manager_get_default();
+    menu = gtk_recent_chooser_menu_new_for_manager(manager);
+    gtk_recent_chooser_set_limit(GTK_RECENT_CHOOSER(menu), 10);
+    gtk_recent_chooser_set_sort_type(GTK_RECENT_CHOOSER(menu),
+                                     GTK_RECENT_SORT_MRU);
+    gtk_recent_chooser_set_show_tips(GTK_RECENT_CHOOSER(menu), TRUE);
+    gtk_recent_chooser_menu_set_show_numbers(GTK_RECENT_CHOOSER_MENU(menu),
+                                             TRUE);
+    gtk_recent_chooser_set_local_only(GTK_RECENT_CHOOSER(menu), TRUE);
+    filter = gtk_recent_filter_new();
+    gtk_recent_filter_add_pattern(filter, "*.[Bb][Dd][Ff]");
+    gtk_recent_chooser_set_filter(GTK_RECENT_CHOOSER(menu), filter);
+
+    (void) g_signal_connect(G_OBJECT(menu), "item_activated",
+                            G_CALLBACK(open_recent_font),
+                            GUINT_TO_POINTER(ed_id));
+
+    return menu;
+}
+#endif
+
 static GtkWidget *
 make_file_menu(gbdfed_editor_t *ed, GtkWidget *menubar)
 {
@@ -978,7 +1023,7 @@ make_file_menu(gbdfed_editor_t *ed, GtkWidget *menubar)
                             GUINT_TO_POINTER(ed->id));
 #endif
 
-    ed->file_export = gtk_menu_item_new_with_mnemonic("E_xport");
+    ed->file_export = gtk_menu_item_new_with_mnemonic("Ex_port");
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), ed->file_export);
 
     submenu = gtk_menu_new();
@@ -1002,8 +1047,24 @@ make_file_menu(gbdfed_editor_t *ed, GtkWidget *menubar)
     gtk_widget_set_sensitive(sep, FALSE);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), sep);
 
+#if (GTK_MAJOR_VERSION >=2 && GTK_MINOR_VERSION >= 10)
+    /*
+     * Only add the Recent Fonts menu if the GTK version supports it.
+     */
+    mitem = gtk_menu_item_new_with_mnemonic("_Recent Fonts");
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mitem);
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(mitem), make_recent_menu(ed->id));
+
+    /*
+     * Separator.
+     */
+    sep = gtk_menu_item_new();
+    gtk_widget_set_sensitive(sep, FALSE);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), sep);
+#endif
+
     if (ed->id == 0) {
-        mitem = make_accel_menu_item(menu, "_Exit", "<Control>F4", ed->ag);
+        mitem = make_accel_menu_item(menu, "E_xit", "<Control>F4", ed->ag);
 
         (void) g_signal_connect(G_OBJECT(mitem), "activate",
                                 G_CALLBACK(quit_application),

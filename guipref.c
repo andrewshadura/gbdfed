@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guipref.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: guipref.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "gbdfed.h"
 #include "grayswatch.h"
@@ -657,7 +650,8 @@ pref_set_filename(GtkWidget *w, gpointer data)
 {
     gchar *fname;
 
-    fname = (gchar *) gtk_file_selection_get_filename(GTK_FILE_SELECTION(w));
+
+    fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(w));
 
     if (pref_fsel_unicode)
       gtk_entry_set_text(GTK_ENTRY(pref_unicode), fname);
@@ -676,31 +670,38 @@ pref_set_filename(GtkWidget *w, gpointer data)
 }
 
 static void
+handle_filename_response(GtkDialog *d, gint response, gpointer data)
+{
+    switch (response) {
+      case GTK_RESPONSE_ACCEPT:
+        pref_set_filename(GTK_WIDGET(d), data);
+        break;
+      case GTK_RESPONSE_CANCEL:
+        gtk_widget_hide(GTK_WIDGET(d));
+        break;
+    }
+}
+
+static void
 pref_show_fsel_dialog(GtkWidget *w, gpointer data)
 {
-    GtkFileSelection *fs;
-
     pref_fsel_unicode = GPOINTER_TO_INT(data);
 
     if (pref_fsel_dialog == 0) {
-        pref_fsel_dialog = gtk_file_selection_new(0);
+        pref_fsel_dialog = gtk_file_chooser_dialog_new("Glyph Name",
+                                                       GTK_WINDOW(pref_dialog),
+                                                       GTK_FILE_CHOOSER_ACTION_OPEN,
+                                                       GTK_STOCK_CANCEL,
+                                                       GTK_RESPONSE_CANCEL,
+                                                       GTK_STOCK_APPLY,
+                                                       GTK_RESPONSE_ACCEPT,
+                                                       NULL);
         (void) g_signal_connect(G_OBJECT(pref_fsel_dialog), "delete_event",
                                 G_CALLBACK(gtk_widget_hide), 0);
 
-        fs = GTK_FILE_SELECTION(pref_fsel_dialog);
-        gtk_file_selection_hide_fileop_buttons(fs);
-
-        (void) g_signal_connect_object(G_OBJECT(fs->ok_button), "clicked",
-                                       G_CALLBACK(pref_set_filename),
-                                       (gpointer) fs,
-                                       G_CONNECT_SWAPPED);
-        (void) g_signal_connect_object(G_OBJECT(fs->cancel_button),
-                                       "clicked",
-                                       G_CALLBACK(gtk_widget_hide),
-                                       (gpointer) fs,
-                                       G_CONNECT_SWAPPED);
-        gtk_widget_show_all(GTK_DIALOG(pref_fsel_dialog)->vbox);
-        gtk_widget_show_all(GTK_DIALOG(pref_fsel_dialog)->action_area);
+        (void) g_signal_connect(G_OBJECT(pref_fsel_dialog), "response",
+                                G_CALLBACK(handle_filename_response),
+                                NULL);
     }
 
     /*
@@ -1044,11 +1045,6 @@ pref_save(void)
     fprintf(out, "#########################\n\n");
     bdf_save_options(out, &options.font_opts);
     fclose(out);
-
-    /*
-     * Close the preferences dialog.
-     */
-    gtk_widget_hide(pref_dialog);
 }
 
 static void

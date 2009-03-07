@@ -1,8 +1,4 @@
-#
-# $Id: README 49 2007-04-12 14:46:40Z mleisher $
-#
-
-gbdfed 1.3
+gbdfed 1.4
 
 INTRO
 -----
@@ -96,6 +92,9 @@ Step 1.
   Run the "configure" script to generate the Makefile. By default, the program
   installs in /usr/local. You can change that by using the --prefix option of
   the "configure" script.
+
+  To disable the File->Import->X Server Font feature, use the --without-x
+  command line option to the "configure" script.
 
 Step 2.
 
@@ -232,7 +231,26 @@ Thanks go to the following people:
   Baruch Even <baruch@ev-en.org> for diagnosing problems on 64-bit
   architectures.
 
+  Ming Hua <minghua.debian@gmail.com> for pointing out a warning about testing
+  a NULL region.
+
+  Ryan Hill <dirtyepic@gentoo.org> for pointing out a crashing problem with
+  filename filters when the import dialog was popped up multiple times.
+
+  Don Knuth for reporting problems with the documentation and a highlighting
+  problem (https://bugs.launchpad.net/ubuntu/+source/gbdfed/+bug/172836).
+
+  Tim Allen <screwtape@froup.com> for reporting an obscure bug with glyph
+  spacing which led to fixing another spacing related bug. Also for the idea
+  of preserving device width offsets.
+
+  Daniel Quarras <dqarras@yahoo.com> for discovering that deleting PSF
+  unicode map entries was being ignored.
+
+  Bertrand Janin <tamentis@neopulsar.org> for adding glyph navigation buttons
+  to the GlyphEditors.
+
 AUTHOR
 ------
   Mark Leisher <mleisher@crl.nmsu.edu>
-  12 April 2007
+  06 March 2009

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfgname.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: bdfgname.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "bdfP.h"
 
@@ -153,14 +146,6 @@ _bdf_load_adobe_names(FILE *in)
             (void) getline(in, buf, 256);
         }
 
-        c = _bdf_atol(buf, 0, 16);
-
-        /*
-         * Ignore the Adobe-specific names in the Private Use Area.
-         */
-        if (c >= 0xe000 && c <= 0xf8ff)
-          continue;
-
         if (adobe_names_used == adobe_names_size) {
             if (adobe_names_size == 0)
               adobe_names = (_bdf_adobe_name_t *)
@@ -175,13 +160,18 @@ _bdf_load_adobe_names(FILE *in)
             adobe_names_size += 512;
         }
 
-        adobe_names[adobe_names_used].code = c;
+        adobe_names[adobe_names_used].start = pos;
         for (sp = buf; *sp != ';'; sp++) ;
-        sp++;
-        adobe_names[adobe_names_used].start = pos + (sp - buf);
-        for (; *sp != ';'; sp++) ;
         adobe_names[adobe_names_used].end = pos + (sp - buf);
-        adobe_names_used++;
+        sp++;
+
+        c = _bdf_atol(sp, 0, 16);
+
+        /*
+         * Ignore the Adobe-specific names in the Private Use Area.
+         */
+        if (c < 0xe000 || c > 0xf8ff)
+          adobe_names[adobe_names_used++].code = c;
     }
 
     /*
