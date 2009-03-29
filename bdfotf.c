@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,24 +14,15 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 /*
  * Only compile this if the FreeType library is available.
  */
 #ifdef HAVE_FREETYPE
-
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfotf.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: bdfotf.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "bdfP.h"
 #include FT_GLYPH_H
@@ -253,7 +244,7 @@ _bdfotf_generate(FT_Face face, int nocmap, bdf_options_t *opts,
     int awidth, code, idx;
     short maxrb, maxlb, minlb, y, x;
     short x_off, y_off, maxas, maxds;
-    unsigned short upm, bpr, wd, ht, sx, ex, sy, ey;
+    int upm, bpr, wd, ht, sx, ex, sy, ey;
     unsigned char *bmap;
     bdf_glyph_t *gp;
     double swscale;

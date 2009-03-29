@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,23 +14,16 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdfgrab.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: bdfgrab.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 /*
- * This file will only be compiled if the BDF_NO_X11 macro is *not* defined.
+ * This file will only be compiled if the HAVE_XLIB macro is defined.
  */
-#ifndef BDF_NO_X11
+#ifdef HAVE_XLIB
 
 /*
  * Code to get BDF fonts from the X server.  Reimplementation of the famous
@@ -45,7 +38,9 @@ static char svnid[] = "$Id: bdfgrab.c 49 2007-04-12 14:46:40Z mleisher $";
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xproto.h>
+#if 0
 #include <X11/Xmu/Error.h>
+#endif
 #include "bdfP.h"
 
 /*
@@ -291,26 +286,32 @@ bdf_load_server_font(Display *d, XFontStruct *f, char *name,
              * Add the property to the font.
              */
             prop.name = XGetAtomName(d, xfp->name);
-            if ((pp = bdf_get_property(prop.name)) == 0) {
+            if (prop.name) {
+                if ((pp = bdf_get_property(prop.name)) == 0) {
+                    /*
+                     * The property does not exist, so create it with type Atom.
+                     */
+                    bdf_create_property(prop.name, BDF_ATOM);
+                    pp = bdf_get_property(prop.name);
+                }
+                prop.format = pp->format;
+                switch (prop.format) {
+                  case BDF_ATOM:
+                    prop.value.atom = XGetAtomName(d, (Atom) xfp->card32);
+                    break;
+                  case BDF_CARDINAL:
+                    prop.value.card32 = xfp->card32;
+                    break;
+                  case BDF_INTEGER:
+                    prop.value.int32 = (int) xfp->card32;
+                    break;
+                }
                 /*
-                 * The property does not exist, so create it with type Atom.
+                 * Ignore the _XMBDFED_INFO property.
                  */
-                bdf_create_property(prop.name, BDF_ATOM);
-                pp = bdf_get_property(prop.name);
+                if (strcmp(prop.name, "_XMBDFED_INFO") != 0)
+                  bdf_add_font_property(font, &prop);
             }
-            prop.format = pp->format;
-            switch (prop.format) {
-              case BDF_ATOM:
-                prop.value.atom = XGetAtomName(d, (Atom) xfp->card32);
-                break;
-              case BDF_CARDINAL:
-                prop.value.card32 = xfp->card32;
-                break;
-              case BDF_INTEGER:
-                prop.value.int32 = (int) xfp->card32;
-                break;
-            }
-            bdf_add_font_property(font, &prop);
 
             /*
              * Free up the Atom names returned by X.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: gectrl.c 1 2006-11-02 16:47:28Z mleisher $";
-#else
-static char svnid[] = "$Id: gectrl.c 1 2006-11-02 16:47:28Z mleisher $";
-#endif
-#endif
 
 #include <gtk/gtklabel.h>
 #include "gectrl.h"
@@ -161,7 +154,7 @@ gecontrol_position_buttons(GtkWidget *w)
          */
         ix = ((w->allocation.width >> 1)-((ge->gimage->width + 2) >> 1)) + dx;
 
-        if (ge->buttons[GEC_GLYPH_IMAGE].region == 0) {
+        if (ge->buttons[GEC_GLYPH_IMAGE].region == NULL) {
             /* Top left. */
             points[0].x = points[4].x = ix;
             points[0].y = points[4].y = sy;
@@ -206,7 +199,7 @@ gecontrol_position_buttons(GtkWidget *w)
      * Position the toggle buttons.
      */
     for (i = 0; i < GEC_FLIPH_BUTTON; i++) {
-        if (ge->buttons[i].region == 0)
+        if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
               gdk_region_polygon(points, 4, GDK_WINDING_RULE);
         else
@@ -246,7 +239,7 @@ gecontrol_position_buttons(GtkWidget *w)
      * Position the first row of buttons.
      */
     for (x = sx; i < GEC_RLEFT_BUTTON; i++) {
-        if (ge->buttons[i].region == 0)
+        if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
               gdk_region_polygon(points, 4, GDK_WINDING_RULE);
         else
@@ -276,7 +269,7 @@ gecontrol_position_buttons(GtkWidget *w)
      * Position second row of buttons.
      */
     for (x = sx; i < GEC_ULEFT_BUTTON; i++) {
-        if (ge->buttons[i].region == 0)
+        if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
               gdk_region_polygon(points, 4, GDK_WINDING_RULE);
         else
@@ -306,7 +299,7 @@ gecontrol_position_buttons(GtkWidget *w)
      * Position third row of buttons.
      */
     for (x = sx; i < GEC_LEFT_BUTTON; i++) {
-        if (ge->buttons[i].region == 0)
+        if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
               gdk_region_polygon(points, 4, GDK_WINDING_RULE);
         else
@@ -336,7 +329,7 @@ gecontrol_position_buttons(GtkWidget *w)
     /*
      * Set the coordinates of the LEFT and RIGHT buttons.
      */
-    if (ge->buttons[i].region == 0)
+    if (ge->buttons[i].region == NULL)
       ge->buttons[i].region =
           gdk_region_polygon(points, 4, GDK_WINDING_RULE);
     else
@@ -350,7 +343,7 @@ gecontrol_position_buttons(GtkWidget *w)
     for (j = 0; j < 4; j++)
       points[j].x += (GEC_BUTTON_SIZE + 3) * 2;
 
-    if (ge->buttons[i].region == 0)
+    if (ge->buttons[i].region == NULL)
       ge->buttons[i].region =
           gdk_region_polygon(points, 4, GDK_WINDING_RULE);
     else
@@ -371,7 +364,7 @@ gecontrol_position_buttons(GtkWidget *w)
       points[j].y += GEC_BUTTON_SIZE + 3;
 
     for (x = sx; i < GEC_GLYPH_IMAGE; i++) {
-        if (ge->buttons[i].region == 0)
+        if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
               gdk_region_polygon(points, 4, GDK_WINDING_RULE);
         else
@@ -430,7 +423,7 @@ gecontrol_position_buttons(GtkWidget *w)
         points[3].x = points[0].x;
         points[3].y = points[2].y;
 
-        if (ge->spot_region == 0)
+        if (ge->spot_region == NULL)
           ge->spot_region = gdk_region_polygon(points, 4,
                                                GDK_WINDING_RULE);
         else
@@ -1077,7 +1070,7 @@ gecontrol_motion_notify(GtkWidget *w, GdkEventMotion *ev)
 
     ge = GECONTROL(w);
     for (i = 0; i < 18; i++) {
-        if (ge->buttons[i].region != 0 &&
+        if (ge->buttons[i].region != NULL &&
             gdk_region_point_in(ge->buttons[i].region, ev->x, ev->y)) {
             if (i != ge->last_button) {
 
@@ -1107,7 +1100,7 @@ gecontrol_motion_notify(GtkWidget *w, GdkEventMotion *ev)
          * to inform the user.
          */
         if (ge->tip_label) {
-            if (ge->spot_region &&
+            if (ge->spot_region != NULL &&
                 gdk_region_point_in(ge->spot_region, ev->x, ev->y)) {
                 /*
                  * Determine which color this is and it's value. Mask
@@ -1246,7 +1239,8 @@ gecontrol_button_release(GtkWidget *w, GdkEventButton *ev)
          * Check to see if one of the colors was selected.
          */
         if (ge->gimage || ge->gimage->bpp > 1) {
-            if (gdk_region_point_in(ge->spot_region, ev->x, ev->y)) {
+            if (ge->spot_region != NULL &&
+                gdk_region_point_in(ge->spot_region, ev->x, ev->y)) {
                 x = (((guint) ev->x) - ge->spot.x) & 0xff;
                 y = (((guint) ev->y) - ge->spot.y) & 0xff;
                 if (ge->gimage->bpp != 8)
@@ -1435,7 +1429,7 @@ gecontrol_init(GTypeInstance *instance, gpointer g_class)
 
     for (i = 0; i < 18; i++) {
         gw->buttons[i].help = help_strings[i];
-        gw->buttons[i].region = 0;
+        gw->buttons[i].region = NULL;
         gw->buttons[i].x = gw->buttons[i].y = 0;
         gw->buttons[i].set = gw->buttons[i].toggle = FALSE;
 

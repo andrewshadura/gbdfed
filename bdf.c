@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,19 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: bdf.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: bdf.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
-
 #include "bdfP.h"
 
 #ifdef HAVE_HBF
@@ -1092,7 +1084,7 @@ _bdf_is_atom(char *line, unsigned int linelen, char **name, char **value)
 static void
 _bdf_add_property(bdf_font_t *font, char *name, char *value)
 {
-    unsigned long propid;
+    unsigned int propid;
     hashnode hn;
     int len;
     bdf_property_t *prop, *fp;
@@ -1105,7 +1097,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
          * The property already exists in the font, so simply replace
          * the value of the property with the current value.
          */
-        fp = font->props + (unsigned long) hn->data;
+        fp = font->props + (unsigned int) hn->data;
 
         switch (fp->format) {
           case BDF_ATOM:
@@ -1159,7 +1151,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
         font->props_size++;
     }
 
-    propid = (unsigned long) hn->data;
+    propid = (unsigned int) hn->data;
     if (propid >= _num_bdf_properties)
       prop = user_props + (propid - _num_bdf_properties);
     else
@@ -1199,7 +1191,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
       /*
        * Add the property to the font property table.
        */
-      hash_insert(fp->name, (void *) ((unsigned long) font->props_used),
+      hash_insert(fp->name, (void *) font->props_used,
                   (hashtable *) font->internal);
 
     font->props_used++;
@@ -1236,7 +1228,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     int c;
     char *s;
     unsigned char *bp;
-    unsigned int i, slen, nibbles;
+    unsigned int i, slen = 0, nibbles;
     double ps, rx, dw, sw;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
@@ -1696,9 +1688,10 @@ _bdf_parse_properties(char *line, unsigned int linelen, unsigned int lineno,
     }
 
     /*
-     * Ignore the _XFREE86_GLYPH_RANGES properties.
+     * Ignore the _XFREE86_GLYPH_RANGES and _XMBDFED_INFO properties.
      */
-    if (memcmp(line, "_XFREE86_GLYPH_RANGES", 21) == 0)
+    if (memcmp(line, "_XFREE86_GLYPH_RANGES", 21) == 0 ||
+        memcmp(line, "_XMBDFED_INFO", 13) == 0)
       return 0;
 
     /*
@@ -1731,7 +1724,7 @@ static int
 _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
                  void *call_data, void *client_data)
 {
-    unsigned int slen;
+    unsigned int slen = 0;
     _bdf_line_func_t *next;
     _bdf_parse_t *p;
     bdf_font_t *font;
@@ -1883,7 +1876,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
 void
 bdf_setup(void)
 {
-    unsigned long i;
+    unsigned int i;
     bdf_property_t *prop;
 
     hash_init(&proptbl);
@@ -2068,7 +2061,7 @@ static int
 _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
                       void *call_data, void *client_data)
 {
-    unsigned int vlen;
+    unsigned int vlen = 0;
     char *name, *value;
     _bdf_parse_t *p;
     _bdf_line_func_t *next;
@@ -3206,7 +3199,7 @@ bdf_free_font(bdf_font_t *font)
 void
 bdf_create_property(char *name, int format)
 {
-    unsigned long n;
+    unsigned int n;
     bdf_property_t *p;
 
     /*
@@ -3243,7 +3236,7 @@ bdf_property_t *
 bdf_get_property(char *name)
 {
     hashnode hn;
-    unsigned long propid;
+    unsigned int propid;
 
     if (name == 0 || *name == 0)
       return 0;
@@ -3251,7 +3244,7 @@ bdf_get_property(char *name)
     if ((hn = hash_lookup(name, &proptbl)) == 0)
       return 0;
 
-    propid = (unsigned long) hn->data;
+    propid = (unsigned int) hn->data;
     if (propid >= _num_bdf_properties)
       return user_props + (propid - _num_bdf_properties);
     return _bdf_properties + propid;
@@ -3333,7 +3326,7 @@ void
 bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
 {
     int len;
-    unsigned long propid;
+    unsigned int propid;
     hashnode hn;
     bdf_property_t *p, *ip;
 
@@ -3360,7 +3353,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
          * If the property exists and is a user defined property, make sure
          * its format is updated to match the property being added.
          */
-        propid = (unsigned long) hn->data;
+        propid = (unsigned int) hn->data;
         if (propid >= _num_bdf_properties) {
             p = user_props + (propid - _num_bdf_properties);
             if (p->format != property->format)
@@ -3376,7 +3369,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
         /*
          * Changing an existing property value.
          */
-        p = font->props + ((unsigned long) hn->data);
+        p = font->props + ((unsigned int) hn->data);
 
         /*
          * If the format changed, then free the atom value if the original
@@ -3433,7 +3426,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
          * name of the property.
          */
         hn = hash_lookup(property->name, &proptbl);
-        propid = (unsigned long) hn->data;
+        propid = (unsigned int) hn->data;
         if (propid >= _num_bdf_properties)
           ip = user_props + (propid - _num_bdf_properties);
         else
@@ -3480,7 +3473,7 @@ bdf_add_font_property(bdf_font_t *font, bdf_property_t *property)
         /*
          * Now insert it into the internal hash table.
          */
-        hash_insert(p->name, (void *) ((unsigned long) font->props_used),
+        hash_insert(p->name, (void *) font->props_used,
                     (hashtable *) font->internal);
         font->props_used++;
     }
@@ -3552,7 +3545,7 @@ void
 bdf_delete_font_property(bdf_font_t *font, char *name)
 {
     hashnode hn;
-    unsigned long off;
+    unsigned int off;
     bdf_property_t *p;
 
     if (font == 0 || name == 0 || *name == 0 || font->props_used == 0)
@@ -3561,7 +3554,7 @@ bdf_delete_font_property(bdf_font_t *font, char *name)
     if ((hn = hash_lookup(name, (hashtable *) font->internal)) == 0)
       return;
 
-    off = (unsigned long) hn->data;
+    off = (unsigned int) hn->data;
     p = font->props + off;
 
     /*
@@ -3616,7 +3609,7 @@ bdf_get_font_property(bdf_font_t *font, char *name)
       return 0;
 
     hn = hash_lookup(name, (hashtable *) font->internal);
-    return (hn) ? (font->props + ((unsigned long) hn->data)) : 0;
+    return (hn) ? (font->props + ((unsigned int) hn->data)) : 0;
 }
 
 typedef struct {

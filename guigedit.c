@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Computing Research Labs, New Mexico State University
+ * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -14,18 +14,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE COMPUTING RESEARCH LAB OR NEW MEXICO STATE UNIVERSITY BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
- * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
- * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * DEPARTMENT OF MATHEMATICAL SCIENCES OR NEW MEXICO STATE UNIVERSITY BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef lint
-#ifdef __GNUC__
-static char svnid[] __attribute__ ((unused)) = "$Id: guigedit.c 49 2007-04-12 14:46:40Z mleisher $";
-#else
-static char svnid[] = "$Id: guigedit.c 49 2007-04-12 14:46:40Z mleisher $";
-#endif
-#endif
 
 #include "gbdfed.h"
 #include "glyphedit.h"
@@ -266,6 +259,10 @@ typedef struct {
     GtkWidget *update_prev;
     GtkWidget *update_next;
 
+    GtkWidget *button_update;
+    GtkWidget *button_prev;
+    GtkWidget *button_next;
+
     GtkWidget *edit_menu;
     GtkWidget *reload;
     GtkWidget *resize;
@@ -413,6 +410,12 @@ update_font(GtkWidget *w, gpointer data)
     gtk_widget_set_sensitive(ge->update, FALSE);
     gtk_widget_set_sensitive(ge->update_next, FALSE);
     gtk_widget_set_sensitive(ge->update_prev, FALSE);
+    gtk_widget_set_sensitive(ge->button_update, FALSE);
+
+    /*
+     * Force the focus to be on the glyph grid
+     */
+    gtk_widget_grab_focus(ge->gedit);
 }
 
 /*
@@ -421,6 +424,9 @@ update_font(GtkWidget *w, gpointer data)
 static void
 update_glyphedit(gbdfed_editor_t *ed, GlypheditRec *ge, bdf_glyph_grid_t *grid)
 {
+    Glyphedit *gw;
+
+    gw = GLYPHEDIT(ge->gedit);
     gtk_entry_set_text(GTK_ENTRY(ge->name), grid->name);
 
     if (grid->unencoded)
@@ -455,7 +461,7 @@ update_glyphedit(gbdfed_editor_t *ed, GlypheditRec *ge, bdf_glyph_grid_t *grid)
     /*
      * Set the new grid in the glyph editor.
      */
-    glyphedit_set_grid(GLYPHEDIT(ge->gedit), grid);
+    glyphedit_set_grid(gw, grid);
 
     /*
      * Set the sensitivity of the update menu items appropriately.
@@ -464,11 +470,28 @@ update_glyphedit(gbdfed_editor_t *ed, GlypheditRec *ge, bdf_glyph_grid_t *grid)
         gtk_widget_set_sensitive(ge->update, TRUE);
         gtk_widget_set_sensitive(ge->update_next, TRUE);
         gtk_widget_set_sensitive(ge->update_prev, TRUE);
+	gtk_widget_set_sensitive(ge->button_update, TRUE);
     } else {
         gtk_widget_set_sensitive(ge->update, FALSE);
         gtk_widget_set_sensitive(ge->update_next, FALSE);
         gtk_widget_set_sensitive(ge->update_prev, FALSE);
+	gtk_widget_set_sensitive(ge->button_update, FALSE);
     }
+
+    if (glyphedit_get_encoding(gw) == 0)
+      gtk_widget_set_sensitive(ge->button_prev, FALSE);
+    else
+      gtk_widget_set_sensitive(ge->button_prev, TRUE);
+
+    if (glyphedit_get_encoding(gw) == 0xffff)
+      gtk_widget_set_sensitive(ge->button_next, FALSE);
+    else
+      gtk_widget_set_sensitive(ge->button_next, TRUE);
+
+    /*
+     * Force the focus to be on the glyph grid.
+     */
+    gtk_widget_grab_focus(ge->gedit);
 }
 
 static void
@@ -487,7 +510,7 @@ next_glyph(GtkWidget *w, gpointer data)
 
     grid = glyphedit_get_grid(GLYPHEDIT(ge->gedit));
 
-    if (fontgrid_select_next_glyph(FONTGRID(ed->fgrid)) == FALSE)
+    if (fontgrid_select_next_glyph(FONTGRID(ed->fgrid), grid->encoding) == FALSE)
       return;
 
     font = fontgrid_get_font(FONTGRID(ed->fgrid));
@@ -521,7 +544,7 @@ previous_glyph(GtkWidget *w, gpointer data)
 
     grid = glyphedit_get_grid(GLYPHEDIT(ge->gedit));
 
-    if (fontgrid_select_previous_glyph(FONTGRID(ed->fgrid)) == FALSE)
+    if (fontgrid_select_previous_glyph(FONTGRID(ed->fgrid), grid->encoding) == FALSE)
       return;
 
     font = fontgrid_get_font(FONTGRID(ed->fgrid));
@@ -683,9 +706,6 @@ static gboolean
 edit_menu_down(GtkWidget *w, GdkEvent *event, gpointer data)
 {
     GlypheditRec *ge = glyph_editors + GPOINTER_TO_UINT(data);
-    Glyphedit *gw;
-
-    gw = GLYPHEDIT(ge->gedit);
 
     gtk_widget_set_sensitive(ge->paste, TRUE);
     gtk_widget_set_sensitive(ge->copy, TRUE);
@@ -1142,8 +1162,12 @@ delete_unimap(GtkWidget *w, gpointer data)
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(ge->ops.psf_mappings));
     sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(ge->ops.psf_mappings));
 
-    if (gtk_tree_selection_get_selected(sel, 0, &iter))
-      gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+    if (gtk_tree_selection_get_selected(sel, 0, &iter)) {
+        gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+        ge->ops.psf_modified = TRUE;
+        gtk_widget_set_sensitive(ge->ops.psf_add, FALSE);
+        gtk_widget_set_sensitive(ge->ops.apply, TRUE);
+    }
 }
 
 static void
@@ -1293,6 +1317,7 @@ operations_dialog_setup(GlypheditRec *ge)
      * until we explicitly get rid of it later.
      */
     g_object_ref(G_OBJECT(ge->ops.rotate_adj));
+    /*gtk_object_sink(GTK_OBJECT(ge->ops.rotate_adj));*/
 
     ge->ops.shear_adj =
         (GtkAdjustment *) gtk_adjustment_new(0.0, -20.0, 20.0, 1.0,
@@ -1302,6 +1327,7 @@ operations_dialog_setup(GlypheditRec *ge)
      * until we explicitly get rid of it later.
      */
     g_object_ref(G_OBJECT(ge->ops.shear_adj));
+    /*gtk_object_sink(GTK_OBJECT(ge->ops.shear_adj));*/
 
     hbox = gtk_hbox_new(FALSE, 0);
     label = gtk_label_new("Degrees:");
@@ -1734,6 +1760,9 @@ glyph_modified(GtkWidget *w, gpointer cb, gpointer ged)
     gtk_widget_set_sensitive(ge->update, TRUE);
     gtk_widget_set_sensitive(ge->update_next, TRUE);
     gtk_widget_set_sensitive(ge->update_prev, TRUE);
+    gtk_widget_set_sensitive(ge->button_update, TRUE);
+    gtk_widget_set_sensitive(ge->button_next, TRUE);
+    gtk_widget_set_sensitive(ge->button_prev, TRUE);
 }
 
 /*
@@ -1824,13 +1853,14 @@ enable_update(GtkWidget *w, gpointer data)
     gtk_widget_set_sensitive(ge->update, TRUE);
     gtk_widget_set_sensitive(ge->update_next, TRUE);
     gtk_widget_set_sensitive(ge->update_prev, TRUE);
+    gtk_widget_set_sensitive(ge->button_update, TRUE);
 }
 
 static void
 _guigedit_build_editor(GlypheditRec *ge, bdf_glyph_grid_t *grid, guint base,
                        gbdfed_editor_t *ed)
 {
-    GtkWidget *mb, *mitem, *frame, *vbox, *vbox1, *hbox;
+    GtkWidget *mb, *mitem, *frame, *vbox, *vbox1, *hbox, *img;
     bdf_bitmap_t image;
 
     if (ed->file == 0)
@@ -1875,7 +1905,7 @@ _guigedit_build_editor(GlypheditRec *ge, bdf_glyph_grid_t *grid, guint base,
     gtk_window_add_accel_group(GTK_WINDOW(ge->shell), ge->ag);
 
     /*
-     * 1. Add the glyph name and encoding widgets.
+     * 1. Add the glyph name, next/previous buttons and encoding widgets.
      */
     frame = gtk_frame_new(0);
     gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
@@ -1884,11 +1914,43 @@ _guigedit_build_editor(GlypheditRec *ge, bdf_glyph_grid_t *grid, guint base,
     vbox1 = gtk_vbox_new(TRUE, 0);
     gtk_container_add(GTK_CONTAINER(frame), vbox1);
 
-    ge->name = gtk_widget_new(gtk_entry_get_type(),
-                              "max_length", 128, NULL);
-    mitem = labcon_new_label_defaults("Glyph Name:", ge->name, 0);
-    gtk_box_pack_start(GTK_BOX(vbox1), mitem, TRUE, TRUE, 0);
+    hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox1), hbox, TRUE, TRUE, 0);
 
+    ge->name = gtk_widget_new(gtk_entry_get_type(), "max_length", 128, NULL);
+    mitem = labcon_new_label_defaults("Glyph Name:", ge->name, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), mitem, TRUE, TRUE, 0);
+
+    /* Update button */
+    ge->button_update = gtk_button_new();
+    guiutil_util_set_tooltip(ge->button_update, "Update Font");
+    img = gtk_image_new_from_stock(GTK_STOCK_APPLY, GTK_ICON_SIZE_SMALL_TOOLBAR);
+    gtk_button_set_image(GTK_BUTTON(ge->button_update), img);
+    g_signal_connect(G_OBJECT(ge->button_update), "clicked", 
+		     G_CALLBACK(update_font), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox), ge->button_update, FALSE, FALSE, 0);
+
+    /* Previous button */
+    ge->button_prev = gtk_button_new();
+    guiutil_util_set_tooltip(ge->button_prev, "Previous Glyph");
+    img = gtk_image_new_from_stock(GTK_STOCK_MEDIA_PREVIOUS, 
+		                   GTK_ICON_SIZE_SMALL_TOOLBAR);
+    gtk_button_set_image(GTK_BUTTON(ge->button_prev), img);
+    g_signal_connect(G_OBJECT(ge->button_prev), "clicked",
+		     G_CALLBACK(previous_glyph), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox), ge->button_prev, FALSE, FALSE, 0);
+
+    /* Next button */
+    ge->button_next = gtk_button_new();
+    guiutil_util_set_tooltip(ge->button_next, "Next Glyph");
+    img = gtk_image_new_from_stock(GTK_STOCK_MEDIA_NEXT, 
+		                   GTK_ICON_SIZE_SMALL_TOOLBAR);
+    gtk_button_set_image(GTK_BUTTON(ge->button_next), img);
+    g_signal_connect(G_OBJECT(ge->button_next), "clicked", 
+		     G_CALLBACK(next_glyph), NULL);
+    gtk_box_pack_start(GTK_BOX(hbox), ge->button_next, FALSE, FALSE, 0);
+
+    /* Encoding */
     ge->encoding = gtk_label_new("0000");
     gtk_misc_set_alignment(GTK_MISC(ge->encoding), 0.0, 0.5);
     mitem = labcon_new_label_defaults("Encoding:", ge->encoding, mitem);
@@ -2049,13 +2111,28 @@ guigedit_edit_glyph(gbdfed_editor_t *ed, FontgridSelectionInfo *si)
 
     if (grid->modified) {
         gtk_widget_set_sensitive(ge->update, TRUE);
+        gtk_widget_set_sensitive(ge->button_update, TRUE);
         gtk_widget_set_sensitive(ge->update_next, TRUE);
         gtk_widget_set_sensitive(ge->update_prev, TRUE);
     } else {
         gtk_widget_set_sensitive(ge->update, FALSE);
+        gtk_widget_set_sensitive(ge->button_update, FALSE);
         gtk_widget_set_sensitive(ge->update_next, FALSE);
         gtk_widget_set_sensitive(ge->update_prev, FALSE);
     }
+
+    /*
+     * Set the sensitivity of the next and previous buttons.
+     */
+    if (glyphedit_get_encoding(GLYPHEDIT(ge->gedit)) == 0)
+      gtk_widget_set_sensitive(ge->button_prev, FALSE);
+    else
+      gtk_widget_set_sensitive(ge->button_prev, TRUE);
+
+    if (glyphedit_get_encoding(GLYPHEDIT(ge->gedit)) == 0xffff)
+      gtk_widget_set_sensitive(ge->button_next, FALSE);
+    else
+      gtk_widget_set_sensitive(ge->button_next, TRUE);
 
     gtk_widget_show_all(ge->shell);
 
