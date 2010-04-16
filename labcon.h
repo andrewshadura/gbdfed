@@ -23,6 +23,7 @@
 #define _h_labcon
 
 #include <gtk/gtkcontainer.h>
+#include "gtkcompat.h"
 
 G_BEGIN_DECLS
 

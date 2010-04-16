@@ -7,7 +7,7 @@
 
 G_BEGIN_DECLS
 
-#define GBDFED_VERSION "1.5"
+#define GBDFED_VERSION "1.6"
 
 /*************************************************************************
  *

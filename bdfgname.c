@@ -39,7 +39,7 @@ static unsigned int adobe_names_used;
 #define MAX_GLYPH_NAME_LEN 127
 
 static int
-getline(FILE *in, char *buf, int limit)
+bdf_getline(FILE *in, char *buf, int limit)
 {
     int c, i;
 
@@ -78,11 +78,11 @@ _bdf_find_name(int code, char *name, FILE *in)
 
     while (!feof(in)) {
         pos = ftell(in);
-        (void) getline(in, buf, 256);
+        (void) bdf_getline(in, buf, 256);
         while (!feof(in) && (buf[0] == 0 || buf[0] == '#')) {
             buf[0] = 0;
             pos = ftell(in);
-            (void) getline(in, buf, 256);
+            (void) bdf_getline(in, buf, 256);
         }
 
         if (buf[0] == 0)
@@ -139,11 +139,11 @@ _bdf_load_adobe_names(FILE *in)
 
     while (!feof(in)) {
         pos = ftell(in);
-        (void) getline(in, buf, 256);
+        (void) bdf_getline(in, buf, 256);
         while (!feof(in) && (buf[0] == 0 || buf[0] == '#')) {
             buf[0] = 0;
             pos = ftell(in);
-            (void) getline(in, buf, 256);
+            (void) bdf_getline(in, buf, 256);
         }
 
         if (adobe_names_used == adobe_names_size) {

@@ -782,15 +782,16 @@ fontgrid_get_glyph_points_color(Fontgrid *fw, gint x, gint y, gint rx, gint by,
 static void
 fontgrid_make_rgb_image(Fontgrid *fw, bdf_glyph_t *glyph)
 {
+    GtkWidget *w = GTK_WIDGET(fw);
     gint x, y, bpr, rgb_bpr, col, byte, di = 0, si;
     guchar bg[4], pix[4], *bmap, *masks = 0;
 
     /*
      * Figure out the background color.
      */
-    bg[0] = (guchar) GTK_WIDGET(fw)->style->bg[GTK_WIDGET_STATE(fw)].red;
-    bg[1] = (guchar) GTK_WIDGET(fw)->style->bg[GTK_WIDGET_STATE(fw)].green;
-    bg[2] = (guchar) GTK_WIDGET(fw)->style->bg[GTK_WIDGET_STATE(fw)].blue;
+    bg[0] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].red;
+    bg[1] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].green;
+    bg[2] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].blue;
 
     switch (fw->bpp) {
       case 1: masks = bdf_onebpp; di = 7; break;
