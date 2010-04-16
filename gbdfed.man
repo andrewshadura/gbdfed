@@ -1,4 +1,4 @@
-.TH GBDFED 1 "15 January 2009" "GTK2"
+.TH GBDFED 1 "23 February 2010" "GTK2"
 .SH NAME 
 gbdfed \- GTK-based BDF font editor
 
@@ -702,6 +702,10 @@ problem.
 .br
 Bertrand Janin <tamentis@neopulsar.org> for improving the GlyphEditor user
 interface.
+.br
+Peter Volkov <pva@gentoo.org> for fixing a name collision.
+.br
+Tom "spot" Callaway <tcallawa@redhat.com> for fixing a linking problem.
 
 .SH AUTHOR
 Mark Leisher <mleisher@gmail.com>

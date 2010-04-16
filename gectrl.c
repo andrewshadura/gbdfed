@@ -841,6 +841,7 @@ gecontrol_get_image_pixels(GEControl *ge, gint color)
 static void
 gecontrol_make_rgb_glyph(GEControl *ge)
 {
+    GtkWidget *w = GTK_WIDGET(ge);
     gint byte = 0;
     guint16 x, y, bpr, rgb_bpr, si, di, nx;
     guchar bg[4], pix[4], *masks, *img;
@@ -850,9 +851,9 @@ gecontrol_make_rgb_glyph(GEControl *ge)
      * First, get the background color of the widget for the empty
      * pixels.
      */
-    bg[0] = (guchar) GTK_WIDGET(ge)->style->bg[GTK_WIDGET_STATE(ge)].red;
-    bg[1] = (guchar) GTK_WIDGET(ge)->style->bg[GTK_WIDGET_STATE(ge)].green;
-    bg[2] = (guchar) GTK_WIDGET(ge)->style->bg[GTK_WIDGET_STATE(ge)].blue;
+    bg[0] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].red;
+    bg[1] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].green;
+    bg[2] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].blue;
 
     im = ge->gimage;
 
@@ -908,10 +909,11 @@ gecontrol_make_rgb_glyph(GEControl *ge)
 static void
 gecontrol_highlight_selected_spot(GEControl *ge)
 {
+    GtkWidget *w = GTK_WIDGET(ge);
     gint x, y;
     GEControlClass *gec = GECONTROL_GET_CLASS(ge);
 
-    if (!GTK_WIDGET_REALIZED(ge) || ge->gimage == 0 || ge->gimage->bpp == 1)
+    if (!GTK_WIDGET_REALIZED(w) || ge->gimage == 0 || ge->gimage->bpp == 1)
       return;
 
     if (ge->gimage->bpp != 8) {
@@ -981,7 +983,7 @@ gecontrol_draw_glyph_image(GEControl *ge)
 {
     GtkWidget *w = GTK_WIDGET(ge);
 
-    if (ge->gimage == 0 || !GTK_WIDGET_REALIZED(ge))
+    if (ge->gimage == 0 || !GTK_WIDGET_REALIZED(w))
       return;
 
     /*

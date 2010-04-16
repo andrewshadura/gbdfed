@@ -21,9 +21,9 @@
  */
 static gchar *about_text = ""
 "<help>"
-"<center><b>GBDFEditor 1.5</b>\n"
+"<center><b>GBDFEditor 1.6</b>\n"
 "mleisher@gmail.com\n"
-"06 March 2009</center>\n"
+"15 April 2010</center>\n"
 "\n"
 "GBDFEditor is a BDF font editor that supports "
 "these main features:\n"

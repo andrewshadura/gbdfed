@@ -26,6 +26,7 @@
 #include <gtk/gtkwidget.h>
 #include <gtk/gtksignal.h>
 #include "bdfP.h"
+#include "gtkcompat.h"
 
 G_BEGIN_DECLS
 

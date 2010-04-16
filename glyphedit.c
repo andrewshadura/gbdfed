@@ -355,12 +355,13 @@ glyphedit_draw_focus(GtkWidget *widget, GdkRectangle *area)
 static void
 glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
 {
+    GtkWidget *w = GTK_WIDGET(gw);
     GlypheditClass *gwc;
     gint16 bpr, set, dx, dy, di, si;
     guchar *masks, *bmap;
     GdkRectangle pix;
 
-    if (!GTK_WIDGET_REALIZED(gw) || gw->grid == 0)
+    if (!GTK_WIDGET_REALIZED(w) || gw->grid == 0)
       return;
 
     gwc = GLYPHEDIT_GET_CLASS(gw);
@@ -430,10 +431,11 @@ glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
 static void
 glyphedit_draw_glyph(Glyphedit *gw)
 {
+    GtkWidget *w = GTK_WIDGET(gw);
     gint16 x, y;
     gboolean sel;
 
-    if (!GTK_WIDGET_REALIZED(gw) || gw->grid == 0)
+    if (!GTK_WIDGET_REALIZED(w) || gw->grid == 0)
       return;
 
     for (y = 0; y < gw->grid->grid_height; y++) {
@@ -447,11 +449,12 @@ glyphedit_draw_glyph(Glyphedit *gw)
 static void
 glyphedit_draw_font_bbx(Glyphedit *gw)
 {
+    GtkWidget *w = GTK_WIDGET(gw);
     GlypheditClass *gwc;
     gint16 xoff, yoff, fxoff, fyoff, psize;
     GdkRectangle frame;
 
-    if (!GTK_WIDGET_REALIZED(gw))
+    if (!GTK_WIDGET_REALIZED(w))
       return;
 
     gwc = GLYPHEDIT_GET_CLASS(gw);
@@ -1040,6 +1043,8 @@ glyphedit_get_psf_mappings(Glyphedit *gw)
 void
 glyphedit_set_metrics(Glyphedit *gw, bdf_metrics_t *metrics)
 {
+    GtkWidget *w = GTK_WIDGET(gw);
+
     g_return_if_fail(gw != NULL);
     g_return_if_fail(metrics != NULL);
     g_return_if_fail(IS_GLYPHEDIT(gw));
@@ -1050,7 +1055,7 @@ glyphedit_set_metrics(Glyphedit *gw, bdf_metrics_t *metrics)
     if (bdf_grid_resize(gw->grid, metrics)) {
         glyphedit_signal_glyph_change(gw);
         gtk_widget_queue_resize(GTK_WIDGET(gw));
-    } else if (GTK_WIDGET_REALIZED(gw))
+    } else if (GTK_WIDGET_REALIZED(w))
       /*
        * The size didn't change, but we need to redraw if the widget
        * has been realized.
