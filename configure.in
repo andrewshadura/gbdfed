@@ -52,6 +52,11 @@ else
   BDFGRABOBJ="bdfgrab.o"
 fi
 
+#
+# Fix for implicit DSO linking issue.
+#
+AC_CHECK_LIB(X11, XCreatePixmap)
+
 AC_SUBST(DEFINES)
 AC_SUBST(HBFSRC)
 AC_SUBST(HBFOBJ)

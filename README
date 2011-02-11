@@ -1,4 +1,4 @@
-gbdfed 1.4
+gbdfed 1.6
 
 INTRO
 -----
@@ -78,7 +78,7 @@ COMPILING
 ---------
 
 To build gbdfed, GTK 2.6 or greater is required. It may be that versions as
-early as 2.3 will work, but only various versions of 2.7 and 2.8 have been
+early as 2.3 will work, but only various versions of 2.7 through 2.20 have been
 tested.
 
 Optional:
@@ -250,7 +250,13 @@ Thanks go to the following people:
   Bertrand Janin <tamentis@neopulsar.org> for adding glyph navigation buttons
   to the GlyphEditors.
 
+  Peter Volkov <pva@gentoo.org> for fixing a name collision with Glib 2.10.
+
+  Tom "spot" Callaway <tcallawa@redhat.com> for the configuration addition
+  that fixes a problem with implicit dynamic linking that showed up with newer
+  versions of gcc.
+
 AUTHOR
 ------
-  Mark Leisher <mleisher@crl.nmsu.edu>
-  06 March 2009
+  Mark Leisher <mleisher@gmail.com>
+  15 April 2010
