@@ -763,7 +763,6 @@ glyphedit_focus_in(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_GLYPHEDIT(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    GTK_WIDGET_SET_FLAGS(widget, GTK_HAS_FOCUS);
     glyphedit_draw_focus(widget, 0);
 
     return FALSE;
@@ -776,7 +775,6 @@ glyphedit_focus_out(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_GLYPHEDIT(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    GTK_WIDGET_UNSET_FLAGS(widget, GTK_HAS_FOCUS);
     glyphedit_draw_focus(widget, 0);
 
     return FALSE;
@@ -852,8 +850,6 @@ glyphedit_init(GTypeInstance *obj, gpointer g_class)
     Glyphedit *gw = GLYPHEDIT(obj);
     GlypheditClass *gwc = GLYPHEDIT_CLASS(g_class);
     gint fwidth, fpad;
-
-    GTK_WIDGET_SET_FLAGS(gw, GTK_CAN_FOCUS);
 
     gwc->gridgc = gwc->bbxgc = gwc->pixgc = gwc->selgc = 0;
 
