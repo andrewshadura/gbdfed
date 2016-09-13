@@ -255,7 +255,7 @@ glyphtest_draw_focus(GtkWidget *widget, GdkRectangle *area)
     wd = (widget->allocation.width - (x * 2));
     ht = (widget->allocation.height - (y * 2));
 
-    if (GTK_WIDGET_HAS_FOCUS(widget))
+    if (gtk_widget_has_focus(widget))
       gtk_paint_focus(widget->style, widget->window, GTK_WIDGET_STATE(widget),
                       area, widget, "glyphtest", x, y, wd, ht);
     else {
@@ -498,7 +498,6 @@ glyphtest_focus_in(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_GLYPHTEST(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    GTK_WIDGET_SET_FLAGS(widget, GTK_HAS_FOCUS);
     (void) glyphtest_draw_focus(widget, NULL);
 
     return FALSE;
@@ -511,7 +510,6 @@ glyphtest_focus_out(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_GLYPHTEST(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    GTK_WIDGET_UNSET_FLAGS(widget, GTK_HAS_FOCUS);
     (void) glyphtest_draw_focus(widget, NULL);
 
     return FALSE;
