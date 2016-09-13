@@ -692,7 +692,7 @@ glyphedit_realize(GtkWidget *widget)
 
     gwc = GLYPHEDIT_GET_CLASS(widget);
     gw = GLYPHEDIT(widget);
-    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+    gtk_widget_set_realized(widget, TRUE);
 
     attributes.window_type = GDK_WINDOW_CHILD;
     attributes.x = widget->allocation.x;
