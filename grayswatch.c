@@ -239,7 +239,7 @@ grayswatch_init(GTypeInstance *obj, gpointer klass)
 {
     Grayswatch *gs = GRAYSWATCH(obj);
 
-    GTK_WIDGET_SET_FLAGS(obj, GTK_NO_WINDOW);
+    gtk_widget_set_has_window(GTK_WIDGET(obj), FALSE);
     gtk_widget_set_redraw_on_allocate(GTK_WIDGET(obj), FALSE);
 
     gs->swatch = gtk_drawing_area_new();

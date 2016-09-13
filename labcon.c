@@ -216,7 +216,7 @@ labcon_init(GTypeInstance *instance, gpointer g_class)
 {
     LabCon *l = LABCON(instance);
 
-    GTK_WIDGET_SET_FLAGS(l, GTK_NO_WINDOW);
+    gtk_widget_set_has_window(GTK_WIDGET(l), FALSE);
     gtk_widget_set_redraw_on_allocate(GTK_WIDGET(l), FALSE);
 
     l->pixbuf = 0;
