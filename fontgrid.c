@@ -1266,7 +1266,7 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
     wd = (widget->allocation.width - (x * 2));
     ht = (widget->allocation.height - (y * 2));
 
-    if (GTK_WIDGET_HAS_FOCUS(widget))
+    if (gtk_widget_has_focus(widget))
       gtk_paint_focus(widget->style, widget->window, GTK_WIDGET_STATE(widget),
                       area, widget, "fontgrid", x, y, wd, ht);
     else {
@@ -1304,7 +1304,6 @@ fontgrid_focus_in(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_FONTGRID(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    GTK_WIDGET_SET_FLAGS(widget, GTK_HAS_FOCUS);
     fontgrid_draw_focus(widget, 0);
 
     return FALSE;
@@ -1317,7 +1316,6 @@ fontgrid_focus_out(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_FONTGRID(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    GTK_WIDGET_UNSET_FLAGS(widget, GTK_HAS_FOCUS);
     fontgrid_draw_focus(widget, 0);
 
     return FALSE;
@@ -1437,14 +1435,6 @@ start_selection(GtkWidget *widget, GdkEventButton *event)
 
     fw = FONTGRID(widget);
 
-    /*
-     * Deal with the focus issue first.
-     */
-    if (!GTK_WIDGET_HAS_FOCUS(widget)) {
-        GTK_WIDGET_SET_FLAGS(widget, GTK_HAS_FOCUS);
-        (void) fontgrid_draw_focus(widget, NULL);
-    }
-
     x = (gint16) event->x;
     y = (gint16) event->y;
 
@@ -1551,14 +1541,6 @@ extend_selection(GtkWidget *widget, gint16 x, gint16 y)
     FontgridSelectionInfo sinfo;
 
     fw = FONTGRID(widget);
-
-    /*
-     * Deal with the focus issue first.
-     */
-    if (!GTK_WIDGET_HAS_FOCUS(widget)) {
-        GTK_WIDGET_SET_FLAGS(widget, GTK_HAS_FOCUS);
-        (void) fontgrid_draw_focus(widget, NULL);
-    }
 
     col = fw->xoff + (fw->cell_width * fw->cell_cols);
     row = fw->yoff + (fw->cell_height * fw->cell_rows);
@@ -2456,7 +2438,7 @@ fontgrid_init(GTypeInstance *obj, gpointer g_class)
     GdkScreen *screen;
     gint fwidth, fpad;
 
-    GTK_WIDGET_SET_FLAGS(fw, GTK_CAN_FOCUS);
+    gtk_widget_set_can_focus(GTK_WIDGET(fw), TRUE);
 
     gtk_widget_style_get(GTK_WIDGET(fw),
                          "focus-line-width", &fwidth,
