@@ -581,7 +581,7 @@ fontgrid_actual_size(GtkWidget *widget, GtkAllocation *actual)
      */
     fontgrid_set_rows_cols(fw, actual);
 
-    if (GTK_WIDGET_REALIZED(widget))
+    if (gtk_widget_get_realized(widget))
       gdk_window_move_resize(widget->window, actual->x, actual->y,
                              actual->width, actual->height);
 }
@@ -598,7 +598,7 @@ fontgrid_realize(GtkWidget *widget)
     g_return_if_fail(IS_FONTGRID(widget));
 
     fw = FONTGRID(widget);
-    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+    gtk_widget_set_realized(widget, TRUE);
 
     attributes.window_type = GDK_WINDOW_CHILD;
     attributes.x = widget->allocation.x;
@@ -849,7 +849,7 @@ fontgrid_draw_encoding(GtkWidget *w, GdkGC *gc, gint x, gint y, gchar *num,
     gint i, j, d;
     GdkPoint *dp;
 
-    if (!GTK_WIDGET_REALIZED(w))
+    if (!gtk_widget_get_realized(w))
       return;
 
     dp = encoding_digits;
@@ -899,7 +899,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
     GdkRectangle rect;
     gchar nbuf[16];
 
-    if (!GTK_WIDGET_REALIZED(widget) || (labels == FALSE && glyphs == FALSE))
+    if (!gtk_widget_get_realized(widget) || (labels == FALSE && glyphs == FALSE))
       return;
 
     fw = FONTGRID(widget);
@@ -3734,11 +3734,11 @@ fontgrid_translate_glyphs(Fontgrid *fw, gint16 dx, gint16 dy,
     if (bdf_translate_glyphs(fw->font, dx, dy, start, end, 0, 0,
                              fw->unencoded)) {
         gtk_widget_queue_resize(w);
-        if (GTK_WIDGET_REALIZED(w))
+        if (gtk_widget_get_realized(w))
           gdk_window_clear(w->window);
 
         gtk_widget_queue_resize(w);
-        if (GTK_WIDGET_REALIZED(w))
+        if (gtk_widget_get_realized(w))
           gdk_window_clear(w->window);
 
         minfo.reason = FONTGRID_GLYPHS_MODIFIED;
@@ -3769,7 +3769,7 @@ fontgrid_rotate_glyphs(Fontgrid *fw, gint16 degrees, gboolean all_glyphs)
     if (bdf_rotate_glyphs(fw->font, degrees, start, end, 0, 0,
                           fw->unencoded)) {
         gtk_widget_queue_resize(w);
-        if (GTK_WIDGET_REALIZED(w))
+        if (gtk_widget_get_realized(w))
           gdk_window_clear(w->window);
 
         minfo.reason = FONTGRID_GLYPHS_MODIFIED;
@@ -3800,7 +3800,7 @@ fontgrid_shear_glyphs(Fontgrid *fw, gint16 degrees, gboolean all_glyphs)
     if (bdf_shear_glyphs(fw->font, degrees, start, end, 0, 0,
                           fw->unencoded)) {
         gtk_widget_queue_resize(w);
-        if (GTK_WIDGET_REALIZED(w))
+        if (gtk_widget_get_realized(w))
           gdk_window_clear(w->window);
 
         minfo.reason = FONTGRID_GLYPHS_MODIFIED;
@@ -3834,7 +3834,7 @@ fontgrid_embolden_glyphs(Fontgrid *fw, gboolean all_glyphs)
                             fw->unencoded, &resize)) {
         if (resize) {
             gtk_widget_queue_resize(w);
-            if (GTK_WIDGET_REALIZED(w))
+            if (gtk_widget_get_realized(w))
               gdk_window_clear(w->window);
         } else
           /*
@@ -4328,7 +4328,7 @@ fontgrid_paste_selection(Fontgrid *fw, FontgridPasteType paste_type)
     FontgridSelectionInfo sinfo;
 
     g_return_if_fail(fw != 0);
-    g_return_if_fail(GTK_WIDGET_REALIZED(w));
+    g_return_if_fail(gtk_widget_get_realized(w));
 
     if ((win = gdk_selection_owner_get(FONTGRID_CLIPBOARD)) == 0) {
         gdk_selection_owner_set(w->window, FONTGRID_CLIPBOARD,
