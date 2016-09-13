@@ -587,7 +587,7 @@ glyphtest_init(GTypeInstance *obj, gpointer g_class)
     Glyphtest *gw = GLYPHTEST(obj);
     gint fwidth;
 
-    GTK_WIDGET_SET_FLAGS(gw, GTK_CAN_FOCUS);
+    gtk_widget_set_can_focus(GTK_WIDGET(gw), TRUE);
 
     (void) memset((char *) &gw->line, 0, sizeof(GlyphtestLine));
 
