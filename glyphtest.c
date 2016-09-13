@@ -229,7 +229,7 @@ glyphtest_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
     widget->allocation = *actual;
 
-    if (GTK_WIDGET_REALIZED(widget))
+    if (gtk_widget_get_realized(widget))
       gdk_window_move_resize(widget->window, actual->x, actual->y,
                              actual->width, actual->height);
 }
@@ -323,7 +323,7 @@ _glyphtest_draw_glyph(Glyphtest *gw, bdf_glyph_t *glyph, bdf_font_t *font)
 
     w = GTK_WIDGET(gw);
 
-    if (!GTK_WIDGET_REALIZED(w))
+    if (!gtk_widget_get_realized(w))
       return;
 
     ry = gw->line.cpoint.y;
@@ -348,7 +348,7 @@ _glyphtest_redraw_glyphs(Glyphtest *gw)
 
     w = GTK_WIDGET(gw);
 
-    if (!GTK_WIDGET_REALIZED(w))
+    if (!gtk_widget_get_realized(w))
       return;
 
     lp = &gw->line;
@@ -393,7 +393,7 @@ glyphtest_draw(GtkWidget *widget, GdkRectangle *area)
     GdkPoint s, e;
     GdkRectangle clear;
 
-    if (!GTK_WIDGET_REALIZED(widget))
+    if (!gtk_widget_get_realized(widget))
       return;
 
     gw = GLYPHTEST(widget);
@@ -459,7 +459,7 @@ glyphtest_realize(GtkWidget *widget)
     g_return_if_fail(IS_GLYPHTEST(widget));
 
     gw = GLYPHTEST(widget);
-    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+    gtk_widget_set_realized(GTK_WIDGET(widget), TRUE);
 
     attributes.window_type = GDK_WINDOW_CHILD;
     attributes.x = widget->allocation.x;
