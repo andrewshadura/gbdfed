@@ -103,7 +103,8 @@ enum {
     GLYPH_MODIFIED = 0,
     POINTER_MOVED,
     OPERATION_CHANGE,
-    COLOR_CHANGE
+    COLOR_CHANGE,
+    NUM_SIGNALS
 };
 
 /**************************************************************************
@@ -113,7 +114,7 @@ enum {
  **************************************************************************/
 
 static GtkWidgetClass *parent_class = 0;
-static guint glyphedit_signals[COLOR_CHANGE + 1];
+static guint glyphedit_signals[NUM_SIGNALS];
 
 /**************************************************************************
  *
