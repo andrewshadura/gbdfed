@@ -241,8 +241,11 @@ draw_pixbuf(GtkWidget *w, GdkEventExpose *event, gpointer data)
 
     x = (all.width >> 1) - (wd >> 1);
     y = (all.height >> 1) - (ht >> 1);
-    gdk_draw_pixbuf(gtk_widget_get_window(w), gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
-                    p, 0, 0, x, y, wd, ht, GDK_RGB_DITHER_NONE, 0, 0);
+
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+    gdk_cairo_set_source_pixbuf(cr, p, x, y);
+    cairo_paint(cr);
+    cairo_destroy(cr);
 
     return FALSE;
 }
