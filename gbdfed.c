@@ -2264,9 +2264,10 @@ editor_setup(int argc, char *argv[])
         options.unicode_name_file = options.adobe_name_file = 0;
     options.pixel_size = 10;
     options.resolution = 0;
-    options.no_blanks = options.really_exit = 
+    options.no_blanks =
         options.overwrite_mode = options.power2 =
         options.backups = TRUE;
+    options.really_exit = FALSE;
     options.show_cap_height = options.show_x_height =
         options.sbit = options.gbdfed_opts = FALSE;
     options.initial_glyph = -1;
