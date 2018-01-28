@@ -710,7 +710,7 @@ guiedit_apply_details(GtkWidget *w, gpointer data)
 }
 
 static void
-notebook_switch_page(GtkNotebook *nb, GtkNotebookPage *nbp, gint pageno,
+notebook_switch_page(GtkNotebook *nb, gpointer *nbp, gint pageno,
                      gpointer data)
 {
     gbdfed_editor_t *ed = editors + GPOINTER_TO_UINT(data);
