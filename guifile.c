@@ -2296,7 +2296,7 @@ update_save_dialog(gbdfed_editor_t *ed, guint type)
 
         vbox = gtk_dialog_get_content_area(GTK_DIALOG(ed->save_dialog));
 
-        psf_export_options = gtk_combo_box_new_text();
+        psf_export_options = gtk_combo_box_text_new();
         /*
          * Since the flags have to be set in the save dialog, attach the
          * save dialog to the object so we can set the bits appropriately.
@@ -2306,11 +2306,11 @@ update_save_dialog(gbdfed_editor_t *ed, guint type)
                           (gpointer) ed->save_dialog);
         (void) g_signal_connect(G_OBJECT(psf_export_options), "changed",
                                 G_CALLBACK(set_psf_option), 0);
-        gtk_combo_box_append_text(GTK_COMBO_BOX(psf_export_options),
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(psf_export_options),
                                   "Font and Unicode Map");
-        gtk_combo_box_append_text(GTK_COMBO_BOX(psf_export_options),
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(psf_export_options),
                                   "Font Only");
-        gtk_combo_box_append_text(GTK_COMBO_BOX(psf_export_options),
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(psf_export_options),
                                   "Unicode Map Only");
         gtk_combo_box_set_active(GTK_COMBO_BOX(psf_export_options), 0);
 
