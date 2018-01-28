@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -g
 DEFS = -DHAVE_XLIB -DHAVE_HBF -DHAVE_FREETYPE -DG_DISABLE_DEPRECATED \
 	-DGDK_PIXBUF_DISABLE_DEPRECATED \
-	-DGTK_DISABLE_DEPRECATED
+	-DGTK_DISABLE_DEPRECATED -DGTK_DISABLE_SINGLE_INCLUDES
 INCS = -I. `pkg-config gtk+-2.0 --cflags freetype2 --cflags x11 --cflags`
 LIBS = `pkg-config gtk+-2.0 --libs freetype2 x11`
 

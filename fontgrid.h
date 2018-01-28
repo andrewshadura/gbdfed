@@ -23,8 +23,7 @@
 #define _h_fontgrid
 
 #include <gdk/gdk.h>
-#include <gtk/gtkwidget.h>
-#include <gtk/gtksignal.h>
+#include <gtk/gtk.h>
 #include "bdfP.h"
 #include "gtkcompat.h"
 
