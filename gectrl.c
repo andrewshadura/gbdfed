@@ -20,7 +20,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <gtk/gtklabel.h>
+#include <gtk/gtk.h>
 #include "gectrl.h"
 #include "gectrlbmaps.h"
 

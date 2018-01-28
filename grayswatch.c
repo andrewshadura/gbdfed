@@ -22,8 +22,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <gtk/gtkdrawingarea.h>
-#include <gtk/gtkspinbutton.h>
 #include "grayswatch.h"
 
 #ifdef ENABLE_NLS
