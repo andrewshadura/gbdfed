@@ -110,6 +110,8 @@ struct _Glyphedit {
     guint16 vmargin;
     guint16 hmargin;
     guint16 border;
+
+    gboolean mouse_down;
 };
 
 struct _GlypheditClass {
