@@ -22,8 +22,6 @@
 #ifndef _h_gtkcompat
 #define _h_gtkcompat
 
-#include <gtk/gtkversion.h>
-
 #if GTK_MAJOR_VERSION >= (2) && GTK_MINOR_VERSION >= (20)
 #define GTK_WIDGET_REALIZED gtk_widget_get_realized
 #define GTK_WIDGET_STATE gtk_widget_get_state

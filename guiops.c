@@ -94,7 +94,7 @@ apply_operation(GtkWidget *w, gint response, gpointer data)
 }
 
 static void
-notebook_switch_page(GtkNotebook *nb, GtkNotebookPage *nbp, gint pageno,
+notebook_switch_page(GtkNotebook *nb, gpointer *nbp, gint pageno,
                      gpointer data)
 {
     GtkWidget *which = 0;

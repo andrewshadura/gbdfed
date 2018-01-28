@@ -21,13 +21,12 @@
  */
 
 #include "glyphedit.h"
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtkselection.h>
 
 #ifdef HAVE_XLIB
 #include <gdk/gdkx.h>
 #endif
+
+#include <gdk/gdkkeysyms-compat.h>
 
 #ifdef ENABLE_NLS
 #include <libintl.h>

@@ -21,8 +21,6 @@
  */
 
 #include "labcon.h"
-#include <gtk/gtklabel.h>
-#include <gtk/gtkdrawingarea.h>
 
 static GtkContainerClass *parent_class = 0;
 

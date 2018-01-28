@@ -2,7 +2,7 @@
 #define _h_gbdfed
 
 #include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>
 #include "bdf.h"
 
 G_BEGIN_DECLS

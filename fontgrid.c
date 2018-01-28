@@ -21,8 +21,10 @@
  */
 
 #include "fontgrid.h"
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtkselection.h>
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
+
+#include <gdk/gdkkeysyms-compat.h>
 
 #ifdef HAVE_XLIB
 #include <gdk/gdkx.h>

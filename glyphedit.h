@@ -22,9 +22,8 @@
 #ifndef _h_glyphedit
 #define _h_glyphedit
 
+#include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gtk/gtkwidget.h>
-#include <gtk/gtksignal.h>
 #include "bdfP.h"
 #include "gtkcompat.h"
 

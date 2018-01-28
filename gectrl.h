@@ -22,7 +22,7 @@
 #ifndef _h_gectrl
 #define _h_gectrl
 
-#include <gtk/gtkdrawingarea.h>
+#include <gtk/gtk.h>
 #include "bdfP.h"
 #include "gtkcompat.h"
 
