@@ -160,10 +160,10 @@ pref_make_general_page()
     tmp = gtk_label_new("EOL:");
     gtk_box_pack_start(GTK_BOX(hbox), tmp, FALSE, FALSE, 0);
 
-    omenu = gtk_combo_box_new_text();
-    gtk_combo_box_append_text(GTK_COMBO_BOX(omenu), "Unix [LF]");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(omenu), "WIN/DOS [CRLF]");
-    gtk_combo_box_append_text(GTK_COMBO_BOX(omenu), "MAC [CR]");
+    omenu = gtk_combo_box_text_new();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(omenu), "Unix [LF]");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(omenu), "WIN/DOS [CRLF]");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(omenu), "MAC [CR]");
     gtk_combo_box_set_active(GTK_COMBO_BOX(omenu), tmp_opts.font_opts.eol - 1);
     (void) g_signal_connect(G_OBJECT(omenu), "changed",
                             G_CALLBACK(pref_eol), 0);
@@ -780,10 +780,10 @@ pref_make_edit_page()
     gtk_misc_set_alignment(GTK_MISC(label), 1.0, 0.5);
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
-    omenu = gtk_combo_box_new_text();
+    omenu = gtk_combo_box_text_new();
     for (i = 2; i < 21; i++) {
         sprintf(buffer1, "%dx%d", i, i);
-        gtk_combo_box_append_text(GTK_COMBO_BOX(omenu), buffer1);
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(omenu), buffer1);
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(omenu), tmp_opts.pixel_size - 2);
     g_signal_connect(G_OBJECT(omenu), "changed",
