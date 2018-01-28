@@ -155,9 +155,9 @@ struct _GEControlClass {
     GtkDrawingAreaClass parent_class;
 
     /*
-     * A GC for drawing the color selection rectangle.
+     * A cairo drawing context for drawing the color selection rectangle.
      */
-    GdkGC *selgc;
+    cairo_t *selcr;
 
     GdkPixbuf *draw;
     GdkPixbuf *move;

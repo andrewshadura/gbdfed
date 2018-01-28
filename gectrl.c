@@ -450,7 +450,7 @@ gecontrol_finalize(GObject *obj)
 {
     gint i;
     GEControl *ge;
-    GEControlClass *gwc;
+    GEControlClass *gec;
 
     g_return_if_fail(obj != 0);
     g_return_if_fail(IS_GECONTROL(obj));
@@ -475,40 +475,40 @@ gecontrol_finalize(GObject *obj)
         ge->gimage = 0;
     }
 
-    gwc = GECONTROL_GET_CLASS(obj);
+    gec = GECONTROL_GET_CLASS(obj);
 
-    if (gwc->selgc != 0)
-      g_object_unref(G_OBJECT(gwc->selgc));
-    gwc->selgc = 0;
+    if (gec->selcr != 0)
+      cairo_destroy(gec->selcr);
+    gec->selcr = 0;
 
     /*
      * Unreference all the pixbufs that were created.
      */
-    if (gwc->draw != 0) {
-        g_object_unref(G_OBJECT(gwc->draw));
-        g_object_unref(G_OBJECT(gwc->move));
-        g_object_unref(G_OBJECT(gwc->copy));
-        g_object_unref(G_OBJECT(gwc->fliph));
-        g_object_unref(G_OBJECT(gwc->flipv));
-        g_object_unref(G_OBJECT(gwc->shear));
-        g_object_unref(G_OBJECT(gwc->rleft));
-        g_object_unref(G_OBJECT(gwc->rright));
-        g_object_unref(G_OBJECT(gwc->rotate));
-        g_object_unref(G_OBJECT(gwc->uleft));
-        g_object_unref(G_OBJECT(gwc->up));
-        g_object_unref(G_OBJECT(gwc->uright));
-        g_object_unref(G_OBJECT(gwc->left));
-        g_object_unref(G_OBJECT(gwc->right));
-        g_object_unref(G_OBJECT(gwc->dleft));
-        g_object_unref(G_OBJECT(gwc->down));
-        g_object_unref(G_OBJECT(gwc->dright));
+    if (gec->draw != 0) {
+        g_object_unref(G_OBJECT(gec->draw));
+        g_object_unref(G_OBJECT(gec->move));
+        g_object_unref(G_OBJECT(gec->copy));
+        g_object_unref(G_OBJECT(gec->fliph));
+        g_object_unref(G_OBJECT(gec->flipv));
+        g_object_unref(G_OBJECT(gec->shear));
+        g_object_unref(G_OBJECT(gec->rleft));
+        g_object_unref(G_OBJECT(gec->rright));
+        g_object_unref(G_OBJECT(gec->rotate));
+        g_object_unref(G_OBJECT(gec->uleft));
+        g_object_unref(G_OBJECT(gec->up));
+        g_object_unref(G_OBJECT(gec->uright));
+        g_object_unref(G_OBJECT(gec->left));
+        g_object_unref(G_OBJECT(gec->right));
+        g_object_unref(G_OBJECT(gec->dleft));
+        g_object_unref(G_OBJECT(gec->down));
+        g_object_unref(G_OBJECT(gec->dright));
 
-        gwc->draw = gwc->move = gwc->copy =
-            gwc->fliph = gwc->flipv = gwc->shear =
-            gwc->rleft = gwc->rright = gwc->rotate =
-            gwc->uleft = gwc->up = gwc->uright =
-            gwc->left = gwc->right =
-            gwc->dleft = gwc->down = gwc->dright = 0;
+        gec->draw = gec->move = gec->copy =
+            gec->fliph = gec->flipv = gec->shear =
+            gec->rleft = gec->rright = gec->rotate =
+            gec->uleft = gec->up = gec->uright =
+            gec->left = gec->right =
+            gec->dleft = gec->down = gec->dright = 0;
     }
 }
 
@@ -706,11 +706,11 @@ gecontrol_button_normal(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    gdk_draw_pixbuf(gtk_widget_get_window(w),
-                    gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
-                    ge->buttons[button].image, 0, 0,
-                    ge->buttons[button].x + v, ge->buttons[button].y + v,
-                    BMAP_DIM, BMAP_DIM, GDK_RGB_DITHER_NONE, 0, 0);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+    gdk_cairo_set_source_pixbuf(cr, ge->buttons[button].image, ge->buttons[button].x + v, ge->buttons[button].y + v);
+    cairo_rectangle(cr, ge->buttons[button].x + v, ge->buttons[button].y + v, BMAP_DIM, BMAP_DIM);
+    cairo_fill(cr);
+    cairo_destroy(cr);
 }
 
 static void
@@ -752,11 +752,11 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    gdk_draw_pixbuf(gtk_widget_get_window(w),
-                    gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
-                    ge->buttons[button].image, 0, 0,
-                    ge->buttons[button].x + v, ge->buttons[button].y + v,
-                    BMAP_DIM, BMAP_DIM, GDK_RGB_DITHER_NONE, 0, 0);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+    gdk_cairo_set_source_pixbuf(cr, ge->buttons[button].image, ge->buttons[button].x + v, ge->buttons[button].y + v);
+    cairo_rectangle(cr, ge->buttons[button].x + v, ge->buttons[button].y + v, BMAP_DIM, BMAP_DIM);
+    cairo_fill(cr);
+    cairo_destroy(cr);
 }
 
 static void
@@ -797,11 +797,11 @@ gecontrol_button_active(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    gdk_draw_pixbuf(gtk_widget_get_window(w),
-                    gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
-                    ge->buttons[button].image, 0, 0,
-                    ge->buttons[button].x + v, ge->buttons[button].y + v,
-                    BMAP_DIM, BMAP_DIM, GDK_RGB_DITHER_NONE, 0, 0);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+    gdk_cairo_set_source_pixbuf(cr, ge->buttons[button].image, ge->buttons[button].x + v, ge->buttons[button].y + v);
+    cairo_rectangle(cr, ge->buttons[button].x + v, ge->buttons[button].y + v, BMAP_DIM, BMAP_DIM);
+    cairo_fill(cr);
+    cairo_destroy(cr);
 }
 
 #if 0
@@ -937,7 +937,7 @@ gecontrol_highlight_selected_spot(GEControl *ge)
         x = ge->spot.x + ((ge->cidx % 16) * 8);
         y = ge->spot.y + ((ge->cidx / 16) * 8);
     }
-    gdk_draw_rectangle(gtk_widget_get_window(GTK_WIDGET(ge)), gec->selgc, FALSE, x, y, 7, 7);
+    cairo_rectangle(gec->selcr, x, y, 7, 7);
 }
 
 static void
@@ -1032,7 +1032,6 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
     gint i;
     GEControl *ge = GECONTROL(w);
     GEControlClass *gec = GECONTROL_GET_CLASS(w);
-    GdkGCValues gcv;
 
     /*
      * Draw the glyph image if one was provided.
@@ -1053,13 +1052,15 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
         /*
          * Make sure the selection GC has been created.
          */
-        if (gec->selgc == 0) {
-            gcv.foreground.pixel = gtk_widget_get_style(w)->fg[GTK_WIDGET_STATE(w)].pixel;
-            gcv.background.pixel = gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].pixel;
-            gcv.foreground.pixel ^= gcv.background.pixel;
-            gcv.function = GDK_XOR;
-            gec->selgc = gdk_gc_new_with_values(gtk_widget_get_window(w), &gcv,
-                                                GDK_GC_FOREGROUND|GDK_GC_BACKGROUND|GDK_GC_FUNCTION);
+        if (gec->selcr == 0) {
+            gec->selcr = gdk_cairo_create(gtk_widget_get_window(w));
+
+            GdkColor color;
+            color.pixel =
+                gtk_widget_get_style(w)->fg[GTK_WIDGET_STATE(w)].pixel ^
+                gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].pixel;
+            gdk_cairo_set_source_color(gec->selcr, &color);
+            cairo_set_operator(gec->selcr, CAIRO_OPERATOR_XOR);
         }
 
         gecontrol_make_color_spots(ge, ge->gimage->bpp);
