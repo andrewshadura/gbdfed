@@ -48,9 +48,9 @@ labcon_size_request(GtkWidget *w, GtkRequisition *req)
     width = MAX(width, l_rec.width);
 
     req->height = MAX(l_rec.height, c_rec.height) +
-        (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2);
+            (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2);
     req->width = width + c_rec.width + l->spacing +
-        (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2);
+            (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2);
 }
 
 static void
@@ -185,11 +185,16 @@ labcon_remove(GtkContainer *c, GtkWidget *w)
     if (l->child == w) {
         if (l->group_size > 0) {
           for (i = 0; i < l->group_used; i++)
-            LABCON(l->group[i])->leader = 0;
+            LABCON(l->group[i])->leader = NULL;
           l->group_size = l->group_used = 0;
           g_free(l->group);
-          l->group = 0;
+          l->group = NULL;
         }
+    }
+
+    if (l->cr) {
+      cairo_destroy(l->cr);
+      l->cr = NULL;
     }
 }
 
@@ -218,34 +223,46 @@ labcon_init(GTypeInstance *instance, gpointer g_class)
     gtk_widget_set_redraw_on_allocate(GTK_WIDGET(l), FALSE);
 
     l->pixbuf = 0;
-    l->image = l->label = l->child = 0;
+    l->cr = NULL;
+    l->image = l->label = l->child = NULL;
     l->spacing = 0;
     l->align = LABCON_ALIGN_LEFT;
     l->pos = GTK_POS_LEFT;
     l->label_width = 0;
-    l->leader = 0;
+    l->leader = NULL;
     l->group_size = l->group_used = 0;
 }
 
 static gboolean
 draw_pixbuf(GtkWidget *w, GdkEventExpose *event, gpointer data)
 {
-    GdkPixbuf *p = GDK_PIXBUF(data);
+    LabCon *l = LABCON(data);
     gint x, y, wd, ht;
     GtkAllocation all;
+    const GdkPixbuf *p = GDK_PIXBUF(l->pixbuf);
 
     wd = gdk_pixbuf_get_width(p);
     ht = gdk_pixbuf_get_height(p);
 
     gtk_widget_get_allocation(w, &all);
-
-    x = (all.width >> 1) - (wd >> 1);
     y = (all.height >> 1) - (ht >> 1);
+    switch (l->align) {
+      case LABCON_ALIGN_RIGHT:
+        x = all.width - wd;
+        break;
+      case LABCON_ALIGN_LEFT:
+        x = 0;
+        break;
+      case LABCON_ALIGN_CENTER:
+        x = (all.width >> 1) - (wd >> 1);
+        break;
+    }
 
-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
-    gdk_cairo_set_source_pixbuf(cr, p, x, y);
-    cairo_paint(cr);
-    cairo_destroy(cr);
+    if (!l->cr) {
+        l->cr = gdk_cairo_create(gtk_widget_get_window(l->image));
+    }
+    gdk_cairo_set_source_pixbuf(l->cr, p, x, y);
+    cairo_paint(l->cr);
 
     return FALSE;
 }
@@ -382,11 +399,12 @@ labcon_new_pixbuf(const GdkPixbuf *pixbuf, LabConAlignment align,
      * first.
      */
     l->image = gtk_drawing_area_new();
+    gtk_widget_set_sensitive(l->image, FALSE);
     gtk_widget_set_size_request(l->image, 
                                 gdk_pixbuf_get_width(l->pixbuf),
                                 gdk_pixbuf_get_height(l->pixbuf));
     g_signal_connect(G_OBJECT(l->image), "expose_event",
-                     G_CALLBACK(draw_pixbuf), (gpointer) l->pixbuf);
+                     G_CALLBACK(draw_pixbuf), (gpointer)l);
 
     /*
      * Go back until we get the group leader.
@@ -435,31 +453,31 @@ labcon_new_pixbuf_defaults(const GdkPixbuf *pixbuf, GtkWidget *child,
 const GdkPixbuf *
 labcon_get_pixbuf(LabCon *l)
 {
-    g_return_val_if_fail(IS_LABCON(l), 0);
+    g_return_val_if_fail(IS_LABCON(l), NULL);
 
-    return l ? l->pixbuf : 0;
+    return l ? l->pixbuf : NULL;
 }
 
 GtkWidget *
 labcon_get_image(LabCon *l)
 {
-    g_return_val_if_fail(IS_LABCON(l), 0);
+    g_return_val_if_fail(IS_LABCON(l), NULL);
 
-    return l ? l->image : 0;
+    return l ? l->image : NULL;
 }
 
 GtkWidget *
 labcon_get_label(LabCon *l)
 {
-    g_return_val_if_fail(IS_LABCON(l), 0);
+    g_return_val_if_fail(IS_LABCON(l), NULL);
 
-    return l ? l->label : 0;
+    return l ? l->label : NULL;
 }
 
 GtkWidget *
 labcon_get_child(LabCon *l)
 {
-    g_return_val_if_fail(IS_LABCON(l), 0);
+    g_return_val_if_fail(IS_LABCON(l), NULL);
 
-    return l ? l->child : 0;
+    return l ? l->child : NULL;
 }

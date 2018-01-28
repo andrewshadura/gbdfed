@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Department of Mathematical Sciences, New Mexico State University
+ * Copyright 2011 Department of Mathematical Sciences, New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,11 +27,12 @@
 G_BEGIN_DECLS
 
 /*
- * The LabCon (Labeled Container) widget. Created to provide a container
- * that contains a label and a single child, and can be part of a group
- * of other LabCon widgets. All members of the group have the same label
- * width. The labels will be on the left or the right side of the child
- * widget and can be aligned to the right, left, or center.
+ * The LabCon (Labeled Container) widget. Created to provide a container that
+ * contains a label and a single child, and can be part of a group of other
+ * LabCon widgets. All members of the group have the same label width. The
+ * labels will be on the left or the right side of the child widget and the
+ * label contents can be aligned to the right, left, or center. The Labels can
+ * be just text or a GdkPixbuf.
  */
 
 #define LABCON(obj) \
@@ -95,6 +96,9 @@ struct _LabCon {
     GtkWidget **group;
     guint group_size;
     guint group_used;
+
+    /* Drawing context */
+    cairo_t *cr;
 };
 
 struct _LabConClass {
@@ -128,9 +132,24 @@ extern GtkWidget *labcon_new_pixbuf_defaults(const GdkPixbuf *pixbuf,
                                              GtkWidget *child,
                                              GtkWidget *group);
 
+/*
+ * Returns the Pixbuf being used as the label.
+ */
 extern const GdkPixbuf *labcon_get_pixbuf(LabCon *l);
+
+/*
+ * Returns the GtkDrawingArea where the Pixbuf is being drawn.
+ */
 extern GtkWidget *labcon_get_image(LabCon *l);
+
+/*
+ * Returns the GtkLabel displaying the label text.
+ */
 extern GtkWidget *labcon_get_label(LabCon *l);
+
+/*
+ * Returns the child.
+ */
 extern GtkWidget *labcon_get_child(LabCon *l);
 
 G_END_DECLS
