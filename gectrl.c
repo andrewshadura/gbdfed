@@ -558,7 +558,7 @@ gecontrol_actual_size(GtkWidget *widget, GtkAllocation *actual)
 
     gecontrol_position_buttons(widget);
 
-    if (GTK_WIDGET_REALIZED(widget))
+    if (gtk_widget_get_realized(widget))
       gdk_window_move_resize(gtk_widget_get_window(widget), actual->x, actual->y,
                              actual->width, actual->height);
 }
@@ -867,9 +867,9 @@ gecontrol_make_rgb_glyph(GEControl *ge)
      * First, get the background color of the widget for the empty
      * pixels.
      */
-    bg[0] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].red;
-    bg[1] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].green;
-    bg[2] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].blue;
+    bg[0] = (guchar) gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].red;
+    bg[1] = (guchar) gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].green;
+    bg[2] = (guchar) gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].blue;
 
     im = ge->gimage;
 
@@ -927,7 +927,7 @@ gecontrol_highlight_selected_spot(GEControl *ge)
     gint x, y;
     GEControlClass *gec = GECONTROL_GET_CLASS(ge);
 
-    if (!GTK_WIDGET_REALIZED(w) || ge->gimage == 0 || ge->gimage->bpp == 1)
+    if (!gtk_widget_get_realized(w) || ge->gimage == 0 || ge->gimage->bpp == 1)
       return;
 
     if (ge->gimage->bpp != 8) {
@@ -997,14 +997,14 @@ gecontrol_draw_glyph_image(GEControl *ge)
 {
     GtkWidget *w = GTK_WIDGET(ge);
 
-    if (ge->gimage == 0 || !GTK_WIDGET_REALIZED(w))
+    if (ge->gimage == 0 || !gtk_widget_get_realized(w))
       return;
 
     /*
      * 1. Draw the box around the image.
      */
     gdk_draw_rectangle(gtk_widget_get_window(w),
-                       gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
+                       gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
                        FALSE, ge->gimage->x, ge->gimage->y,
                        ge->gimage->width + 4, ge->gimage->height + 4);
 
@@ -1019,7 +1019,7 @@ gecontrol_draw_glyph_image(GEControl *ge)
      */
     gecontrol_make_rgb_glyph(ge);
     gdk_draw_rgb_image(gtk_widget_get_window(w),
-                       gtk_widget_get_style(w)->bg_gc[GTK_WIDGET_STATE(w)],
+                       gtk_widget_get_style(w)->bg_gc[gtk_widget_get_state(w)],
                        ge->gimage->x + 2, ge->gimage->y + 2,
                        ge->gimage->width, ge->gimage->height,
                        GDK_RGB_DITHER_NONE, ge->rgb,
@@ -1057,8 +1057,8 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
 
             GdkColor color;
             color.pixel =
-                gtk_widget_get_style(w)->fg[GTK_WIDGET_STATE(w)].pixel ^
-                gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].pixel;
+                gtk_widget_get_style(w)->fg[gtk_widget_get_state(w)].pixel ^
+                gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].pixel;
             gdk_cairo_set_source_color(gec->selcr, &color);
             cairo_set_operator(gec->selcr, CAIRO_OPERATOR_XOR);
         }
@@ -1066,7 +1066,7 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
         gecontrol_make_color_spots(ge, ge->gimage->bpp);
 
         gdk_draw_gray_image(gtk_widget_get_window(w),
-                            gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
+                            gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
                             ge->spot.x, ge->spot.y,
                             ge->spot.width, ge->spot.height,
                             GDK_RGB_DITHER_NONE, ge->rgb, ge->spot.width);

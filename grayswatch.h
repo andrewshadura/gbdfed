@@ -23,7 +23,6 @@
 #define _h_grayswatch
 
 #include <gtk/gtk.h>
-#include "gtkcompat.h"
 
 G_BEGIN_DECLS
 

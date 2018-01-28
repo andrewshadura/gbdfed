@@ -347,7 +347,7 @@ update_font(GtkWidget *w, gpointer data)
     bdf_glyph_t *glyph;
     GlypheditOperation op;
 
-    if (GTK_WIDGET_IS_SENSITIVE(ge->update) == TRUE) {
+    if (gtk_widget_is_sensitive(ge->update) == TRUE) {
         if (glyphedit_get_selecting(GLYPHEDIT(ge->gedit)) == TRUE) {
           /*
            * A selection operation is in progress. Need to switch back to
@@ -503,7 +503,7 @@ next_glyph(GtkWidget *w, gpointer data)
     bdf_glyph_grid_t *grid;
     bdf_bitmap_t image;
 
-    if (GTK_WIDGET_IS_SENSITIVE(ge->update) == TRUE) {
+    if (gtk_widget_is_sensitive(ge->update) == TRUE) {
         if (guiutil_yes_or_no(ge->shell, UPMSG, TRUE))
           update_font(w, GUINT_TO_POINTER(ge->id));
     }
@@ -537,7 +537,7 @@ previous_glyph(GtkWidget *w, gpointer data)
     bdf_glyph_grid_t *grid;
     bdf_bitmap_t image;
 
-    if (GTK_WIDGET_IS_SENSITIVE(ge->update) == TRUE) {
+    if (gtk_widget_is_sensitive(ge->update) == TRUE) {
         if (guiutil_yes_or_no(ge->shell, UPMSG, TRUE))
           update_font(w, GUINT_TO_POINTER(ge->id));
     }
@@ -594,7 +594,7 @@ close_glyph_editor(GtkWidget *w, GdkEvent *ev, gpointer data)
      * certain operations cause the modify flag to be set, but they
      * don't really represent a modification.
      */
-    if (GTK_WIDGET_IS_SENSITIVE(ge->update) == TRUE) {
+    if (gtk_widget_is_sensitive(ge->update) == TRUE) {
         if (guiutil_yes_or_no(ge->shell, UPMSG, TRUE))
           update_font(w, GUINT_TO_POINTER(ge->id));
     }
@@ -1546,7 +1546,7 @@ show_resize_dialog(GtkWidget *w, gpointer data)
     /*
      * Move the focus to the first sensitive spin box.
      */
-    if (GTK_WIDGET_SENSITIVE(ge->ops.lbearing))
+    if (gtk_widget_get_sensitive(ge->ops.lbearing))
       gtk_widget_grab_focus(ge->ops.lbearing);
     else
       gtk_widget_grab_focus(ge->ops.rbearing);

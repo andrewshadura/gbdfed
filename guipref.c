@@ -410,7 +410,7 @@ pref_set_bpp(GtkWidget *w, gpointer data)
     on = (tmp_opts.font_opts.bits_per_pixel == 1 ||
           tmp_opts.font_opts.bits_per_pixel == 8) ? FALSE : TRUE;
 
-    if (pref_color_dialog != 0 && GTK_WIDGET_VISIBLE(pref_color_dialog)) {
+    if (pref_color_dialog != 0 && gtk_widget_get_visible(pref_color_dialog)) {
         if (tmp_opts.font_opts.bits_per_pixel == 1 ||
             tmp_opts.font_opts.bits_per_pixel == 8)
           gtk_widget_hide(pref_color_dialog);
@@ -927,7 +927,7 @@ pref_save(void)
     /*
      * If any changes were made, do an update before saving.
      */
-    if (GTK_WIDGET_SENSITIVE(pref_apply))
+    if (gtk_widget_get_sensitive(pref_apply))
       pref_apply_changes();
 
     if ((home = getenv("HOME")) == 0) {
@@ -1059,7 +1059,7 @@ pref_response(GtkDialog *d, gint response, gpointer data)
          * Make sure the color chooser dialog is hidden if it
          * happens to be up.
          */
-        if (pref_color_dialog != 0 && GTK_WIDGET_VISIBLE(pref_color_dialog))
+        if (pref_color_dialog != 0 && gtk_widget_get_visible(pref_color_dialog))
           gtk_widget_hide(pref_color_dialog);
 
         gtk_widget_hide(GTK_WIDGET(d));

@@ -25,7 +25,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include "bdfP.h"
-#include "gtkcompat.h"
 
 G_BEGIN_DECLS
 

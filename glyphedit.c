@@ -313,7 +313,7 @@ glyphedit_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
     gtk_widget_set_allocation(widget, actual);
 
-    if (GTK_WIDGET_REALIZED(widget))
+    if (gtk_widget_get_realized(widget))
       gdk_window_move_resize(gtk_widget_get_window(widget), actual->x, actual->y,
                              actual->width, actual->height);
 }
@@ -328,7 +328,7 @@ glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
     GdkRectangle pix;
     GtkAllocation all;
 
-    if (!GTK_WIDGET_REALIZED(w) || gw->grid == 0)
+    if (!gtk_widget_get_realized(w) || gw->grid == 0)
       return;
 
     gwc = GLYPHEDIT_GET_CLASS(gw);
@@ -404,7 +404,7 @@ glyphedit_draw_glyph(Glyphedit *gw)
     gint16 x, y;
     gboolean sel;
 
-    if (!GTK_WIDGET_REALIZED(w) || gw->grid == 0)
+    if (!gtk_widget_get_realized(w) || gw->grid == 0)
       return;
 
     for (y = 0; y < gw->grid->grid_height; y++) {
@@ -424,7 +424,7 @@ glyphedit_draw_font_bbx(Glyphedit *gw)
     GdkRectangle frame;
     GtkAllocation all;
 
-    if (!GTK_WIDGET_REALIZED(w))
+    if (!gtk_widget_get_realized(w))
       return;
 
     gwc = GLYPHEDIT_GET_CLASS(gw);
@@ -596,9 +596,9 @@ glyphedit_create_gcs(GtkWidget *widget, gboolean force)
         if (gwc->gridgc != 0)
           g_object_unref(G_OBJECT(gwc->gridgc));
         gcv.foreground.pixel =
-            gtk_widget_get_style(widget)->fg[GTK_WIDGET_STATE(widget)].pixel;
+            gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel;
         gcv.background.pixel =
-            gtk_widget_get_style(widget)->bg[GTK_WIDGET_STATE(widget)].pixel;
+            gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
         gcv.function = GDK_COPY;
         gcv.line_style = GDK_LINE_ON_OFF_DASH;
         gwc->gridgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv,
@@ -632,9 +632,9 @@ glyphedit_create_gcs(GtkWidget *widget, gboolean force)
           g_object_unref(G_OBJECT(gwc->selgc));
 
         gcv.foreground.pixel =
-            gtk_widget_get_style(widget)->fg[GTK_WIDGET_STATE(widget)].pixel;
+            gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel;
         gcv.background.pixel =
-            gtk_widget_get_style(widget)->bg[GTK_WIDGET_STATE(widget)].pixel;
+            gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
         gcv.foreground.pixel ^= gcv.background.pixel;
         gcv.function = GDK_XOR;
         gwc->selgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv, gcm);
@@ -645,9 +645,9 @@ glyphedit_create_gcs(GtkWidget *widget, gboolean force)
           g_object_unref(G_OBJECT(gwc->pixgc));
 
         gcv.foreground.pixel =
-            gtk_widget_get_style(widget)->fg[GTK_WIDGET_STATE(widget)].pixel;
+            gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel;
         gcv.background.pixel =
-            gtk_widget_get_style(widget)->bg[GTK_WIDGET_STATE(widget)].pixel;
+            gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
         gcv.function = GDK_COPY;
         gwc->pixgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv, gcm);
     }
@@ -721,9 +721,9 @@ glyphedit_expose(GtkWidget *widget, GdkEventExpose *event)
     /*
      * Paint the shadow first.
      */
-    if (GTK_WIDGET_DRAWABLE(widget))
+    if (gtk_widget_is_drawable(widget))
       gtk_paint_shadow(gtk_widget_get_style(widget), gtk_widget_get_window(widget),
-                       GTK_WIDGET_STATE(widget), GTK_SHADOW_OUT,
+                       gtk_widget_get_state(widget), GTK_SHADOW_OUT,
                        &event->area, widget, "glyphedit",
                        0, 0,
                        all.width,
@@ -1027,7 +1027,7 @@ glyphedit_set_metrics(Glyphedit *gw, bdf_metrics_t *metrics)
     if (bdf_grid_resize(gw->grid, metrics)) {
         glyphedit_signal_glyph_change(gw);
         gtk_widget_queue_resize(GTK_WIDGET(gw));
-    } else if (GTK_WIDGET_REALIZED(w))
+    } else if (gtk_widget_get_realized(w))
       /*
        * The size didn't change, but we need to redraw if the widget
        * has been realized.
@@ -1529,7 +1529,7 @@ glyphedit_own_clipboard(Glyphedit *gw)
     GtkWidget *w;
 
     w = GTK_WIDGET(gw);
-    if (!GTK_WIDGET_REALIZED(w) || gw->owns_clipboard == TRUE)
+    if (!gtk_widget_get_realized(w) || gw->owns_clipboard == TRUE)
       return;
 
     gdk_selection_owner_set(gtk_widget_get_window(w),

@@ -221,7 +221,7 @@ static GdkPoint encoding_digits[19*6];
 /*
  * A macro for getting the current foreground GC.
  */
-#define WIDGET_FG_GC(w) ((w)->style->fg_gc[GTK_WIDGET_STATE(w)])
+#define WIDGET_FG_GC(w) ((w)->style->fg_gc[gtk_widget_get_state(w)])
 
 #define HMARGINS(fw) ((fw)->hmargin << 1)
 #define VMARGINS(fw) ((fw)->vmargin << 1)
@@ -635,8 +635,8 @@ fontgrid_realize(GtkWidget *widget)
      * Create the GC used to display selected cells.
      */
     values.foreground.pixel =
-        gtk_widget_get_style(widget)->fg[GTK_WIDGET_STATE(widget)].pixel ^
-        gtk_widget_get_style(widget)->bg[GTK_WIDGET_STATE(widget)].pixel;
+        gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel ^
+        gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
     (void) memset((char *) &values.background, 0, sizeof(GdkColor));
     values.function = GDK_XOR;
     fw->xor_gc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &values,
@@ -792,9 +792,9 @@ fontgrid_make_rgb_image(Fontgrid *fw, bdf_glyph_t *glyph)
     /*
      * Figure out the background color.
      */
-    bg[0] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].red;
-    bg[1] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].green;
-    bg[2] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].blue;
+    bg[0] = (guchar) gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].red;
+    bg[1] = (guchar) gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].green;
+    bg[2] = (guchar) gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].blue;
 
     switch (fw->bpp) {
       case 1: masks = bdf_onebpp; di = 7; break;
@@ -945,7 +945,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
 
     gp = glyph;
 
-    gc = gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->fg_gc[gtk_widget_get_state(widget)];
 
     for (ng = 0, i = start; i <= end; i++) {
         /*
@@ -1123,7 +1123,7 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
 
     fw = FONTGRID(widget);
 
-    gc = gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->fg_gc[gtk_widget_get_state(widget)];
 
     gw = fw->cell_width * fw->cell_cols;
     gh = fw->cell_height * fw->cell_rows;
@@ -1267,7 +1267,7 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad, NULL);
 
-    gc = gtk_widget_get_style(widget)->bg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->bg_gc[gtk_widget_get_state(widget)];
 
     x = (gtk_widget_get_style(widget)->xthickness + fwidth + fpad) - 1;
     y = (gtk_widget_get_style(widget)->ythickness + fwidth + fpad) - 1;
@@ -1277,7 +1277,7 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
     ht = (all.height - (y * 2));
 
     if (gtk_widget_has_focus(widget))
-      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_WIDGET_STATE(widget),
+      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), gtk_widget_get_state(widget),
                       area, widget, "fontgrid", x, y, wd, ht);
     else {
         gdk_gc_set_clip_rectangle(gc, area);
@@ -1294,10 +1294,10 @@ fontgrid_expose(GtkWidget *widget, GdkEventExpose *event)
     /*
      * Paint the shadow first.
      */
-    if (GTK_WIDGET_DRAWABLE(widget)) {
+    if (gtk_widget_is_drawable(widget)) {
       gtk_widget_get_allocation(widget, &all);
       gtk_paint_shadow(gtk_widget_get_style(widget), gtk_widget_get_window(widget),
-                       GTK_WIDGET_STATE(widget), GTK_SHADOW_OUT,
+                       gtk_widget_get_state(widget), GTK_SHADOW_OUT,
                        &event->area, widget, "fontgrid",
                        0, 0,
                        all.width,

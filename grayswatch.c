@@ -72,13 +72,13 @@ value_changed(GtkSpinButton *b, gpointer data)
 
     memset(gs->image, v, gs->image_size);
 
-    if (GTK_WIDGET_DRAWABLE(sw)) {
+    if (gtk_widget_is_drawable(sw)) {
       GtkAllocation all;
 
       gtk_widget_get_allocation(sw, &all);
 
       gdk_draw_gray_image(gtk_widget_get_window(sw),
-                          gtk_widget_get_style(sw)->fg_gc[GTK_WIDGET_STATE(sw)],
+                          gtk_widget_get_style(sw)->fg_gc[gtk_widget_get_state(sw)],
                           gtk_container_get_border_width(GTK_CONTAINER(gs)),
                           gtk_container_get_border_width(GTK_CONTAINER(gs)),
                           all.width, all.height,
@@ -132,7 +132,7 @@ grayswatch_expose(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
     if (gs->image_size > 0)
       gdk_draw_gray_image(gtk_widget_get_window(widget),
-                          gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)],
+                          gtk_widget_get_style(widget)->fg_gc[gtk_widget_get_state(widget)],
                           gtk_container_get_border_width(GTK_CONTAINER(gs)),
                           gtk_container_get_border_width(GTK_CONTAINER(gs)),
                           all.width, all.height,
