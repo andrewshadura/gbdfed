@@ -344,7 +344,7 @@ guihelp_show_help(GtkWidget *w, gpointer data)
         /*
          * Add the table to the dialog widget.
          */
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(help_dialog)->vbox),
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(help_dialog))),
                           hbox);
 
         button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -353,10 +353,10 @@ guihelp_show_help(GtkWidget *w, gpointer data)
                                        (gpointer) help_dialog,
                                        G_CONNECT_SWAPPED);
 
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(help_dialog)->action_area),
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(help_dialog))),
                           button);
-        gtk_widget_show_all(GTK_DIALOG(help_dialog)->vbox);
-        gtk_widget_show_all(GTK_DIALOG(help_dialog)->action_area);
+        gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(help_dialog)));
+        gtk_widget_show_all(gtk_dialog_get_action_area(GTK_DIALOG(help_dialog)));
 
         /*
          * Create all the markup tags the text buffer will use.
@@ -384,7 +384,7 @@ guihelp_show_help(GtkWidget *w, gpointer data)
      * Show the help dialog and force it to the top.
      */
     guiutil_show_dialog_centered(help_dialog, editors[0].shell);
-    gdk_window_raise(help_dialog->window);
+    gdk_window_raise(gtk_widget_get_window(help_dialog));
 }
 
 void

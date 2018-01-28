@@ -273,7 +273,8 @@ ops_dialog_setup(gbdfed_editor_t *ed)
         /*
          * Add the vbox to the dialog.
          */
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(ops_dialog)->vbox), vbox);
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(ops_dialog))),
+                          vbox);
 
         ops_apply = gtk_dialog_add_button(GTK_DIALOG(ops_dialog),
                                           GTK_STOCK_APPLY,
@@ -287,7 +288,7 @@ ops_dialog_setup(gbdfed_editor_t *ed)
         g_signal_connect(G_OBJECT(ops_dialog), "response",
                          G_CALLBACK(apply_operation), 0);
 
-        gtk_widget_show_all(GTK_DIALOG(ops_dialog)->vbox);
+        gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(ops_dialog)));
     }
 
     if (fontgrid_has_selection(FONTGRID(ed->fgrid), 0))

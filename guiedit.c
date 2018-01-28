@@ -112,13 +112,13 @@ guiedit_show_glyphtest(GtkWidget *w, gpointer data)
 
         gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(gtest_dialog)->vbox),
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(gtest_dialog))),
                           vbox);
 
         /*
          * Add the buttons.
          */
-        hbox = GTK_DIALOG(gtest_dialog)->action_area;
+        hbox = gtk_dialog_get_action_area(GTK_DIALOG(gtest_dialog));
 
         gtest_erase = gtk_button_new_with_label("Erase");
         gtk_widget_set_sensitive(gtest_erase, FALSE);
@@ -132,8 +132,8 @@ guiedit_show_glyphtest(GtkWidget *w, gpointer data)
                                        (gpointer) gtest_dialog,
                                        G_CONNECT_SWAPPED);
         gtk_container_add(GTK_CONTAINER(hbox), cb);
-        gtk_widget_show_all(GTK_DIALOG(gtest_dialog)->vbox);
-        gtk_widget_show_all(GTK_DIALOG(gtest_dialog)->action_area);
+        gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(gtest_dialog)));
+        gtk_widget_show_all(gtk_dialog_get_action_area(GTK_DIALOG(gtest_dialog)));
     }
 
     guiutil_show_dialog_centered(gtest_dialog, ed->shell);
@@ -1214,7 +1214,7 @@ guiedit_show_font_info(GtkWidget *w, gpointer data)
         label = gtk_label_new("Font Comments");
         gtk_notebook_append_page(GTK_NOTEBOOK(nb), frame, label);
 
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(ed->finfo_dialog)->vbox),
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(ed->finfo_dialog))),
                           nb);
 
         /*
@@ -1228,8 +1228,8 @@ guiedit_show_font_info(GtkWidget *w, gpointer data)
 
         guiedit_update_font_info(ed);
 
-        gtk_widget_show_all(GTK_DIALOG(ed->finfo_dialog)->vbox);
-        gtk_widget_show_all(GTK_DIALOG(ed->finfo_dialog)->action_area);
+        gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(ed->finfo_dialog)));
+        gtk_widget_show_all(gtk_dialog_get_action_area(GTK_DIALOG(ed->finfo_dialog)));
     }
 
     /*

@@ -1475,12 +1475,13 @@ operations_dialog_setup(GlypheditRec *ge)
     /*
      * 4. Add the notebook to the dialog.
      */
-    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(ge->ops.dialog)->vbox), nb);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(ge->ops.dialog))),
+                      nb);
 
     gtk_window_set_transient_for(GTK_WINDOW(ge->ops.dialog),
                                  GTK_WINDOW(ge->shell));
-    gtk_widget_show_all(GTK_DIALOG(ge->ops.dialog)->vbox);
-    gtk_widget_show_all(GTK_DIALOG(ge->ops.dialog)->action_area);
+    gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(ge->ops.dialog)));
+    gtk_widget_show_all(gtk_dialog_get_action_area(GTK_DIALOG(ge->ops.dialog)));
 }
 
 static void
