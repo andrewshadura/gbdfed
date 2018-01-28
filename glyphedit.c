@@ -319,40 +319,6 @@ glyphedit_actual_size(GtkWidget *widget, GtkAllocation *actual)
 }
 
 static void
-glyphedit_draw_focus(GtkWidget *widget, GdkRectangle *area)
-{
-    GdkGC *gc;
-    gint x, y, wd, ht, fwidth, fpad;
-    GtkAllocation all;
-
-    /*
-     * Do something with this later to make sure the focus line width
-     * is set in the GC's.
-     */
-    gtk_widget_style_get(widget,
-                         "focus-line-width", &fwidth,
-                         "focus-padding", &fpad, NULL);
-
-    gc = gtk_widget_get_style(widget)->bg_gc[GTK_WIDGET_STATE(widget)];
-
-    x = (gtk_widget_get_style(widget)->xthickness + fwidth + fpad) - 1;
-    y = (gtk_widget_get_style(widget)->ythickness + fwidth + fpad) - 1;
-
-    gtk_widget_get_allocation(widget, &all);
-    wd = (all.width - (x * 2));
-    ht = (all.height - (y * 2));
-
-    if (GTK_WIDGET_HAS_FOCUS(widget))
-      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_WIDGET_STATE(widget),
-                      area, widget, "glyphedit", x, y, wd, ht);
-    else {
-        gdk_gc_set_clip_rectangle(gc, area);
-        gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE, x, y, wd - 1, ht - 1);
-        gdk_gc_set_clip_rectangle(gc, 0);
-    }
-}
-
-static void
 glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
 {
     GtkWidget *w = GTK_WIDGET(gw);
@@ -765,8 +731,6 @@ glyphedit_expose(GtkWidget *widget, GdkEventExpose *event)
 
     glyphedit_draw(widget, event->region);
 
-    glyphedit_draw_focus(widget, &event->area);
-
     return FALSE;
 }
 
@@ -776,8 +740,6 @@ glyphedit_focus_in(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(widget != NULL, FALSE);
     g_return_val_if_fail(IS_GLYPHEDIT(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
-
-    glyphedit_draw_focus(widget, 0);
 
     return FALSE;
 }
@@ -789,7 +751,7 @@ glyphedit_focus_out(GtkWidget *widget, GdkEventFocus *event)
     g_return_val_if_fail(IS_GLYPHEDIT(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    glyphedit_draw_focus(widget, 0);
+    GLYPHEDIT(widget)->mouse_down = FALSE;
 
     return FALSE;
 }
@@ -2179,6 +2141,7 @@ glyphedit_button_press(GtkWidget *w, GdkEventButton *event)
      */
     gw->last_x = x;
     gw->last_y = y;
+    gw->mouse_down = TRUE;
 
     return FALSE;
 }
@@ -2188,12 +2151,6 @@ glyphedit_button_release(GtkWidget *w, GdkEventButton *event)
 {
     Glyphedit *gw;
     gint16 sx, sy, ex, ey;
-
-    /*
-     * Button releases on a widget without the focus is ignored.
-     */
-    if (!GTK_WIDGET_HAS_FOCUS(w))
-      return FALSE;
 
     gw = GLYPHEDIT(w);
 
@@ -2228,6 +2185,8 @@ glyphedit_button_release(GtkWidget *w, GdkEventButton *event)
             }
         }
     }
+    gw->mouse_down = FALSE;
+
     return FALSE;
 }
 
@@ -2268,7 +2227,7 @@ glyphedit_motion_notify(GtkWidget *w, GdkEventMotion *event)
      * If the event is a simple motion event with no button being pressed,
      * then simply return at this point.
      */
-    if (!GTK_WIDGET_HAS_FOCUS(w) ||
+    if (!gw->mouse_down ||
         !(event->state & (GDK_BUTTON1_MASK|GDK_BUTTON2_MASK|GDK_BUTTON3_MASK)))
       return FALSE;
 
