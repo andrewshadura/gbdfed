@@ -312,7 +312,7 @@ toggle_encoding_view(GtkWidget *w, gpointer editor)
       label = "Unencoded";
     else
       label = "Encoded";
-    lw = GTK_LABEL(GTK_BIN(ed->view_unencoded)->child);
+    lw = GTK_LABEL(gtk_bin_get_child(GTK_BIN(ed->view_unencoded)));
     gtk_label_set_text(lw, label);
 
     fontgrid_switch_encoding_view(FONTGRID(ed->fgrid));
@@ -335,7 +335,7 @@ toggle_view_orientation(GtkWidget *w, gpointer editor)
                                  GTK_ORIENTATION_VERTICAL);
         label = "Horizontal View";
     }
-    lw = GTK_LABEL(GTK_BIN(ed->view_orientation)->child);
+    lw = GTK_LABEL(gtk_bin_get_child(GTK_BIN(ed->view_unencoded)));
     gtk_label_set_text(lw, label);
 }
 
@@ -397,7 +397,7 @@ page_change(GtkWidget *w, gpointer pinfo, gpointer editor)
      * Finally, modify the label on the Encoded/Unencoded view menu item.
      */
     label = (pi->unencoded_page) ? "Encoded" : "Unencoded";
-    lw = GTK_LABEL(GTK_BIN(ed->view_unencoded)->child);
+    lw = GTK_LABEL(gtk_bin_get_child(GTK_BIN(ed->view_unencoded)));
     gtk_label_set_text(lw, label);
 }
 
@@ -656,7 +656,7 @@ view_font_messages(GtkWidget *w, gpointer editor)
         label = ed->messages_label = gtk_label_new("");
         gtk_container_add(GTK_CONTAINER(frame), label);
 
-        vbox = GTK_DIALOG(dialog)->vbox;
+        vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
         gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, FALSE, 0);
 
         sw = gtk_scrolled_window_new(NULL, NULL);
@@ -682,11 +682,11 @@ view_font_messages(GtkWidget *w, gpointer editor)
                                        G_CALLBACK(gtk_widget_hide),
                                        (gpointer) dialog,
                                        G_CONNECT_SWAPPED);
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->action_area),
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(dialog))),
                           button);
 
-        gtk_widget_show_all(GTK_DIALOG(ed->messages_dialog)->vbox);
-        gtk_widget_show_all(GTK_DIALOG(ed->messages_dialog)->action_area);
+        gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(ed->messages_dialog)));
+        gtk_widget_show_all(gtk_dialog_get_action_area(GTK_DIALOG(ed->messages_dialog)));
     } else
       text = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ed->messages_text));
 
@@ -820,7 +820,7 @@ menu_popup(GtkWidget *w, GdkEvent *event, gpointer data)
              * Go through and update the file names that might have changed
              * since the last time this menu popped up.
              */
-            for (i = 0, kids = GTK_MENU(w)->menu_shell.children; kids != 0;
+            for (i = 0, kids = gtk_container_get_children(GTK_CONTAINER(w)); kids != 0;
                  kids = kids->next, i++) {
                 if (editors[i].file == 0)
                   sprintf(buffer1, "(unnamed%d)", i);

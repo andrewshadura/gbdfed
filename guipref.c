@@ -348,7 +348,7 @@ pref_select_colors(GtkWidget *w, gpointer data)
                                FALSE, FALSE, 0);
         }
 
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(pref_color_dialog)->vbox),
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(pref_color_dialog))),
                           hbox);
 
         /*
@@ -1085,7 +1085,7 @@ guiedit_show_preferences(GtkWidget *w, gpointer data)
         sprintf(buffer1, "%s Preferences", g_get_prgname());
         gtk_window_set_title(GTK_WINDOW(pref_dialog), buffer1);
 
-        dvbox = GTK_DIALOG(pref_dialog)->vbox;
+        dvbox = gtk_dialog_get_content_area(GTK_DIALOG(pref_dialog));
 
         /*
          * Create the notebook that will contain the Preference tabs.

@@ -111,6 +111,7 @@ gecontrol_position_buttons(GtkWidget *w)
     GEControl *ge = GECONTROL(w);
     gint x, y, sx, sy, ix, dx, i, j, v, wd, ht;
     GdkPoint points[5];
+    GtkAllocation all;
 
     dx = 0;
 
@@ -120,7 +121,8 @@ gecontrol_position_buttons(GtkWidget *w)
      * of the window.
      */
 
-    sx = (w->allocation.width >> 1) - (((GEC_TOGGLE_SIZE * 3) + 6) >> 1);
+    gtk_widget_get_allocation(w, &all);
+    sx = (all.width >> 1) - (((GEC_TOGGLE_SIZE * 3) + 6) >> 1);
     v = (GEC_TOGGLE_SIZE + (GEC_BUTTON_SIZE * 5)) + 15;
 
     if (ge->gimage != 0) {
@@ -142,7 +144,7 @@ gecontrol_position_buttons(GtkWidget *w)
     }
 
     sx += dx;
-    sy = (w->allocation.height >> 1) - (v >> 1);
+    sy = (all.height >> 1) - (v >> 1);
 
     /*
      * Position the glyph image first if one is present.
@@ -152,7 +154,7 @@ gecontrol_position_buttons(GtkWidget *w)
          * The addition of 2 is for the box and an empty row around the glyph
          * image.
          */
-        ix = ((w->allocation.width >> 1)-((ge->gimage->width + 2) >> 1)) + dx;
+        ix = ((all.width >> 1)-((ge->gimage->width + 2) >> 1)) + dx;
 
         if (ge->buttons[GEC_GLYPH_IMAGE].region == NULL) {
             /* Top left. */
@@ -219,7 +221,7 @@ gecontrol_position_buttons(GtkWidget *w)
      * Recalculate the starting x position based on the button size instead
      * of the toggle size.
      */
-    sx = ((w->allocation.width >> 1)-(((GEC_BUTTON_SIZE * 3) + 6) >> 1)) + dx;
+    sx = ((all.width >> 1)-(((GEC_BUTTON_SIZE * 3) + 6) >> 1)) + dx;
 
     y += GEC_TOGGLE_SIZE + 3;
 
@@ -394,14 +396,14 @@ gecontrol_position_buttons(GtkWidget *w)
             sx = (sx >> 1) - (8 >> 1);
             y = (8 * (1 << ge->gimage->bpp)) + ((1 << ge->gimage->bpp) - 1);
             sy = ge->buttons[GEC_FLIPH_BUTTON].y +
-                ((w->allocation.height-ge->buttons[GEC_FLIPH_BUTTON].y)>>1) -
+                ((all.height-ge->buttons[GEC_FLIPH_BUTTON].y)>>1) -
                 (y >> 1);
             wd = 8;
             ht = 8 * (1 << ge->gimage->bpp);
         } else {
             sx = (sx >> 1) - (128 >> 1);
             sy = ge->buttons[GEC_FLIPH_BUTTON].y +
-                ((w->allocation.height-ge->buttons[GEC_FLIPH_BUTTON].y)>>1) -
+                ((all.height-ge->buttons[GEC_FLIPH_BUTTON].y)>>1) -
                 (128 >> 1);
             wd = ht = 128;
         }
@@ -552,12 +554,12 @@ gecontrol_preferred_size(GtkWidget *widget, GtkRequisition *preferred)
 static void
 gecontrol_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
-    widget->allocation = *actual;
+    gtk_widget_set_allocation(widget, actual);
 
     gecontrol_position_buttons(widget);
 
     if (GTK_WIDGET_REALIZED(widget))
-      gdk_window_move_resize(widget->window, actual->x, actual->y,
+      gdk_window_move_resize(gtk_widget_get_window(widget), actual->x, actual->y,
                              actual->width, actual->height);
 }
 
@@ -673,7 +675,8 @@ gecontrol_button_normal(GEControl *ge, gint button)
       return;
 
     if (button < 3) {
-        gecontrol_paint_diamond(w->style, w->window, GTK_STATE_NORMAL, 0,
+        gecontrol_paint_diamond(gtk_widget_get_style(w),
+                                gtk_widget_get_window(w), GTK_STATE_NORMAL, 0,
                                 ge->buttons[button].x, ge->buttons[button].y,
                                 GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
@@ -686,13 +689,16 @@ gecontrol_button_normal(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        gdk_draw_polygon(w->window, w->style->bg_gc[GTK_STATE_NORMAL], TRUE,
+        gdk_draw_polygon(gtk_widget_get_window(w),
+                         gtk_widget_get_style(w)->bg_gc[GTK_STATE_NORMAL],
+                         TRUE,
                          points, 4);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
 
     } else {
-        gtk_paint_box(w->style, w->window, GTK_STATE_NORMAL,
+        gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
+                      GTK_STATE_NORMAL,
                       GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
                       ge->buttons[button].x, ge->buttons[button].y,
                       GEC_BUTTON_SIZE, GEC_BUTTON_SIZE);
@@ -700,7 +706,8 @@ gecontrol_button_normal(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    gdk_draw_pixbuf(w->window, w->style->fg_gc[GTK_WIDGET_STATE(w)],
+    gdk_draw_pixbuf(gtk_widget_get_window(w),
+                    gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
                     ge->buttons[button].image, 0, 0,
                     ge->buttons[button].x + v, ge->buttons[button].y + v,
                     BMAP_DIM, BMAP_DIM, GDK_RGB_DITHER_NONE, 0, 0);
@@ -717,7 +724,9 @@ gecontrol_button_prelight(GEControl *ge, gint button)
       return;
 
     if (button < 3) {
-        gecontrol_paint_diamond(w->style, w->window, GTK_STATE_PRELIGHT, 0,
+        gecontrol_paint_diamond(gtk_widget_get_style(w),
+                                gtk_widget_get_window(w), GTK_STATE_PRELIGHT,
+                                0,
                                 ge->buttons[button].x, ge->buttons[button].y,
                                 GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
@@ -730,18 +739,21 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        gdk_draw_polygon(w->window, w->style->bg_gc[GTK_STATE_PRELIGHT], TRUE,
-                         points, 4);
+        gdk_draw_polygon(gtk_widget_get_window(w),
+                         gtk_widget_get_style(w)->bg_gc[GTK_STATE_PRELIGHT],
+                         TRUE, points, 4);
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
-        gtk_paint_box(w->style, w->window, GTK_STATE_PRELIGHT,
+        gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
+                      GTK_STATE_PRELIGHT,
                       GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
                       ge->buttons[button].x, ge->buttons[button].y,
                       GEC_BUTTON_SIZE, GEC_BUTTON_SIZE);
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    gdk_draw_pixbuf(w->window, w->style->fg_gc[GTK_WIDGET_STATE(w)],
+    gdk_draw_pixbuf(gtk_widget_get_window(w),
+                    gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
                     ge->buttons[button].image, 0, 0,
                     ge->buttons[button].x + v, ge->buttons[button].y + v,
                     BMAP_DIM, BMAP_DIM, GDK_RGB_DITHER_NONE, 0, 0);
@@ -758,7 +770,8 @@ gecontrol_button_active(GEControl *ge, gint button)
       return;
 
     if (button < 3) {
-        gecontrol_paint_diamond(w->style, w->window, GTK_STATE_ACTIVE, 0,
+        gecontrol_paint_diamond(gtk_widget_get_style(w),
+                                gtk_widget_get_window(w), GTK_STATE_ACTIVE, 0,
                                 ge->buttons[button].x, ge->buttons[button].y,
                                 GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
@@ -771,18 +784,21 @@ gecontrol_button_active(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        gdk_draw_polygon(w->window, w->style->bg_gc[GTK_STATE_ACTIVE], TRUE,
-                         points, 4);
+        gdk_draw_polygon(gtk_widget_get_window(w),
+                         gtk_widget_get_style(w)->bg_gc[GTK_STATE_ACTIVE],
+                         TRUE, points, 4);
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
-        gtk_paint_box(w->style, w->window, GTK_STATE_ACTIVE,
+        gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
+                      GTK_STATE_ACTIVE,
                       GTK_SHADOW_IN, 0, GTK_WIDGET(ge), "gectrl",
                       ge->buttons[button].x, ge->buttons[button].y,
                       GEC_BUTTON_SIZE, GEC_BUTTON_SIZE);
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    gdk_draw_pixbuf(w->window, w->style->fg_gc[GTK_WIDGET_STATE(w)],
+    gdk_draw_pixbuf(gtk_widget_get_window(w),
+                    gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
                     ge->buttons[button].image, 0, 0,
                     ge->buttons[button].x + v, ge->buttons[button].y + v,
                     BMAP_DIM, BMAP_DIM, GDK_RGB_DITHER_NONE, 0, 0);
@@ -844,16 +860,16 @@ gecontrol_make_rgb_glyph(GEControl *ge)
     GtkWidget *w = GTK_WIDGET(ge);
     gint byte = 0;
     guint16 x, y, bpr, rgb_bpr, si, di, nx;
-    guchar bg[4], pix[4], *masks, *img;
+    guchar bg[4], pix[4], *masks;
     bdf_bitmap_t *im;
 
     /*
      * First, get the background color of the widget for the empty
      * pixels.
      */
-    bg[0] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].red;
-    bg[1] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].green;
-    bg[2] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].blue;
+    bg[0] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].red;
+    bg[1] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].green;
+    bg[2] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].blue;
 
     im = ge->gimage;
 
@@ -881,8 +897,6 @@ gecontrol_make_rgb_glyph(GEControl *ge)
           ge->rgb = g_realloc(ge->rgb, ge->rgb_used);
         ge->rgb_size = ge->rgb_used;
     }
-
-    img = ge->rgb;
 
     for (y = 0; y < im->height; y++) {
         for (nx = x = 0; x < im->width; x++, nx += im->bpp) {
@@ -923,7 +937,7 @@ gecontrol_highlight_selected_spot(GEControl *ge)
         x = ge->spot.x + ((ge->cidx % 16) * 8);
         y = ge->spot.y + ((ge->cidx / 16) * 8);
     }
-    gdk_draw_rectangle(GTK_WIDGET(ge)->window, gec->selgc, FALSE, x, y, 7, 7);
+    gdk_draw_rectangle(gtk_widget_get_window(GTK_WIDGET(ge)), gec->selgc, FALSE, x, y, 7, 7);
 }
 
 static void
@@ -989,22 +1003,23 @@ gecontrol_draw_glyph_image(GEControl *ge)
     /*
      * 1. Draw the box around the image.
      */
-    gdk_draw_rectangle(w->window, w->style->fg_gc[GTK_WIDGET_STATE(w)],
+    gdk_draw_rectangle(gtk_widget_get_window(w),
+                       gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
                        FALSE, ge->gimage->x, ge->gimage->y,
                        ge->gimage->width + 4, ge->gimage->height + 4);
 
     /*
      * 2. Clear the space inside the rectangle.
      */
-    gdk_window_clear_area(w->window, ge->gimage->x + 1, ge->gimage->y + 1,
+    gdk_window_clear_area(gtk_widget_get_window(w), ge->gimage->x + 1, ge->gimage->y + 1,
                           ge->gimage->width - 2, ge->gimage->height - 2);
 
     /*
      * 3. Draw the points.
      */
     gecontrol_make_rgb_glyph(ge);
-    gdk_draw_rgb_image(w->window,
-                       w->style->bg_gc[GTK_WIDGET_STATE(w)],
+    gdk_draw_rgb_image(gtk_widget_get_window(w),
+                       gtk_widget_get_style(w)->bg_gc[GTK_WIDGET_STATE(w)],
                        ge->gimage->x + 2, ge->gimage->y + 2,
                        ge->gimage->width, ge->gimage->height,
                        GDK_RGB_DITHER_NONE, ge->rgb,
@@ -1039,18 +1054,18 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
          * Make sure the selection GC has been created.
          */
         if (gec->selgc == 0) {
-            gcv.foreground.pixel = w->style->fg[GTK_WIDGET_STATE(w)].pixel;
-            gcv.background.pixel = w->style->bg[GTK_WIDGET_STATE(w)].pixel;
+            gcv.foreground.pixel = gtk_widget_get_style(w)->fg[GTK_WIDGET_STATE(w)].pixel;
+            gcv.background.pixel = gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].pixel;
             gcv.foreground.pixel ^= gcv.background.pixel;
             gcv.function = GDK_XOR;
-            gec->selgc = gdk_gc_new_with_values(w->window, &gcv,
+            gec->selgc = gdk_gc_new_with_values(gtk_widget_get_window(w), &gcv,
                                                 GDK_GC_FOREGROUND|GDK_GC_BACKGROUND|GDK_GC_FUNCTION);
         }
 
         gecontrol_make_color_spots(ge, ge->gimage->bpp);
 
-        gdk_draw_gray_image(w->window,
-                            w->style->fg_gc[GTK_WIDGET_STATE(w)],
+        gdk_draw_gray_image(gtk_widget_get_window(w),
+                            gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
                             ge->spot.x, ge->spot.y,
                             ge->spot.width, ge->spot.height,
                             GDK_RGB_DITHER_NONE, ge->rgb, ge->spot.width);

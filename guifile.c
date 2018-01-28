@@ -1131,8 +1131,8 @@ load_windows_font(gbdfed_editor_t *ed, gchar *fullpath, gchar *dot,
         (void) g_signal_connect(G_OBJECT(fnt_dialog), "delete_event",
                                 G_CALLBACK(fnt_cancel), 0);
 
-        vbox = GTK_DIALOG(fnt_dialog)->vbox;
-        hbox = GTK_DIALOG(fnt_dialog)->action_area;
+        vbox = gtk_dialog_get_content_area(GTK_DIALOG(fnt_dialog));
+        hbox = gtk_dialog_get_action_area(GTK_DIALOG(fnt_dialog));
 
         swin = gtk_scrolled_window_new(0, 0);
         gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swin),
@@ -1495,7 +1495,7 @@ make_otf_import_dialog(void)
     (void) g_signal_connect(G_OBJECT(otf_dialog), "delete_event",
                             G_CALLBACK(gtk_widget_hide), 0);
 
-    vbox = GTK_DIALOG(otf_dialog)->vbox;
+    vbox = gtk_dialog_get_content_area(GTK_DIALOG(otf_dialog));
 
     swin = gtk_scrolled_window_new(0, 0);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swin),
@@ -1691,7 +1691,7 @@ make_otf_import_dialog(void)
     /*
      * Add the buttons at the bottom of the dialog.
      */
-    hbox = GTK_DIALOG(otf_dialog)->action_area;
+    hbox = gtk_dialog_get_action_area(GTK_DIALOG(otf_dialog));
 
     button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
     gtk_container_add(GTK_CONTAINER(hbox), button);
@@ -2294,7 +2294,7 @@ update_save_dialog(gbdfed_editor_t *ed, guint type)
                                         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
                                         NULL);
 
-        vbox = GTK_DIALOG(ed->save_dialog)->vbox;
+        vbox = gtk_dialog_get_content_area(GTK_DIALOG(ed->save_dialog));
 
         psf_export_options = gtk_combo_box_new_text();
         /*
@@ -2769,8 +2769,8 @@ guifile_import_xserver_font(GtkWidget *w, gpointer data)
         (void) g_signal_connect(G_OBJECT(xsrv_dialog), "delete_event",
                                 G_CALLBACK(gtk_widget_hide), 0);
 
-        vbox = GTK_DIALOG(xsrv_dialog)->vbox;
-        hbox = GTK_DIALOG(xsrv_dialog)->action_area;
+        vbox = gtk_dialog_get_content_area(GTK_DIALOG(xsrv_dialog));
+        hbox = gtk_dialog_get_action_area(GTK_DIALOG(xsrv_dialog));
 
         label = gtk_label_new("Filter");
         gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.0);

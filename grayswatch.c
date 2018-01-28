@@ -72,14 +72,19 @@ value_changed(GtkSpinButton *b, gpointer data)
 
     memset(gs->image, v, gs->image_size);
 
-    if (GTK_WIDGET_DRAWABLE(sw))
-      gdk_draw_gray_image(sw->window,
-                          sw->style->fg_gc[GTK_WIDGET_STATE(sw)],
-                          GTK_CONTAINER(gs)->border_width,
-                          GTK_CONTAINER(gs)->border_width,
-                          sw->allocation.width, sw->allocation.height,
+    if (GTK_WIDGET_DRAWABLE(sw)) {
+      GtkAllocation all;
+
+      gtk_widget_get_allocation(sw, &all);
+
+      gdk_draw_gray_image(gtk_widget_get_window(sw),
+                          gtk_widget_get_style(sw)->fg_gc[GTK_WIDGET_STATE(sw)],
+                          gtk_container_get_border_width(GTK_CONTAINER(gs)),
+                          gtk_container_get_border_width(GTK_CONTAINER(gs)),
+                          all.width, all.height,
                           GDK_RGB_DITHER_NONE, gs->image,
-                          sw->allocation.width);
+                          all.width);
+    }
 
     if (gs->signal_blocked == FALSE)
       /*
@@ -100,9 +105,11 @@ grayswatch_configure(GtkWidget *widget, GdkEventConfigure *event,
 {
     Grayswatch *gs = GRAYSWATCH(data);
     gint nbytes;
+    GtkAllocation all;
 
-    nbytes = gs->swatch->allocation.width *
-        gs->swatch->allocation.height;
+    gtk_widget_get_allocation(gs->swatch, &all);
+
+    nbytes = all.width * all.height;
     if (nbytes > gs->image_size) {
         if (gs->image_size == 0)
           gs->image = (guchar *) g_malloc(nbytes);
@@ -119,16 +126,18 @@ static gboolean
 grayswatch_expose(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
     Grayswatch *gs = GRAYSWATCH(data);
+    GtkAllocation all;
+
+    gtk_widget_get_allocation(widget, &all);
 
     if (gs->image_size > 0)
-      gdk_draw_gray_image(widget->window,
-                          widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
-                          GTK_CONTAINER(gs)->border_width,
-                          GTK_CONTAINER(gs)->border_width,
-                          widget->allocation.width,
-                          widget->allocation.height,
+      gdk_draw_gray_image(gtk_widget_get_window(widget),
+                          gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)],
+                          gtk_container_get_border_width(GTK_CONTAINER(gs)),
+                          gtk_container_get_border_width(GTK_CONTAINER(gs)),
+                          all.width, all.height,
                           GDK_RGB_DITHER_NONE, gs->image,
-                          widget->allocation.width);
+                          all.width);
 
     return FALSE;
 }

@@ -48,9 +48,9 @@ labcon_size_request(GtkWidget *w, GtkRequisition *req)
     width = MAX(width, l_rec.width);
 
     req->height = MAX(l_rec.height, c_rec.height) +
-        (GTK_CONTAINER(l)->border_width * 2);
+        (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2);
     req->width = width + c_rec.width + l->spacing +
-        (GTK_CONTAINER(l)->border_width * 2);
+        (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2);
 }
 
 static void
@@ -62,7 +62,7 @@ labcon_size_allocate(GtkWidget *w, GtkAllocation *all)
     GtkRequisition l_rec, c_rec, ll_rec;
     GtkAllocation w_all;
 
-    w->allocation = *all;
+    gtk_widget_set_allocation(w, all);
 
     l_rec.width = c_rec.width = l_rec.height = c_rec.height = 0;
 
@@ -76,10 +76,10 @@ labcon_size_allocate(GtkWidget *w, GtkAllocation *all)
     /*
      * Make sure the height is non-zero and leaves the border.
      */
-    w_all.x = all->x + GTK_CONTAINER(l)->border_width;
-    w_all.y = all->y + GTK_CONTAINER(l)->border_width;
+    w_all.x = all->x + gtk_container_get_border_width(GTK_CONTAINER(l));
+    w_all.y = all->y + gtk_container_get_border_width(GTK_CONTAINER(l));
     w_all.height = MAX(1, (gint) all->height -
-                       (gint) (GTK_CONTAINER(l)->border_width * 2));
+                       (gint) (gtk_container_get_border_width(GTK_CONTAINER(l)) * 2));
 
     if (l->leader != 0) {
         leader = LABCON(l->leader);
@@ -232,13 +232,16 @@ draw_pixbuf(GtkWidget *w, GdkEventExpose *event, gpointer data)
 {
     GdkPixbuf *p = GDK_PIXBUF(data);
     gint x, y, wd, ht;
+    GtkAllocation all;
 
     wd = gdk_pixbuf_get_width(p);
     ht = gdk_pixbuf_get_height(p);
 
-    x = (w->allocation.width >> 1) - (wd >> 1);
-    y = (w->allocation.height >> 1) - (ht >> 1);
-    gdk_draw_pixbuf(w->window, w->style->fg_gc[GTK_WIDGET_STATE(w)],
+    gtk_widget_get_allocation(w, &all);
+
+    x = (all.width >> 1) - (wd >> 1);
+    y = (all.height >> 1) - (ht >> 1);
+    gdk_draw_pixbuf(gtk_widget_get_window(w), gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
                     p, 0, 0, x, y, wd, ht, GDK_RGB_DITHER_NONE, 0, 0);
 
     return FALSE;

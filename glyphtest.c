@@ -60,13 +60,15 @@ _glyphtest_set_line_size(Glyphtest *gw)
     guint16 wd, wwidth;
     GlyphtestLine *lp;
     bdf_bbx_t bbx;
+    GtkAllocation all;
 
     w = GTK_WIDGET(gw);
+    gtk_widget_get_allocation(w, &all);
 
     lp = &gw->line;
     (void) memset((char *) &bbx, 0, sizeof(bdf_bbx_t));
 
-    wwidth = w->allocation.width - (HMARGINS(gw) + 4);
+    wwidth = all.width - (HMARGINS(gw) + 4);
 
     for (wd = 0, i = 0; i < lp->glyphs_used; i++) {
         bbx.ascent = GTESTMAX(bbx.ascent, lp->glyphs[i].font->bbx.ascent);
@@ -227,10 +229,10 @@ glyphtest_preferred_size(GtkWidget *widget, GtkRequisition *preferred)
 static void
 glyphtest_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
-    widget->allocation = *actual;
+    gtk_widget_set_allocation(widget, actual);
 
     if (gtk_widget_get_realized(widget))
-      gdk_window_move_resize(widget->window, actual->x, actual->y,
+      gdk_window_move_resize(gtk_widget_get_window(widget), actual->x, actual->y,
                              actual->width, actual->height);
 }
 
@@ -239,6 +241,7 @@ glyphtest_draw_focus(GtkWidget *widget, GdkRectangle *area)
 {
     GdkGC *gc;
     gint x, y, wd, ht, fwidth, fpad;
+    GtkAllocation all;
 
     /*
      * Do something with this later to make sure the focus line width
@@ -248,19 +251,21 @@ glyphtest_draw_focus(GtkWidget *widget, GdkRectangle *area)
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad, NULL);
 
-    gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->bg_gc[GTK_WIDGET_STATE(widget)];
 
-    x = (widget->style->xthickness + fwidth + fpad) - 1;
-    y = (widget->style->ythickness + fwidth + fpad) - 1;
-    wd = (widget->allocation.width - (x * 2));
-    ht = (widget->allocation.height - (y * 2));
+    x = (gtk_widget_get_style(widget)->xthickness + fwidth + fpad) - 1;
+    y = (gtk_widget_get_style(widget)->ythickness + fwidth + fpad) - 1;
+
+    gtk_widget_get_allocation(widget, &all);
+    wd = (all.width - (x * 2));
+    ht = (all.height - (y * 2));
 
     if (gtk_widget_has_focus(widget))
-      gtk_paint_focus(widget->style, widget->window, GTK_WIDGET_STATE(widget),
+      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_WIDGET_STATE(widget),
                       area, widget, "glyphtest", x, y, wd, ht);
     else {
         gdk_gc_set_clip_rectangle(gc, area);
-        gdk_draw_rectangle(widget->window, gc, FALSE, x, y, wd - 1, ht - 1);
+        gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE, x, y, wd - 1, ht - 1);
         gdk_gc_set_clip_rectangle(gc, 0);
     }
 }
@@ -333,7 +338,7 @@ _glyphtest_draw_glyph(Glyphtest *gw, bdf_glyph_t *glyph, bdf_font_t *font)
 
     _glyphtest_get_pixels(gw, glyph, font, rx, ry);
     if (gw->image_used > 0)
-      gdk_draw_points(w->window, w->style->fg_gc[GTK_STATE_NORMAL],
+      gdk_draw_points(gtk_widget_get_window(w), gtk_widget_get_style(w)->fg_gc[GTK_STATE_NORMAL],
                       gw->image, gw->image_used);
 }
 
@@ -345,11 +350,14 @@ _glyphtest_redraw_glyphs(Glyphtest *gw)
     guint16 dwidth;
     GlyphtestLine *lp;
     GlyphtestGlyph *gp;
+    GtkAllocation all;
 
     w = GTK_WIDGET(gw);
 
     if (!gtk_widget_get_realized(w))
       return;
+
+    gtk_widget_get_allocation(w, &all);
 
     lp = &gw->line;
 
@@ -357,7 +365,7 @@ _glyphtest_redraw_glyphs(Glyphtest *gw)
     if (gw->dir == GLYPHTEST_LEFT_TO_RIGHT)
       lp->cpoint.x = (HMARGINS(gw) >> 1) + 2;
     else
-      lp->cpoint.x = w->allocation.width - ((HMARGINS(gw) >> 1) + 2);
+      lp->cpoint.x = all.width - ((HMARGINS(gw) >> 1) + 2);
 
     for (i = 0, gp = lp->glyphs; i < lp->glyphs_used; i++, gp++) {
 
@@ -392,9 +400,12 @@ glyphtest_draw(GtkWidget *widget, GdkRectangle *area)
     Glyphtest *gw;
     GdkPoint s, e;
     GdkRectangle clear;
+    GtkAllocation all;
 
     if (!gtk_widget_get_realized(widget))
       return;
+
+    gtk_widget_get_allocation(widget, &all);
 
     gw = GLYPHTEST(widget);
 
@@ -402,9 +413,9 @@ glyphtest_draw(GtkWidget *widget, GdkRectangle *area)
      * Erase the window.
      */
     clear.x = clear.y = (HMARGINS(gw) >> 1);
-    clear.width = widget->allocation.width - (clear.x << 1);
-    clear.height = widget->allocation.height - (clear.y << 1);
-    gdk_window_clear_area(widget->window, clear.x, clear.y,
+    clear.width = all.width - (clear.x << 1);
+    clear.height = all.height - (clear.y << 1);
+    gdk_window_clear_area(gtk_widget_get_window(widget), clear.x, clear.y,
                           clear.width, clear.height);
 
     /*
@@ -417,11 +428,11 @@ glyphtest_draw(GtkWidget *widget, GdkRectangle *area)
      */
     if (gw->show_baseline == TRUE) {
         s.x = (HMARGINS(gw) >> 1) + 2;
-        e.x = widget->allocation.width - s.x;
+        e.x = all.width - s.x;
         s.y = e.y = gw->line.cpoint.y;
 
-        gdk_draw_line(widget->window,
-                      widget->style->fg_gc[GTK_WIDGET_STATE(widget)],
+        gdk_draw_line(gtk_widget_get_window(widget),
+                      gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)],
                       s.x, s.y, e.x, e.y);
     }
 }
@@ -429,17 +440,22 @@ glyphtest_draw(GtkWidget *widget, GdkRectangle *area)
 static gboolean
 glyphtest_expose(GtkWidget *widget, GdkEventExpose *event)
 {
+    GtkAllocation all;
+
     /*
      * Paint the shadow first.
      */
-    if (GTK_WIDGET_DRAWABLE(widget))
-      gtk_paint_shadow(widget->style, widget->window,
+    if (GTK_WIDGET_DRAWABLE(widget)) {
+      gtk_widget_get_allocation(widget, &all);
+
+      gtk_paint_shadow(gtk_widget_get_style(widget), gtk_widget_get_window(widget),
                        GTK_WIDGET_STATE(widget), GTK_SHADOW_OUT,
                        &event->area,
                        widget, "glyphtest",
                        0, 0,
-                       widget->allocation.width,
-                       widget->allocation.height);
+                       all.width,
+                       all.height);
+    }
 
     glyphtest_draw(widget, 0);
 
@@ -451,21 +467,21 @@ glyphtest_expose(GtkWidget *widget, GdkEventExpose *event)
 static void
 glyphtest_realize(GtkWidget *widget)
 {
-    Glyphtest *gw;
     GdkWindowAttr attributes;
     gint attributes_mask;
+    GtkAllocation all;
 
     g_return_if_fail(widget != NULL);
     g_return_if_fail(IS_GLYPHTEST(widget));
 
-    gw = GLYPHTEST(widget);
-    gtk_widget_set_realized(GTK_WIDGET(widget), TRUE);
+    gtk_widget_set_realized(widget, TRUE);
+    gtk_widget_get_allocation(widget, &all);
 
     attributes.window_type = GDK_WINDOW_CHILD;
-    attributes.x = widget->allocation.x;
-    attributes.y = widget->allocation.y;
-    attributes.width = widget->allocation.width;
-    attributes.height = widget->allocation.height;
+    attributes.x = all.x;
+    attributes.y = all.y;
+    attributes.width = all.width;
+    attributes.height = all.height;
     attributes.wclass = GDK_INPUT_OUTPUT;
     attributes.visual = gtk_widget_get_visual(widget);
     attributes.colormap = gtk_widget_get_colormap(widget);
@@ -475,20 +491,17 @@ glyphtest_realize(GtkWidget *widget)
 
     attributes_mask = GDK_WA_X|GDK_WA_Y|GDK_WA_VISUAL|GDK_WA_COLORMAP;
 
-    widget->window = gdk_window_new(gtk_widget_get_parent_window(widget),
-                                    &attributes, attributes_mask);
-    gdk_window_set_user_data(widget->window, widget);
+    gtk_widget_set_window(widget, gdk_window_new(gtk_widget_get_parent_window(widget),
+                                    &attributes, attributes_mask));
+    gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
 
-    widget->style = gtk_style_attach(widget->style, widget->window);
-    gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
+    gtk_widget_set_style(widget, gtk_style_attach(gtk_widget_get_style(widget), gtk_widget_get_window(widget)));
+    gtk_style_set_background(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_STATE_NORMAL);
 }
 
 static void
 glyphtest_unrealize(GtkWidget *widget)
 {
-    Glyphtest *gw;
-
-    gw = GLYPHTEST(widget);
 }
 
 static gint
@@ -610,9 +623,9 @@ glyphtest_init(GTypeInstance *obj, gpointer g_class)
      */
     gw->focus_thickness = 3;
     gw->hmargin =
-        gw->widget.style->xthickness + fwidth + (gw->focus_thickness * 2);
+        gtk_widget_get_style(&gw->widget)->xthickness + fwidth + (gw->focus_thickness * 2);
     gw->vmargin = 
-        gw->widget.style->ythickness + fwidth + (gw->focus_thickness * 2);
+        gtk_widget_get_style(&gw->widget)->ythickness + fwidth + (gw->focus_thickness * 2);
 
     /*
      * Call the line size function to set the initial size.

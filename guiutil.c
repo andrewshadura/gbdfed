@@ -77,7 +77,8 @@ guiutil_error_message(GtkWidget *parent, gchar *text)
 
         errmsg = gtk_label_new(text);
         gtk_box_pack_start(GTK_BOX(hbox), errmsg, TRUE, TRUE, 2);
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(errd)->vbox), hbox);
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(errd))),
+                          hbox);
 
         ok = gtk_dialog_add_button(GTK_DIALOG(errd), GTK_STOCK_CLOSE,
                                    GTK_RESPONSE_CLOSE);
@@ -86,7 +87,8 @@ guiutil_error_message(GtkWidget *parent, gchar *text)
                                        (gpointer) errd,
                                        G_CONNECT_SWAPPED);
 
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(errd)->action_area), ok);
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(errd))),
+                          ok);
 
         gtk_widget_show_all(errd);
 
@@ -142,12 +144,14 @@ guiutil_yes_or_no(GtkWidget *parent, gchar *text, gboolean default_answer)
         question = gtk_label_new(text);
 
         gtk_box_pack_start(GTK_BOX(hbox), question, TRUE, TRUE, 2);
-        gtk_container_add(GTK_CONTAINER(GTK_DIALOG(questd)->vbox), hbox);
+        gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(questd))),
+                          hbox);
 
         /*
          * Make sure the buttons are evenly distributed in the button box.
          */
-        gtk_button_box_set_layout(GTK_BUTTON_BOX(GTK_DIALOG(questd)->action_area), GTK_BUTTONBOX_SPREAD);
+        gtk_button_box_set_layout(GTK_BUTTON_BOX(gtk_dialog_get_action_area(GTK_DIALOG(questd))),
+                                  GTK_BUTTONBOX_SPREAD);
 
         gtk_dialog_add_buttons(GTK_DIALOG(questd),
                                GTK_STOCK_YES, GTK_RESPONSE_ACCEPT,
@@ -157,7 +161,7 @@ guiutil_yes_or_no(GtkWidget *parent, gchar *text, gboolean default_answer)
          * Get the two children buttons out now so focus can be set on either
          * when needed.
          */
-        kids = gtk_container_get_children(GTK_CONTAINER(GTK_DIALOG(questd)->action_area));
+        kids = gtk_container_get_children(GTK_CONTAINER(gtk_dialog_get_action_area(GTK_DIALOG(questd))));
         no = GTK_WIDGET(g_list_nth_data(kids, 0));
         yes = GTK_WIDGET(g_list_nth_data(kids, 1));
         g_list_free(kids);
@@ -171,7 +175,7 @@ guiutil_yes_or_no(GtkWidget *parent, gchar *text, gboolean default_answer)
     /*
      * Force the dialog to reset to its minimum size.
      */
-    if (questd->window != NULL)
+    if (gtk_widget_get_window(questd) != NULL)
       gtk_window_resize(GTK_WINDOW(questd), 1, 1);
 
     /*
@@ -216,9 +220,9 @@ guiutil_busy_cursor(GtkWidget *w, gboolean on)
       watch_cursor = gdk_cursor_new(GDK_WATCH);
 
     if (on)
-      gdk_window_set_cursor(w->window, watch_cursor);
+      gdk_window_set_cursor(gtk_widget_get_window(w), watch_cursor);
     else
-      gdk_window_set_cursor(w->window, 0);
+      gdk_window_set_cursor(gtk_widget_get_window(w), 0);
 }
 
 void

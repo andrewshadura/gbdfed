@@ -361,10 +361,8 @@ static void
 fontgrid_set_property(GObject *obj, guint prop_id, const GValue *value,
                       GParamSpec *pspec)
 {
-    GtkWidget *widget;
     Fontgrid *fw;
 
-    widget = GTK_WIDGET(obj);
     fw = FONTGRID(obj);
 
     switch (prop_id) {
@@ -575,7 +573,7 @@ fontgrid_actual_size(GtkWidget *widget, GtkAllocation *actual)
 
     fw = FONTGRID(widget);
 
-    widget->allocation = *actual;
+    gtk_widget_set_allocation(widget, actual);
 
     /*
      * Make sure the rows and columns are adjusted to fit the actual allocated
@@ -584,7 +582,7 @@ fontgrid_actual_size(GtkWidget *widget, GtkAllocation *actual)
     fontgrid_set_rows_cols(fw, actual);
 
     if (gtk_widget_get_realized(widget))
-      gdk_window_move_resize(widget->window, actual->x, actual->y,
+      gdk_window_move_resize(gtk_widget_get_window(widget), actual->x, actual->y,
                              actual->width, actual->height);
 }
 
@@ -595,6 +593,7 @@ fontgrid_realize(GtkWidget *widget)
     GdkWindowAttr attributes;
     GdkGCValues values;
     gint attributes_mask;
+    GtkAllocation all;
 
     g_return_if_fail(widget != NULL);
     g_return_if_fail(IS_FONTGRID(widget));
@@ -603,10 +602,12 @@ fontgrid_realize(GtkWidget *widget)
     gtk_widget_set_realized(widget, TRUE);
 
     attributes.window_type = GDK_WINDOW_CHILD;
-    attributes.x = widget->allocation.x;
-    attributes.y = widget->allocation.y;
-    attributes.width = widget->allocation.width;
-    attributes.height = widget->allocation.height;
+
+    gtk_widget_get_allocation(widget, &all);
+    attributes.x = all.x;
+    attributes.y = all.y;
+    attributes.width = all.width;
+    attributes.height = all.height;
     attributes.wclass = GDK_INPUT_OUTPUT;
     attributes.visual = gtk_widget_get_visual(widget);
     attributes.colormap = gtk_widget_get_colormap(widget);
@@ -620,12 +621,12 @@ fontgrid_realize(GtkWidget *widget)
 
     attributes_mask = GDK_WA_X|GDK_WA_Y|GDK_WA_VISUAL|GDK_WA_COLORMAP;
 
-    widget->window = gdk_window_new(gtk_widget_get_parent_window(widget),
-                                    &attributes, attributes_mask);
-    gdk_window_set_user_data(widget->window, widget);
+    gtk_widget_set_window(widget, gdk_window_new(gtk_widget_get_parent_window(widget),
+                                    &attributes, attributes_mask));
+    gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
 
-    widget->style = gtk_style_attach(widget->style, widget->window);
-    gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
+    gtk_widget_set_style(widget, gtk_style_attach(gtk_widget_get_style(widget), gtk_widget_get_window(widget)));
+    gtk_style_set_background(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_STATE_NORMAL);
 
     if (fw->xor_gc != 0)
       g_object_unref(G_OBJECT(fw->xor_gc));
@@ -634,11 +635,11 @@ fontgrid_realize(GtkWidget *widget)
      * Create the GC used to display selected cells.
      */
     values.foreground.pixel =
-        widget->style->fg[GTK_WIDGET_STATE(widget)].pixel ^
-        widget->style->bg[GTK_WIDGET_STATE(widget)].pixel;
+        gtk_widget_get_style(widget)->fg[GTK_WIDGET_STATE(widget)].pixel ^
+        gtk_widget_get_style(widget)->bg[GTK_WIDGET_STATE(widget)].pixel;
     (void) memset((char *) &values.background, 0, sizeof(GdkColor));
     values.function = GDK_XOR;
-    fw->xor_gc = gdk_gc_new_with_values(widget->window, &values,
+    fw->xor_gc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &values,
                                         GDK_GC_FOREGROUND|
                                         GDK_GC_BACKGROUND|GDK_GC_FUNCTION);
 }
@@ -791,9 +792,9 @@ fontgrid_make_rgb_image(Fontgrid *fw, bdf_glyph_t *glyph)
     /*
      * Figure out the background color.
      */
-    bg[0] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].red;
-    bg[1] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].green;
-    bg[2] = (guchar) w->style->bg[GTK_WIDGET_STATE(w)].blue;
+    bg[0] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].red;
+    bg[1] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].green;
+    bg[2] = (guchar) gtk_widget_get_style(w)->bg[GTK_WIDGET_STATE(w)].blue;
 
     switch (fw->bpp) {
       case 1: masks = bdf_onebpp; di = 7; break;
@@ -882,7 +883,7 @@ fontgrid_draw_encoding(GtkWidget *w, GdkGC *gc, gint x, gint y, gchar *num,
     /*
      * Draw the points.
      */
-    gdk_draw_points(w->window, gc, encoding_digits, dp - encoding_digits);
+    gdk_draw_points(gtk_widget_get_window(w), gc, encoding_digits, dp - encoding_digits);
 }
 
 static void
@@ -944,7 +945,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
 
     gp = glyph;
 
-    gc = widget->style->fg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)];
 
     for (ng = 0, i = start; i <= end; i++) {
         /*
@@ -976,7 +977,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
             rect.y = y + 1;
             rect.width = fw->cell_width - 2;
             rect.height = fw->label_height - 2;
-            gdk_draw_rectangle(widget->window, gc, FALSE,
+            gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE,
                                rect.x, rect.y, rect.width, rect.height);
 
             len = strlen(nbuf);
@@ -992,11 +993,11 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
               mod = (!fw->unencoded) ? bdf_glyph_modified(font, i, 0) :
                 bdf_glyph_modified(font, i, 1);
 
-            gdk_window_clear_area(widget->window, rect.x + 1, rect.y + 1,
+            gdk_window_clear_area(gtk_widget_get_window(widget), rect.x + 1, rect.y + 1,
                                   rect.width - 1, rect.height - 1);
 
             if (!fw->unencoded && mod) {
-                gdk_draw_rectangle(widget->window, gc, TRUE,
+                gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
                                    rect.x + 2, rect.y + 2,
                                    rect.width - 3, rect.height - 3);
                 fontgrid_draw_encoding(widget, fw->xor_gc, lx, ly, nbuf, len);
@@ -1012,7 +1013,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                  * this.
                  */
                 if (gp && gp->encoding == i) {
-                    gdk_draw_rectangle(widget->window, gc, FALSE,
+                    gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE,
                                        rect.x + 1, rect.y + 1,
                                        rect.width - 2, rect.height - 2);
                     ng++;
@@ -1051,13 +1052,13 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                 y += fw->label_height + font->bbx.ascent + 3;
 
                 if (IsSelected(glyph->encoding, pi->selmap)) {
-                    gdk_draw_rectangle(widget->window, gc, TRUE,
+                    gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
                                        rect.x + 1, rect.y + 1,
                                        rect.width - 1, rect.height - 1);
                     if (glyph->bytes > 0) {
                         fontgrid_get_glyph_points(fw, x, y, lx, ly, glyph);
                         if (fw->points_used > 0)
-                          gdk_draw_points(widget->window, fw->xor_gc,
+                          gdk_draw_points(gtk_widget_get_window(widget), fw->xor_gc,
                                           fw->points, fw->points_used);
                     }
                 } else {
@@ -1065,11 +1066,11 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                      * The glyph is not selected, so draw it according to
                      * the bytes-per-pixel of the font.
                      */
-                    gdk_window_clear_area(widget->window, rect.x, rect.y,
+                    gdk_window_clear_area(gtk_widget_get_window(widget), rect.x, rect.y,
                                           rect.width, rect.height);
                     if (glyph->bytes > 0) {
                         fontgrid_make_rgb_image(fw, glyph);
-                        gdk_draw_rgb_image(widget->window, gc,
+                        gdk_draw_rgb_image(gtk_widget_get_window(widget), gc,
                                            x, y - glyph->bbx.ascent,
                                            glyph->bbx.width,
                                            glyph->bbx.height,
@@ -1087,17 +1088,17 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                  * Clear the empty cell.
                  */
                 if (i <= 0xffff && IsSelected(i, pi->selmap))
-                  gdk_draw_rectangle(widget->window, gc, TRUE,
+                  gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
                                      rect.x + 1, rect.y + 1,
                                      rect.width - 1, rect.height - 1);
                 else {
-                    gdk_window_clear_area(widget->window, rect.x, rect.y,
+                    gdk_window_clear_area(gtk_widget_get_window(widget), rect.x, rect.y,
                                           rect.width, rect.height);
                     if (i > 0xffff) {
-                        gdk_draw_line(widget->window, gc, rect.x, rect.y,
+                        gdk_draw_line(gtk_widget_get_window(widget), gc, rect.x, rect.y,
                                       rect.x + rect.width,
                                       rect.y + rect.height);
-                        gdk_draw_line(widget->window, gc,
+                        gdk_draw_line(gtk_widget_get_window(widget), gc,
                                       rect.x + rect.width, rect.y,
                                       rect.x, rect.y + rect.height);
                     }
@@ -1115,18 +1116,22 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
     guint16 wd, ht, gw, gh;
     gint32 start, end;
     GdkGC *gc;
+    GtkAllocation all;
 
     g_return_if_fail(widget != NULL);
     g_return_if_fail(IS_FONTGRID(widget));
 
     fw = FONTGRID(widget);
 
-    gc = widget->style->fg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)];
 
     gw = fw->cell_width * fw->cell_cols;
     gh = fw->cell_height * fw->cell_rows;
-    wd = widget->allocation.width;
-    ht = widget->allocation.height;
+
+    gtk_widget_get_allocation(widget, &all);
+
+    wd = all.width;
+    ht = all.height;
     x = fw->xoff = ((wd >> 1) - (gw >> 1)) - 1;
     y = fw->yoff = ((ht >> 1) - (gh >> 1)) - 1;
 
@@ -1134,13 +1139,13 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
      * Draw the horizontal lines.
      */
     for (i = 0; i <= fw->cell_rows; i++) {
-        gdk_draw_line(widget->window, gc, x, y, x + gw, y);
+        gdk_draw_line(gtk_widget_get_window(widget), gc, x, y, x + gw, y);
 
         /*
          * Only draw the second line if this is not the last line.
          */
         if (i < fw->cell_rows)
-          gdk_draw_line(widget->window, gc, x, y + fw->label_height,
+          gdk_draw_line(gtk_widget_get_window(widget), gc, x, y + fw->label_height,
                         x + gw, y + fw->label_height);
 
         y += fw->cell_height;
@@ -1153,7 +1158,7 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
     y = fw->yoff;
 
     for (i = 0; i <= fw->cell_cols; i++) {
-        gdk_draw_line(widget->window, gc, x, y, x, y + gh);
+        gdk_draw_line(gtk_widget_get_window(widget), gc, x, y, x, y + gh);
         x += fw->cell_width;
     }
 
@@ -1252,6 +1257,7 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
 {
     GdkGC *gc;
     gint x, y, wd, ht, fwidth, fpad;
+    GtkAllocation all;
 
     /*
      * Do something with this later to make sure the focus line width
@@ -1261,19 +1267,21 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad, NULL);
 
-    gc = widget->style->bg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->bg_gc[GTK_WIDGET_STATE(widget)];
 
-    x = (widget->style->xthickness + fwidth + fpad) - 1;
-    y = (widget->style->ythickness + fwidth + fpad) - 1;
-    wd = (widget->allocation.width - (x * 2));
-    ht = (widget->allocation.height - (y * 2));
+    x = (gtk_widget_get_style(widget)->xthickness + fwidth + fpad) - 1;
+    y = (gtk_widget_get_style(widget)->ythickness + fwidth + fpad) - 1;
+
+    gtk_widget_get_allocation(widget, &all);
+    wd = (all.width - (x * 2));
+    ht = (all.height - (y * 2));
 
     if (gtk_widget_has_focus(widget))
-      gtk_paint_focus(widget->style, widget->window, GTK_WIDGET_STATE(widget),
+      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_WIDGET_STATE(widget),
                       area, widget, "fontgrid", x, y, wd, ht);
     else {
         gdk_gc_set_clip_rectangle(gc, area);
-        gdk_draw_rectangle(widget->window, gc, FALSE, x, y, wd - 1, ht - 1);
+        gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE, x, y, wd - 1, ht - 1);
         gdk_gc_set_clip_rectangle(gc, 0);
     }
 }
@@ -1281,16 +1289,20 @@ fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
 static gint
 fontgrid_expose(GtkWidget *widget, GdkEventExpose *event)
 {
+    GtkAllocation all;
+
     /*
      * Paint the shadow first.
      */
-    if (GTK_WIDGET_DRAWABLE(widget))
-      gtk_paint_shadow(widget->style, widget->window,
+    if (GTK_WIDGET_DRAWABLE(widget)) {
+      gtk_widget_get_allocation(widget, &all);
+      gtk_paint_shadow(gtk_widget_get_style(widget), gtk_widget_get_window(widget),
                        GTK_WIDGET_STATE(widget), GTK_SHADOW_OUT,
                        &event->area, widget, "fontgrid",
                        0, 0,
-                       widget->allocation.width,
-                       widget->allocation.height);
+                       all.width,
+                       all.height);
+    }
 
     fontgrid_draw(widget, event->region);
 
@@ -1648,7 +1660,7 @@ end_selection(GtkWidget *widget, GdkEventButton *event)
          * Assert ownership of the clipboard if there is a selection of
          * more than one glyph.
          */
-        gdk_selection_owner_set(widget->window, FONTGRID_CLIPBOARD,
+        gdk_selection_owner_set(gtk_widget_get_window(widget), FONTGRID_CLIPBOARD,
                                 GDK_CURRENT_TIME, FALSE);
         sinfo.glyphs = 0;
         sinfo.num_glyphs = 0;
@@ -1760,7 +1772,7 @@ fontgrid_shift_key_press(GtkWidget *widget, GdkEventKey *event)
     gint32 code, pageno;
     guint32 count;
     gboolean signal_extend, activate;
-    FontgridInternalPageInfo *pi, *opi;
+    FontgridInternalPageInfo *pi;
     FontgridSelectionInfo sinfo;
 
     g_return_val_if_fail(widget != NULL, FALSE);
@@ -1780,12 +1792,10 @@ fontgrid_shift_key_press(GtkWidget *widget, GdkEventKey *event)
 
     if (!fw->unencoded) {
         pi = &fw->npage;
-        opi = &fw->upage;
         gp = (fw->font && fw->font->glyphs_used) ?
             (fw->font->glyphs + (fw->font->glyphs_used - 1)) : 0;
     } else {
         pi = &fw->upage;
-        opi = &fw->npage;
         gp = (fw->font && fw->font->unencoded_used) ?
             (fw->font->unencoded + (fw->font->unencoded_used - 1)) : 0;
     }
@@ -2468,8 +2478,8 @@ fontgrid_init(GTypeInstance *obj, gpointer g_class)
     fw->cell_rows = FGRID_DEFAULT_ROWS;
     fw->cell_cols = FGRID_DEFAULT_COLS;
     fw->border = 4;
-    fw->hmargin = fw->widget.style->xthickness + fwidth + fpad + fw->border;
-    fw->vmargin = fw->widget.style->ythickness + fwidth + fpad + fw->border;
+    fw->hmargin = gtk_widget_get_style(&fw->widget)->xthickness + fwidth + fpad + fw->border;
+    fw->vmargin = gtk_widget_get_style(&fw->widget)->ythickness + fwidth + fpad + fw->border;
 
     fontgrid_set_cell_geometry(fw);
     fontgrid_set_rows_cols(fw, 0);
@@ -3737,11 +3747,11 @@ fontgrid_translate_glyphs(Fontgrid *fw, gint16 dx, gint16 dy,
                              fw->unencoded)) {
         gtk_widget_queue_resize(w);
         if (gtk_widget_get_realized(w))
-          gdk_window_clear(w->window);
+          gdk_window_clear(gtk_widget_get_window(w));
 
         gtk_widget_queue_resize(w);
         if (gtk_widget_get_realized(w))
-          gdk_window_clear(w->window);
+          gdk_window_clear(gtk_widget_get_window(w));
 
         minfo.reason = FONTGRID_GLYPHS_MODIFIED;
         g_signal_emit(G_OBJECT(fw), fontgrid_signals[MODIFIED], 0, &minfo);
@@ -3772,7 +3782,7 @@ fontgrid_rotate_glyphs(Fontgrid *fw, gint16 degrees, gboolean all_glyphs)
                           fw->unencoded)) {
         gtk_widget_queue_resize(w);
         if (gtk_widget_get_realized(w))
-          gdk_window_clear(w->window);
+          gdk_window_clear(gtk_widget_get_window(w));
 
         minfo.reason = FONTGRID_GLYPHS_MODIFIED;
         g_signal_emit(G_OBJECT(fw), fontgrid_signals[MODIFIED], 0, &minfo);
@@ -3803,7 +3813,7 @@ fontgrid_shear_glyphs(Fontgrid *fw, gint16 degrees, gboolean all_glyphs)
                           fw->unencoded)) {
         gtk_widget_queue_resize(w);
         if (gtk_widget_get_realized(w))
-          gdk_window_clear(w->window);
+          gdk_window_clear(gtk_widget_get_window(w));
 
         minfo.reason = FONTGRID_GLYPHS_MODIFIED;
         g_signal_emit(G_OBJECT(fw), fontgrid_signals[MODIFIED], 0, &minfo);
@@ -3837,7 +3847,7 @@ fontgrid_embolden_glyphs(Fontgrid *fw, gboolean all_glyphs)
         if (resize) {
             gtk_widget_queue_resize(w);
             if (gtk_widget_get_realized(w))
-              gdk_window_clear(w->window);
+              gdk_window_clear(gtk_widget_get_window(w));
         } else
           /*
            * Just redisplay the selection.
@@ -4236,8 +4246,8 @@ fontgrid_copy_selection(Fontgrid *fw)
      * Make sure the widget owns the clipboard property.
      */
     if ((win = gdk_selection_owner_get(FONTGRID_CLIPBOARD)) == 0 ||
-        win != w->window)
-      gdk_selection_owner_set(w->window, FONTGRID_CLIPBOARD, GDK_CURRENT_TIME,
+        win != gtk_widget_get_window(w))
+      gdk_selection_owner_set(gtk_widget_get_window(w), FONTGRID_CLIPBOARD, GDK_CURRENT_TIME,
                               FALSE);
 
     /*
@@ -4246,7 +4256,7 @@ fontgrid_copy_selection(Fontgrid *fw)
     if ((sel = fontgrid_encode_selection(fw, &bytes)) == 0)
       return;
 
-    gdk_property_change(w->window, FONTGRID_CLIPBOARD, FONTGRID_GLYPHLIST,
+    gdk_property_change(gtk_widget_get_window(w), FONTGRID_CLIPBOARD, FONTGRID_GLYPHLIST,
                         8, GDK_PROP_MODE_REPLACE, sel, (gint) bytes);
 
     /*
@@ -4333,7 +4343,7 @@ fontgrid_paste_selection(Fontgrid *fw, FontgridPasteType paste_type)
     g_return_if_fail(gtk_widget_get_realized(w));
 
     if ((win = gdk_selection_owner_get(FONTGRID_CLIPBOARD)) == 0) {
-        gdk_selection_owner_set(w->window, FONTGRID_CLIPBOARD,
+        gdk_selection_owner_set(gtk_widget_get_window(w), FONTGRID_CLIPBOARD,
                                 GDK_CURRENT_TIME, FALSE);
         /*
          * Return here because there was no owner of the selection.
@@ -4354,8 +4364,8 @@ fontgrid_paste_selection(Fontgrid *fw, FontgridPasteType paste_type)
      * Attempt to own the clipboard after getting the value if this widget
      * does not own it.
      */
-    if (win != w->window)
-      gdk_selection_owner_set(w->window, FONTGRID_CLIPBOARD, GDK_CURRENT_TIME,
+    if (win != gtk_widget_get_window(w))
+      gdk_selection_owner_set(gtk_widget_get_window(w), FONTGRID_CLIPBOARD, GDK_CURRENT_TIME,
                               FALSE);
 
     if (nitems > 0) {
@@ -4537,7 +4547,7 @@ fontgrid_paste_selection(Fontgrid *fw, FontgridPasteType paste_type)
          * clipboard to lose its data, add the data to it again so
          * it can be pasted in some other font editor.
          */
-        gdk_property_change(w->window, FONTGRID_CLIPBOARD,
+        gdk_property_change(gtk_widget_get_window(w), FONTGRID_CLIPBOARD,
                             FONTGRID_GLYPHLIST, 8, GDK_PROP_MODE_REPLACE,
                             data, (gint) nitems);
 
