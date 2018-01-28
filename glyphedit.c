@@ -735,16 +735,6 @@ glyphedit_expose(GtkWidget *widget, GdkEventExpose *event)
 }
 
 static gint
-glyphedit_focus_in(GtkWidget *widget, GdkEventFocus *event)
-{
-    g_return_val_if_fail(widget != NULL, FALSE);
-    g_return_val_if_fail(IS_GLYPHEDIT(widget), FALSE);
-    g_return_val_if_fail(event != NULL, FALSE);
-
-    return FALSE;
-}
-
-static gint
 glyphedit_focus_out(GtkWidget *widget, GdkEventFocus *event)
 {
     g_return_val_if_fail(widget != NULL, FALSE);
@@ -2482,7 +2472,6 @@ glyphedit_class_init(gpointer g_class, gpointer class_data)
     wcp->size_allocate = glyphedit_actual_size;
     wcp->realize = glyphedit_realize;
     wcp->expose_event = glyphedit_expose;
-    wcp->focus_in_event = glyphedit_focus_in;
     wcp->focus_out_event = glyphedit_focus_out;
     wcp->button_press_event = glyphedit_button_press;
     wcp->button_release_event = glyphedit_button_release;
