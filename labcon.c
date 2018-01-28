@@ -34,13 +34,13 @@ labcon_size_request(GtkWidget *w, GtkRequisition *req)
     l_rec.width = c_rec.width = l_rec.height = c_rec.height = 0;
 
     if (l->label != 0) {
-        if (GTK_WIDGET_VISIBLE(l->label))
+        if (gtk_widget_get_visible(l->label))
           gtk_widget_size_request(l->label, &l_rec);
     } else {
-        if (GTK_WIDGET_VISIBLE(l->image))
+        if (gtk_widget_get_visible(l->image))
           gtk_widget_size_request(l->image, &l_rec);
     }
-    if (GTK_WIDGET_VISIBLE(l->child))
+    if (gtk_widget_get_visible(l->child))
       gtk_widget_size_request(l->child, &c_rec);
 
     if (l->leader)
@@ -68,9 +68,9 @@ labcon_size_allocate(GtkWidget *w, GtkAllocation *all)
 
     label = (l->label != 0) ? l->label : l->image;
 
-    if (GTK_WIDGET_VISIBLE(label))
+    if (gtk_widget_get_visible(label))
       gtk_widget_get_child_requisition(label, &l_rec);
-    if (GTK_WIDGET_VISIBLE(l->child))
+    if (gtk_widget_get_visible(l->child))
       gtk_widget_get_child_requisition(l->child, &c_rec);
 
     /*
@@ -241,7 +241,7 @@ draw_pixbuf(GtkWidget *w, GdkEventExpose *event, gpointer data)
 
     x = (all.width >> 1) - (wd >> 1);
     y = (all.height >> 1) - (ht >> 1);
-    gdk_draw_pixbuf(gtk_widget_get_window(w), gtk_widget_get_style(w)->fg_gc[GTK_WIDGET_STATE(w)],
+    gdk_draw_pixbuf(gtk_widget_get_window(w), gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
                     p, 0, 0, x, y, wd, ht, GDK_RGB_DITHER_NONE, 0, 0);
 
     return FALSE;

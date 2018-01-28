@@ -251,7 +251,7 @@ glyphtest_draw_focus(GtkWidget *widget, GdkRectangle *area)
                          "focus-line-width", &fwidth,
                          "focus-padding", &fpad, NULL);
 
-    gc = gtk_widget_get_style(widget)->bg_gc[GTK_WIDGET_STATE(widget)];
+    gc = gtk_widget_get_style(widget)->bg_gc[gtk_widget_get_state(widget)];
 
     x = (gtk_widget_get_style(widget)->xthickness + fwidth + fpad) - 1;
     y = (gtk_widget_get_style(widget)->ythickness + fwidth + fpad) - 1;
@@ -261,7 +261,7 @@ glyphtest_draw_focus(GtkWidget *widget, GdkRectangle *area)
     ht = (all.height - (y * 2));
 
     if (gtk_widget_has_focus(widget))
-      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_WIDGET_STATE(widget),
+      gtk_paint_focus(gtk_widget_get_style(widget), gtk_widget_get_window(widget), gtk_widget_get_state(widget),
                       area, widget, "glyphtest", x, y, wd, ht);
     else {
         gdk_gc_set_clip_rectangle(gc, area);
@@ -432,7 +432,7 @@ glyphtest_draw(GtkWidget *widget, GdkRectangle *area)
         s.y = e.y = gw->line.cpoint.y;
 
         gdk_draw_line(gtk_widget_get_window(widget),
-                      gtk_widget_get_style(widget)->fg_gc[GTK_WIDGET_STATE(widget)],
+                      gtk_widget_get_style(widget)->fg_gc[gtk_widget_get_state(widget)],
                       s.x, s.y, e.x, e.y);
     }
 }
@@ -445,11 +445,11 @@ glyphtest_expose(GtkWidget *widget, GdkEventExpose *event)
     /*
      * Paint the shadow first.
      */
-    if (GTK_WIDGET_DRAWABLE(widget)) {
+    if (gtk_widget_is_drawable(widget)) {
       gtk_widget_get_allocation(widget, &all);
 
       gtk_paint_shadow(gtk_widget_get_style(widget), gtk_widget_get_window(widget),
-                       GTK_WIDGET_STATE(widget), GTK_SHADOW_OUT,
+                       gtk_widget_get_state(widget), GTK_SHADOW_OUT,
                        &event->area,
                        widget, "glyphtest",
                        0, 0,
