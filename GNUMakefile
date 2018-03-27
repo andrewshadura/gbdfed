@@ -65,6 +65,9 @@ all: gbdfed
 gbdfed: $(OBJS)
 	$(CC) $(STATIC) $(LDFLAGS) -o gbdfed $(OBJS) $(LIBS)
 
+%.test: %.test.o %.o bdf.o bdfcons.o bdffnt.o bdfgname.o bdfgrab.o bdfgrid.o bdfotf.o bdfpkgf.o bdfpsf.o hbf.o
+	$(CC) $(STATIC) $(CFLAGS) $^ -o $@ $(LIBS)
+
 clean:
 	$(RM) -f *.o *BAK *CKP *~ core
 
