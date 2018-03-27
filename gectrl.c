@@ -477,10 +477,6 @@ gecontrol_finalize(GObject *obj)
 
     gec = GECONTROL_GET_CLASS(obj);
 
-    if (gec->selcr != 0)
-      cairo_destroy(gec->selcr);
-    gec->selcr = 0;
-
     /*
      * Unreference all the pixbufs that were created.
      */
@@ -831,6 +827,8 @@ gecontrol_highlight_selected_spot(GEControl *ge)
     if (!gtk_widget_get_realized(w) || ge->gimage == 0 || ge->gimage->bpp == 1)
       return;
 
+    GdkColor bg = gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)];
+
     if (ge->gimage->bpp != 8) {
         x = ge->spot.x;
         y = ge->spot.y + (8 * ge->cidx);
@@ -838,7 +836,25 @@ gecontrol_highlight_selected_spot(GEControl *ge)
         x = ge->spot.x + ((ge->cidx % 16) * 8);
         y = ge->spot.y + ((ge->cidx / 16) * 8);
     }
-    cairo_rectangle(gec->selcr, x, y, 7, 7);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+    cairo_set_line_width(cr, 1.0);
+    gdk_cairo_set_source_color(cr, &bg);
+    cairo_rectangle(cr, ge->spot.x, ge->spot.y, ge->spot.width, ge->spot.height);
+    cairo_stroke(cr);
+    cairo_fill(cr);
+    cairo_surface_flush(cr);
+
+    gdk_draw_gray_image(gtk_widget_get_window(w),
+                        gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
+                        ge->spot.x, ge->spot.y,
+                        ge->spot.width, ge->spot.height,
+                        GDK_RGB_DITHER_NONE, ge->rgb, ge->spot.width);
+
+    cairo_surface_mark_dirty(cr);
+    cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
+    cairo_rectangle(cr, x, y, 7, 7);
+    cairo_stroke(cr);
+    cairo_destroy(cr);
 }
 
 static void
@@ -950,27 +966,7 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
      * Draw the color spots if called for.
      */
     if (ge->gimage && ge->gimage->bpp > 1) {
-        /*
-         * Make sure the selection GC has been created.
-         */
-        if (gec->selcr == 0) {
-            gec->selcr = gdk_cairo_create(gtk_widget_get_window(w));
-
-            GdkColor color;
-            color.pixel =
-                gtk_widget_get_style(w)->fg[gtk_widget_get_state(w)].pixel ^
-                gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)].pixel;
-            gdk_cairo_set_source_color(gec->selcr, &color);
-            cairo_set_operator(gec->selcr, CAIRO_OPERATOR_XOR);
-        }
-
         gecontrol_make_color_spots(ge, ge->gimage->bpp);
-
-        gdk_draw_gray_image(gtk_widget_get_window(w),
-                            gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
-                            ge->spot.x, ge->spot.y,
-                            ge->spot.width, ge->spot.height,
-                            GDK_RGB_DITHER_NONE, ge->rgb, ge->spot.width);
 
         /*
          * Draw the box around the active color.
@@ -1169,7 +1165,6 @@ gecontrol_button_release(GtkWidget *w, GdkEventButton *ev)
                     y >>= 3;
                     i = (y << 4) + x;
                 }
-                gecontrol_highlight_selected_spot(ge);
                 ge->cidx = i;
                 gecontrol_highlight_selected_spot(ge);
 
@@ -1566,7 +1561,6 @@ gecontrol_change_color(GEControl *ge, gint cidx)
     else if (cidx < 0)
       cidx = (1 << ge->gimage->bpp) - 1;
 
-    gecontrol_highlight_selected_spot(ge);
     ge->cidx = cidx;
     gecontrol_highlight_selected_spot(ge);
 }
