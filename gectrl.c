@@ -563,107 +563,6 @@ gecontrol_actual_size(GtkWidget *widget, GtkAllocation *actual)
                              actual->width, actual->height);
 }
 
-/*
- * Use our own painting routines to get the look and behavior we want.
- */
-static void
-gecontrol_paint_diamond(GtkStyle *style, GdkWindow *win, GtkStateType state,
-                        GdkRectangle *area, gint x, gint y,
-                        gint width, gint height)
-{
-    GdkSegment left[6], right[6];
-
-    /*
-     * Start the left segments at the top. Go from outer to inner.
-     */
-
-    /* Outer. */
-    left[0].x1 = x + (width >> 1);
-    left[0].y1 = y;
-    left[0].x2 = x;
-    left[0].y2 = y + (width >> 1);
-    left[1].x1 = left[0].x2;
-    left[1].y1 = left[0].y2;
-    left[1].x2 = x + (width >> 1);
-    left[1].y2 = y + height;
-
-    /* Middle. */
-    left[2].x1 = left[0].x1;
-    left[2].y1 = left[0].y1 + 1;
-    left[2].x2 = left[0].x2 + 1;
-    left[2].y2 = left[0].y2;
-    left[3].x1 = left[2].x2;
-    left[3].y1 = left[2].y2;
-    left[3].x2 = left[1].x2;
-    left[3].y2 = left[1].y2 - 1;
-
-    /* Inner. */
-    left[4].x1 = left[2].x1;
-    left[4].y1 = left[2].y1 + 1;
-    left[4].x2 = left[2].x2 + 1;
-    left[4].y2 = left[2].y2;
-    left[5].x1 = left[4].x2;
-    left[5].y1 = left[4].y2;
-    left[5].x2 = left[3].x2;
-    left[5].y2 = left[3].y2 - 1;
-
-    /* Outer. */
-    right[0].x1 = x + (width >> 1);
-    right[0].y1 = y;
-    right[0].x2 = x + width;
-    right[0].y2 = y + (width >> 1);
-    right[1].x1 = right[0].x2;
-    right[1].y1 = right[0].y2;
-    right[1].x2 = x + (width >> 1);
-    right[1].y2 = y + height;
-
-    /* Middle. */
-    right[2].x1 = right[0].x1;
-    right[2].y1 = right[0].y1 + 1;
-    right[2].x2 = right[0].x2 - 1;
-    right[2].y2 = right[0].y2;
-    right[3].x1 = right[2].x2;
-    right[3].y1 = right[2].y2;
-    right[3].x2 = right[1].x2;
-    right[3].y2 = right[1].y2 - 1;
-
-    /* Inner. */
-    right[4].x1 = right[2].x1;
-    right[4].y1 = right[2].y1 + 1;
-    right[4].x2 = right[2].x2 - 1;
-    right[4].y2 = right[2].y2;
-    right[5].x1 = right[4].x2;
-    right[5].y1 = right[4].y2;
-    right[5].x2 = right[3].x2;
-    right[5].y2 = right[3].y2 - 1;
-
-    if (area) {
-        gdk_gc_set_clip_rectangle(style->bg_gc[state], area);
-        gdk_gc_set_clip_rectangle(style->light_gc[state], area);
-        gdk_gc_set_clip_rectangle(style->dark_gc[state], area);
-        gdk_gc_set_clip_rectangle(style->black_gc, area);
-    }
-
-    if (state != GTK_STATE_ACTIVE) {
-        gdk_draw_segments(win, style->light_gc[state], left, 4);
-        gdk_draw_segments(win, style->bg_gc[state], &left[4], 2);
-        gdk_draw_segments(win, style->black_gc, right, 2);
-        gdk_draw_segments(win, style->dark_gc[state], &right[2], 4);
-    } else {
-        gdk_draw_segments(win, style->dark_gc[state], left, 4);
-        gdk_draw_segments(win, style->black_gc, &left[4], 2);
-        gdk_draw_segments(win, style->light_gc[state], right, 4);
-        gdk_draw_segments(win, style->bg_gc[state], &right[4], 2);
-    }
-
-    if (area) {
-        gdk_gc_set_clip_rectangle(style->bg_gc[state], NULL);
-        gdk_gc_set_clip_rectangle(style->light_gc[state], NULL);
-        gdk_gc_set_clip_rectangle(style->dark_gc[state], NULL);
-        gdk_gc_set_clip_rectangle(style->black_gc, NULL);
-    }
-}
-
 static void
 gecontrol_button_normal(GEControl *ge, gint button)
 {
@@ -675,10 +574,11 @@ gecontrol_button_normal(GEControl *ge, gint button)
       return;
 
     if (button < 3) {
-        gecontrol_paint_diamond(gtk_widget_get_style(w),
-                                gtk_widget_get_window(w), GTK_STATE_NORMAL, 0,
-                                ge->buttons[button].x, ge->buttons[button].y,
-                                GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
+        gtk_paint_diamond(gtk_widget_get_style(w),
+                          gtk_widget_get_window(w), GTK_STATE_NORMAL,
+                          GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+                          ge->buttons[button].x, ge->buttons[button].y,
+                          GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
         points[0].x = ge->buttons[button].x + (GEC_TOGGLE_SIZE >> 1);
         points[0].y = ge->buttons[button].y + 3;
@@ -724,11 +624,11 @@ gecontrol_button_prelight(GEControl *ge, gint button)
       return;
 
     if (button < 3) {
-        gecontrol_paint_diamond(gtk_widget_get_style(w),
-                                gtk_widget_get_window(w), GTK_STATE_PRELIGHT,
-                                0,
-                                ge->buttons[button].x, ge->buttons[button].y,
-                                GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
+        gtk_paint_diamond(gtk_widget_get_style(w),
+                          gtk_widget_get_window(w), GTK_STATE_PRELIGHT,
+                          GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+                          ge->buttons[button].x, ge->buttons[button].y,
+                          GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
         points[0].x = ge->buttons[button].x + (GEC_TOGGLE_SIZE >> 1);
         points[0].y = ge->buttons[button].y + 3;
@@ -770,10 +670,11 @@ gecontrol_button_active(GEControl *ge, gint button)
       return;
 
     if (button < 3) {
-        gecontrol_paint_diamond(gtk_widget_get_style(w),
-                                gtk_widget_get_window(w), GTK_STATE_ACTIVE, 0,
-                                ge->buttons[button].x, ge->buttons[button].y,
-                                GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
+        gtk_paint_diamond(gtk_widget_get_style(w),
+                          gtk_widget_get_window(w), GTK_STATE_ACTIVE,
+                          GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+                          ge->buttons[button].x, ge->buttons[button].y,
+                          GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
         points[0].x = ge->buttons[button].x + (GEC_TOGGLE_SIZE >> 1);
         points[0].y = ge->buttons[button].y + 3;
