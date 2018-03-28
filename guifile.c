@@ -2596,7 +2596,7 @@ xsrv_filter(GtkWidget *w, gpointer data)
 
     pattern = (gchar *) gtk_entry_get_text(GTK_ENTRY(xsrv_filter_text));
 
-    fonts = XListFonts(GDK_DISPLAY(), pattern, _XSRV_MAX_FONTS, &nfonts);
+    fonts = XListFonts(gdk_x11_get_default_xdisplay(), pattern, _XSRV_MAX_FONTS, &nfonts);
 
     store =
         GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(xsrv_font_list)));
@@ -2661,7 +2661,7 @@ xsrv_import_font(GtkWidget *w, gpointer data)
 
     guiutil_busy_cursor(ed->shell, TRUE);
     guiutil_busy_cursor(xsrv_dialog, TRUE);
-    if ((xfont = XLoadQueryFont(GDK_DISPLAY(), name)) == 0) {
+    if ((xfont = XLoadQueryFont(gdk_x11_get_default_xdisplay(), name)) == 0) {
         guiutil_busy_cursor(ed->shell, FALSE);
         guiutil_busy_cursor(xsrv_dialog, FALSE);
         sprintf(buffer1, "Import Font: Unable to load server font %s.",
@@ -2670,11 +2670,11 @@ xsrv_import_font(GtkWidget *w, gpointer data)
         return;
     }
 
-    font = bdf_load_server_font(GDK_DISPLAY(), xfont, name,
+    font = bdf_load_server_font(gdk_x11_get_default_xdisplay(), xfont, name,
                                 &options.font_opts, 0, 0);
     guiutil_busy_cursor(ed->shell, FALSE);
     guiutil_busy_cursor(xsrv_dialog, FALSE);
-    XFreeFont(GDK_DISPLAY(), xfont);
+    XFreeFont(gdk_x11_get_default_xdisplay(), xfont);
 
     if (font == 0) {
         sprintf(buffer1, "Import Font: Unable to import server font %s.",
@@ -2874,7 +2874,7 @@ guifile_import_xserver_font(GtkWidget *w, gpointer data)
      * calls.
      */
     name = (gchar *) gtk_entry_get_text(GTK_ENTRY(xsrv_filter_text));
-    fonts = XListFonts(GDK_DISPLAY(), name, _XSRV_MAX_FONTS, &nfonts);
+    fonts = XListFonts(gdk_x11_get_default_xdisplay(), name, _XSRV_MAX_FONTS, &nfonts);
 
     /*
      * Update the label on the font list with the number of fonts.
