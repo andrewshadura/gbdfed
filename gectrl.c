@@ -111,6 +111,7 @@ gecontrol_position_buttons(GtkWidget *w)
     GEControl *ge = GECONTROL(w);
     gint x, y, sx, sy, ix, dx, i, j, v, wd, ht;
     GdkPoint points[5];
+    GdkRectangle rect;
     GtkAllocation all;
 
     dx = 0;
@@ -169,8 +170,14 @@ gecontrol_position_buttons(GtkWidget *w)
             /* Bottom left. */
             points[3].x = points[0].x;
             points[3].y = points[2].y;
+
+            rect.x = ix;
+            rect.y = sy;
+            rect.width = ge->gimage->width + 4;
+            rect.height = ge->gimage->height + 4;
+
             ge->buttons[GEC_GLYPH_IMAGE].region =
-                gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+                gdk_region_rectangle(&rect);
         } else
           gdk_region_offset(ge->buttons[GEC_GLYPH_IMAGE].region,
                             ix - ge->buttons[GEC_GLYPH_IMAGE].x,
@@ -197,13 +204,18 @@ gecontrol_position_buttons(GtkWidget *w)
     points[3].x = points[1].x;
     points[3].y = y + GEC_TOGGLE_SIZE;
 
+    rect.x = x;
+    rect.y = y;
+    rect.width = GEC_TOGGLE_SIZE;
+    rect.height = GEC_TOGGLE_SIZE;
+
     /*
      * Position the toggle buttons.
      */
     for (i = 0; i < GEC_FLIPH_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+              gdk_region_rectangle(&rect);
         else
           gdk_region_offset(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -212,6 +224,7 @@ gecontrol_position_buttons(GtkWidget *w)
         ge->buttons[i].y = y;
 
         x += GEC_TOGGLE_SIZE + 3;
+        rect.x += GEC_TOGGLE_SIZE + 3;
 
         for (j = 0; j < 5; j++)
           points[j].x += GEC_TOGGLE_SIZE + 3;
@@ -237,13 +250,18 @@ gecontrol_position_buttons(GtkWidget *w)
     points[3].x = points[0].x;
     points[3].y = points[2].y;
 
+    rect.x = sx;
+    rect.y = y;
+    rect.width = GEC_BUTTON_SIZE;
+    rect.height = GEC_BUTTON_SIZE;
+
     /*
      * Position the first row of buttons.
      */
     for (x = sx; i < GEC_RLEFT_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+              gdk_region_rectangle(&rect);
         else
           gdk_region_offset(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -251,6 +269,7 @@ gecontrol_position_buttons(GtkWidget *w)
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
+        rect.x += GEC_BUTTON_SIZE + 3;
 
         for (j = 0; j < 4; j++)
           points[j].x += GEC_BUTTON_SIZE + 3;
@@ -261,6 +280,9 @@ gecontrol_position_buttons(GtkWidget *w)
      */
     points[0].x = points[3].x = sx;
     points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
+
+    rect.x = sx;
+    rect.y += GEC_BUTTON_SIZE + 3;
 
     y += GEC_BUTTON_SIZE + 3;
 
@@ -273,7 +295,7 @@ gecontrol_position_buttons(GtkWidget *w)
     for (x = sx; i < GEC_ULEFT_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+              gdk_region_rectangle(&rect);
         else
           gdk_region_offset(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -281,6 +303,7 @@ gecontrol_position_buttons(GtkWidget *w)
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
+        rect.x += GEC_BUTTON_SIZE + 3;
 
         for (j = 0; j < 4; j++)
           points[j].x += GEC_BUTTON_SIZE + 3;
@@ -291,6 +314,9 @@ gecontrol_position_buttons(GtkWidget *w)
      */
     points[0].x = points[3].x = sx;
     points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
+
+    rect.x = sx;
+    rect.y += GEC_BUTTON_SIZE + 3;
 
     y += GEC_BUTTON_SIZE + 3;
 
@@ -303,7 +329,7 @@ gecontrol_position_buttons(GtkWidget *w)
     for (x = sx; i < GEC_LEFT_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+              gdk_region_rectangle(&rect);
         else
           gdk_region_offset(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -311,6 +337,7 @@ gecontrol_position_buttons(GtkWidget *w)
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
+        rect.x += GEC_BUTTON_SIZE + 3;
 
         for (j = 0; j < 4; j++)
           points[j].x += GEC_BUTTON_SIZE + 3;
@@ -321,6 +348,9 @@ gecontrol_position_buttons(GtkWidget *w)
      */
     points[0].x = points[3].x = sx;
     points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
+
+    rect.x = sx;
+    rect.y += GEC_BUTTON_SIZE + 3;
 
     x = sx;
     y += GEC_BUTTON_SIZE + 3;
@@ -333,7 +363,7 @@ gecontrol_position_buttons(GtkWidget *w)
      */
     if (ge->buttons[i].region == NULL)
       ge->buttons[i].region =
-          gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+          gdk_region_rectangle(&rect);
     else
       gdk_region_offset(ge->buttons[i].region,
                         x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -341,13 +371,14 @@ gecontrol_position_buttons(GtkWidget *w)
     ge->buttons[i++].y = y;
 
     x += (GEC_BUTTON_SIZE + 3) * 2;
+    rect.x += (GEC_BUTTON_SIZE + 3) * 2;
 
     for (j = 0; j < 4; j++)
       points[j].x += (GEC_BUTTON_SIZE + 3) * 2;
 
     if (ge->buttons[i].region == NULL)
       ge->buttons[i].region =
-          gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+          gdk_region_rectangle(&rect);
     else
       gdk_region_offset(ge->buttons[i].region,
                         x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -360,6 +391,9 @@ gecontrol_position_buttons(GtkWidget *w)
     points[0].x = points[3].x = sx;
     points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
 
+    rect.x = sx;
+    rect.y += GEC_BUTTON_SIZE + 3;
+
     y += GEC_BUTTON_SIZE + 3;
 
     for (j = 0; j < 4; j++)
@@ -368,7 +402,7 @@ gecontrol_position_buttons(GtkWidget *w)
     for (x = sx; i < GEC_GLYPH_IMAGE; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_polygon(points, 4, GDK_WINDING_RULE);
+              gdk_region_rectangle(&rect);
         else
           gdk_region_offset(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
@@ -376,6 +410,7 @@ gecontrol_position_buttons(GtkWidget *w)
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
+        rect.x += GEC_BUTTON_SIZE + 3;
 
         for (j = 0; j < 4; j++)
           points[j].x += GEC_BUTTON_SIZE + 3;
@@ -425,9 +460,13 @@ gecontrol_position_buttons(GtkWidget *w)
         points[3].x = points[0].x;
         points[3].y = points[2].y;
 
+        rect.x = sx;
+        rect.y = sy;
+        rect.width = wd;
+        rect.height = ht;
+
         if (ge->spot_region == NULL)
-          ge->spot_region = gdk_region_polygon(points, 4,
-                                               GDK_WINDING_RULE);
+          ge->spot_region = gdk_region_rectangle(&rect);
         else
           gdk_region_offset(ge->spot_region,
                             sx - ge->spot.x, sy - ge->spot.y);
