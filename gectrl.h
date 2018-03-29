@@ -77,7 +77,7 @@ typedef struct {
     gint x;
     gint y;
     GdkPixbuf *image;
-    GdkRegion *region;
+    cairo_region_t *region;
     gint other_toggles[2];
     gboolean set;
     gboolean toggle;
@@ -86,7 +86,7 @@ typedef struct {
 typedef struct {
     gint x;
     gint y;
-    GdkRegion *region;
+    cairo_region_t *region;
     gboolean set;
 } GEControlColor;
 
@@ -127,7 +127,7 @@ struct _GEControl {
      * 16 color spots. Used to track mouse position and update the tip label.
      */
     GdkRectangle spot;
-    GdkRegion *spot_region;
+    cairo_region_t *spot_region;
 
     /*
      * Timer stuff for holding down the buttons.
