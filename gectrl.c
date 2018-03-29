@@ -110,8 +110,7 @@ gecontrol_position_buttons(GtkWidget *w)
 {
     GEControl *ge = GECONTROL(w);
     gint x, y, sx, sy, ix, dx, i, j, v, wd, ht;
-    GdkPoint points[5];
-    GdkRectangle rect;
+    cairo_rectangle_int_t rect;
     GtkAllocation all;
 
     dx = 0;
@@ -158,28 +157,15 @@ gecontrol_position_buttons(GtkWidget *w)
         ix = ((all.width >> 1)-((ge->gimage->width + 2) >> 1)) + dx;
 
         if (ge->buttons[GEC_GLYPH_IMAGE].region == NULL) {
-            /* Top left. */
-            points[0].x = points[4].x = ix;
-            points[0].y = points[4].y = sy;
-            /* Top right. */
-            points[1].x = ix + ge->gimage->width + 4;
-            points[1].y = points[0].y;
-            /* Bottom right. */
-            points[2].x = points[1].x;
-            points[2].y = sy + ge->gimage->height + 4;
-            /* Bottom left. */
-            points[3].x = points[0].x;
-            points[3].y = points[2].y;
-
             rect.x = ix;
             rect.y = sy;
             rect.width = ge->gimage->width + 4;
             rect.height = ge->gimage->height + 4;
 
             ge->buttons[GEC_GLYPH_IMAGE].region =
-                gdk_region_rectangle(&rect);
+                cairo_region_create_rectangle(&rect);
         } else
-          gdk_region_offset(ge->buttons[GEC_GLYPH_IMAGE].region,
+          cairo_region_translate(ge->buttons[GEC_GLYPH_IMAGE].region,
                             ix - ge->buttons[GEC_GLYPH_IMAGE].x,
                             sy - ge->buttons[GEC_GLYPH_IMAGE].y);
 
@@ -195,15 +181,6 @@ gecontrol_position_buttons(GtkWidget *w)
     /*
      * Prep the points for creating regions for the toggle buttons.
      */
-    points[0].x = points[4].x = x;
-    points[0].y = points[4].y = y + (GEC_TOGGLE_SIZE >> 1);
-    points[1].x = x + (GEC_TOGGLE_SIZE >> 1);
-    points[1].y = y;
-    points[2].x = x + GEC_TOGGLE_SIZE;
-    points[2].y = points[0].y;
-    points[3].x = points[1].x;
-    points[3].y = y + GEC_TOGGLE_SIZE;
-
     rect.x = x;
     rect.y = y;
     rect.width = GEC_TOGGLE_SIZE;
@@ -215,9 +192,9 @@ gecontrol_position_buttons(GtkWidget *w)
     for (i = 0; i < GEC_FLIPH_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_rectangle(&rect);
+              cairo_region_create_rectangle(&rect);
         else
-          gdk_region_offset(ge->buttons[i].region,
+          cairo_region_translate(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
 
         ge->buttons[i].x = x;
@@ -225,9 +202,6 @@ gecontrol_position_buttons(GtkWidget *w)
 
         x += GEC_TOGGLE_SIZE + 3;
         rect.x += GEC_TOGGLE_SIZE + 3;
-
-        for (j = 0; j < 5; j++)
-          points[j].x += GEC_TOGGLE_SIZE + 3;
     }
 
     /*
@@ -241,15 +215,6 @@ gecontrol_position_buttons(GtkWidget *w)
     /*
      * Now set up the points for the buttons.
      */
-    points[0].x = sx;
-    points[0].y = y;
-    points[1].x = sx + GEC_BUTTON_SIZE;
-    points[1].y = points[0].y;
-    points[2].x = points[1].x;
-    points[2].y = y + GEC_BUTTON_SIZE;
-    points[3].x = points[0].x;
-    points[3].y = points[2].y;
-
     rect.x = sx;
     rect.y = y;
     rect.width = GEC_BUTTON_SIZE;
@@ -261,33 +226,24 @@ gecontrol_position_buttons(GtkWidget *w)
     for (x = sx; i < GEC_RLEFT_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_rectangle(&rect);
+              cairo_region_create_rectangle(&rect);
         else
-          gdk_region_offset(ge->buttons[i].region,
+          cairo_region_translate(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
         ge->buttons[i].x = x;
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
         rect.x += GEC_BUTTON_SIZE + 3;
-
-        for (j = 0; j < 4; j++)
-          points[j].x += GEC_BUTTON_SIZE + 3;
     }
 
     /*
      * Reset the x coordinate for the regions.
      */
-    points[0].x = points[3].x = sx;
-    points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
-
     rect.x = sx;
     rect.y += GEC_BUTTON_SIZE + 3;
 
     y += GEC_BUTTON_SIZE + 3;
-
-    for (j = 0; j < 4; j++)
-      points[j].y += GEC_BUTTON_SIZE + 3;
 
     /*
      * Position second row of buttons.
@@ -295,33 +251,24 @@ gecontrol_position_buttons(GtkWidget *w)
     for (x = sx; i < GEC_ULEFT_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_rectangle(&rect);
+              cairo_region_create_rectangle(&rect);
         else
-          gdk_region_offset(ge->buttons[i].region,
+          cairo_region_translate(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
         ge->buttons[i].x = x;
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
         rect.x += GEC_BUTTON_SIZE + 3;
-
-        for (j = 0; j < 4; j++)
-          points[j].x += GEC_BUTTON_SIZE + 3;
     }
 
     /*
      * Reset the x coordinate for the regions.
      */
-    points[0].x = points[3].x = sx;
-    points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
-
     rect.x = sx;
     rect.y += GEC_BUTTON_SIZE + 3;
 
     y += GEC_BUTTON_SIZE + 3;
-
-    for (j = 0; j < 4; j++)
-      points[j].y += GEC_BUTTON_SIZE + 3;
 
     /*
      * Position third row of buttons.
@@ -329,43 +276,34 @@ gecontrol_position_buttons(GtkWidget *w)
     for (x = sx; i < GEC_LEFT_BUTTON; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_rectangle(&rect);
+              cairo_region_create_rectangle(&rect);
         else
-          gdk_region_offset(ge->buttons[i].region,
+          cairo_region_translate(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
         ge->buttons[i].x = x;
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
         rect.x += GEC_BUTTON_SIZE + 3;
-
-        for (j = 0; j < 4; j++)
-          points[j].x += GEC_BUTTON_SIZE + 3;
     }
 
     /*
      * Reset the x coordinate for the regions.
      */
-    points[0].x = points[3].x = sx;
-    points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
-
     rect.x = sx;
     rect.y += GEC_BUTTON_SIZE + 3;
 
     x = sx;
     y += GEC_BUTTON_SIZE + 3;
 
-    for (j = 0; j < 4; j++)
-      points[j].y += GEC_BUTTON_SIZE + 3;
-
     /*
      * Set the coordinates of the LEFT and RIGHT buttons.
      */
     if (ge->buttons[i].region == NULL)
       ge->buttons[i].region =
-          gdk_region_rectangle(&rect);
+          cairo_region_create_rectangle(&rect);
     else
-      gdk_region_offset(ge->buttons[i].region,
+      cairo_region_translate(ge->buttons[i].region,
                         x - ge->buttons[i].x, y - ge->buttons[i].y);
     ge->buttons[i].x = x;
     ge->buttons[i++].y = y;
@@ -373,14 +311,11 @@ gecontrol_position_buttons(GtkWidget *w)
     x += (GEC_BUTTON_SIZE + 3) * 2;
     rect.x += (GEC_BUTTON_SIZE + 3) * 2;
 
-    for (j = 0; j < 4; j++)
-      points[j].x += (GEC_BUTTON_SIZE + 3) * 2;
-
     if (ge->buttons[i].region == NULL)
       ge->buttons[i].region =
-          gdk_region_rectangle(&rect);
+          cairo_region_create_rectangle(&rect);
     else
-      gdk_region_offset(ge->buttons[i].region,
+      cairo_region_translate(ge->buttons[i].region,
                         x - ge->buttons[i].x, y - ge->buttons[i].y);
     ge->buttons[i].x = x;
     ge->buttons[i++].y = y;
@@ -388,32 +323,23 @@ gecontrol_position_buttons(GtkWidget *w)
     /*
      * Reset the x coordinate for the regions.
      */
-    points[0].x = points[3].x = sx;
-    points[1].x = points[2].x = sx + GEC_BUTTON_SIZE;
-
     rect.x = sx;
     rect.y += GEC_BUTTON_SIZE + 3;
 
     y += GEC_BUTTON_SIZE + 3;
 
-    for (j = 0; j < 4; j++)
-      points[j].y += GEC_BUTTON_SIZE + 3;
-
     for (x = sx; i < GEC_GLYPH_IMAGE; i++) {
         if (ge->buttons[i].region == NULL)
           ge->buttons[i].region =
-              gdk_region_rectangle(&rect);
+              cairo_region_create_rectangle(&rect);
         else
-          gdk_region_offset(ge->buttons[i].region,
+          cairo_region_translate(ge->buttons[i].region,
                             x - ge->buttons[i].x, y - ge->buttons[i].y);
         ge->buttons[i].x = x;
         ge->buttons[i].y = y;
 
         x += GEC_BUTTON_SIZE + 3;
         rect.x += GEC_BUTTON_SIZE + 3;
-
-        for (j = 0; j < 4; j++)
-          points[j].x += GEC_BUTTON_SIZE + 3;
     }
 
     /*
@@ -446,29 +372,15 @@ gecontrol_position_buttons(GtkWidget *w)
         /*
          * Initialize the points for the spot region.
          */
-
-        /* Top left. */
-        points[0].x = points[4].x = sx;
-        points[0].y = points[4].y = sy;
-        /* Top right. */
-        points[1].x = points[0].x + wd;
-        points[1].y = points[0].y;
-        /* Bottom right. */
-        points[2].x = points[1].x;
-        points[2].y = points[1].y + ht;
-        /* Bottom left. */
-        points[3].x = points[0].x;
-        points[3].y = points[2].y;
-
         rect.x = sx;
         rect.y = sy;
         rect.width = wd;
         rect.height = ht;
 
         if (ge->spot_region == NULL)
-          ge->spot_region = gdk_region_rectangle(&rect);
+          ge->spot_region = cairo_region_create_rectangle(&rect);
         else
-          gdk_region_offset(ge->spot_region,
+          cairo_region_translate(ge->spot_region,
                             sx - ge->spot.x, sy - ge->spot.y);
 
         ge->spot.x = sx;
@@ -500,7 +412,7 @@ gecontrol_finalize(GObject *obj)
     ge = GECONTROL(obj);
     for (i = 0; i < 18; i++) {
         if (ge->buttons[i].region != 0)
-          gdk_region_destroy(ge->buttons[i].region);
+          cairo_region_destroy(ge->buttons[i].region);
         ge->buttons[i].region = 0;
     }
 
@@ -1025,7 +937,7 @@ gecontrol_motion_notify(GtkWidget *w, GdkEventMotion *ev)
     ge = GECONTROL(w);
     for (i = 0; i < 18; i++) {
         if (ge->buttons[i].region != NULL &&
-            gdk_region_point_in(ge->buttons[i].region, ev->x, ev->y)) {
+            cairo_region_contains_point(ge->buttons[i].region, ev->x, ev->y)) {
             if (i != ge->last_button) {
 
                 /*
@@ -1055,7 +967,7 @@ gecontrol_motion_notify(GtkWidget *w, GdkEventMotion *ev)
          */
         if (ge->tip_label) {
             if (ge->spot_region != NULL &&
-                gdk_region_point_in(ge->spot_region, ev->x, ev->y)) {
+                cairo_region_contains_point(ge->spot_region, ev->x, ev->y)) {
                 /*
                  * Determine which color this is and it's value. Mask
                  * the coordinates so they can't overflow the text buffer
@@ -1124,7 +1036,7 @@ gecontrol_button_press(GtkWidget *w, GdkEventButton *ev)
 
     for (i = 0; i < 17; i++) {
         if (ge->buttons[i].region != 0 &&
-            gdk_region_point_in(ge->buttons[i].region, ev->x, ev->y)) {
+            cairo_region_contains_point(ge->buttons[i].region, ev->x, ev->y)) {
             if (i < 3) {
                 if (ge->buttons[i].set == TRUE)
                   /*
@@ -1170,7 +1082,7 @@ gecontrol_button_release(GtkWidget *w, GdkEventButton *ev)
 
     for (i = 0; i < 17; i++) {
         if (ge->buttons[i].region != 0 &&
-            gdk_region_point_in(ge->buttons[i].region, ev->x, ev->y)) {
+            cairo_region_contains_point(ge->buttons[i].region, ev->x, ev->y)) {
             if (i >= 3) {
                 gecontrol_button_prelight(ge, i);
                 ge->buttons[i].set = FALSE;
@@ -1194,7 +1106,7 @@ gecontrol_button_release(GtkWidget *w, GdkEventButton *ev)
          */
         if (ge->gimage || ge->gimage->bpp > 1) {
             if (ge->spot_region != NULL &&
-                gdk_region_point_in(ge->spot_region, ev->x, ev->y)) {
+                cairo_region_contains_point(ge->spot_region, ev->x, ev->y)) {
                 x = (((guint) ev->x) - ge->spot.x) & 0xff;
                 y = (((guint) ev->y) - ge->spot.y) & 0xff;
                 if (ge->gimage->bpp != 8)
@@ -1522,7 +1434,7 @@ gecontrol_set_glyph_image(GEControl *ge, bdf_bitmap_t *image)
      * because the sizes change depending on the bits per pixel.
      */
     if (ge->spot_region != 0) {
-        gdk_region_destroy(ge->spot_region);
+        cairo_region_destroy(ge->spot_region);
         ge->spot_region = 0;
     }
 
