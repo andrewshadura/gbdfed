@@ -499,6 +499,26 @@ gecontrol_preferred_size(GtkWidget *widget, GtkRequisition *preferred)
 }
 
 static void
+gecontrol_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+    GtkRequisition requisition;
+
+    gecontrol_preferred_size(widget, &requisition);
+
+    *minimal_width = *natural_width = requisition.width;
+}
+
+static void
+gecontrol_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+    GtkRequisition requisition;
+
+    gecontrol_preferred_size(widget, &requisition);
+
+    *minimal_height = *natural_height = requisition.height;
+}
+
+static void
 gecontrol_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
     gtk_widget_set_allocation(widget, actual);
@@ -895,7 +915,11 @@ gecontrol_draw_glyph_image(GEControl *ge)
 }
 
 static gboolean
+#if GTK_CHECK_VERSION(3, 0, 0)
+gecontrol_draw(GtkWidget *w, cairo_t *cr)
+#else
 gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
+#endif
 {
     gint i;
     GEControl *ge = GECONTROL(w);
@@ -1183,9 +1207,15 @@ gecontrol_class_init(gpointer g_class, gpointer class_data)
     goc->get_property = gecontrol_get_property;
     goc->finalize = gecontrol_finalize;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+    wc->get_preferred_width = gecontrol_get_preferred_width;
+    wc->get_preferred_height = gecontrol_get_preferred_height;
+    wc->draw = gecontrol_draw;
+#else
     wc->size_request = gecontrol_preferred_size;
-    wc->size_allocate = gecontrol_actual_size;
     wc->expose_event = gecontrol_expose;
+#endif
+    wc->size_allocate = gecontrol_actual_size;
     wc->motion_notify_event = gecontrol_motion_notify;
     wc->button_press_event = gecontrol_button_press;
     wc->button_release_event = gecontrol_button_release;
