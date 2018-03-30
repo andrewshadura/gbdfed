@@ -104,7 +104,9 @@ struct _Fontgrid {
     gboolean unencoded;
     gboolean debug;
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
     GdkGC *xor_gc;
+#endif
 
     GdkPoint *points;
     guint32 points_used;
