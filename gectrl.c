@@ -426,6 +426,16 @@ gecontrol_finalize(GObject *obj)
         ge->gimage = 0;
     }
 
+    if (ge->glyph_surface) {
+        cairo_surface_destroy(ge->glyph_surface);
+        ge->glyph_surface = 0;
+    }
+
+    if (ge->spot_surface) {
+        cairo_surface_destroy(ge->spot_surface);
+        ge->spot_surface = 0;
+    }
+
     gec = GECONTROL_GET_CLASS(obj);
 
     /*
@@ -750,21 +760,18 @@ gecontrol_make_rgb_glyph(GEControl *ge)
       case 8: masks = bdf_eightbpp; di = 0; break;
     }
 
+    if (ge->glyph_surface) {
+        cairo_surface_destroy(ge->glyph_surface);
+    }
+    ge->glyph_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+                                                   im->width,
+                                                   im->height);
+
+    guchar *data = cairo_image_surface_get_data(ge->glyph_surface);
+
     bpr = ((im->width * im->bpp) + 7) >> 3;
 
-    rgb_bpr = im->width * 3;
-    ge->rgb_used = rgb_bpr * im->height;
-
-    /*
-     * Make sure there is enough storage space for the image.
-     */
-    if (ge->rgb_size < ge->rgb_used) {
-        if (ge->rgb_size == 0)
-          ge->rgb = g_malloc(ge->rgb_used);
-        else
-          ge->rgb = g_realloc(ge->rgb, ge->rgb_used);
-        ge->rgb_size = ge->rgb_used;
-    }
+    rgb_bpr = cairo_image_surface_get_stride(ge->glyph_surface);
 
     for (y = 0; y < im->height; y++) {
         for (nx = x = 0; x < im->width; x++, nx += im->bpp) {
@@ -775,17 +782,19 @@ gecontrol_make_rgb_glyph(GEControl *ge)
               byte >>= (di - si) * im->bpp;
             if (byte) {
                 switch (im->bpp) {
-                  case 1: memset(pix, 0, 3); break;
-                  case 2: memset(pix, ge->colors[byte-1], 3); break;
-                  case 4: memset(pix, ge->colors[byte-1+4], 3); break;
-                  case 8: memset(pix, byte-1, 3); break;
+                  case 1: memset(pix, 0, 4); break;
+                  case 2: memset(pix, ge->colors[byte-1], 4); break;
+                  case 4: memset(pix, ge->colors[byte-1+4], 4); break;
+                  case 8: memset(pix, byte-1, 4); break;
                 }
             } else
-              memcpy(pix, bg, 3);
+              memcpy(pix, bg, 4);
 
-            memcpy(&ge->rgb[(y * rgb_bpr) + (x * 3)], pix, 3);
+            memcpy(&data[(y * rgb_bpr) + (x * 4)], pix, 4);
         }
     }
+
+    cairo_surface_mark_dirty(ge->glyph_surface);
 }
 
 static void
@@ -813,15 +822,11 @@ gecontrol_highlight_selected_spot(GEControl *ge)
     cairo_rectangle(cr, ge->spot.x, ge->spot.y, ge->spot.width, ge->spot.height);
     cairo_stroke(cr);
     cairo_fill(cr);
-    cairo_surface_flush(cr);
 
-    gdk_draw_gray_image(gtk_widget_get_window(w),
-                        gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
-                        ge->spot.x, ge->spot.y,
-                        ge->spot.width, ge->spot.height,
-                        GDK_RGB_DITHER_NONE, ge->rgb, ge->spot.width);
-
-    cairo_surface_mark_dirty(cr);
+    cairo_set_source_surface(cr, ge->spot_surface, ge->spot.x, ge->spot.y);
+    cairo_rectangle(cr, ge->spot.x, ge->spot.y,
+                        ge->spot.width, ge->spot.height);
+    cairo_fill(cr);
     cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
     cairo_rectangle(cr, x, y, 7, 7);
     cairo_stroke(cr);
@@ -850,14 +855,14 @@ gecontrol_make_color_spots(GEControl *ge, gint bpp)
     }
     bytes = wd * ht;
 
-    if (ge->rgb_size < bytes) {
-        if (ge->rgb_size == 0)
-          ge->rgb = g_malloc(bytes);
-        else
-          ge->rgb = g_realloc(ge->rgb, bytes);
-        ge->rgb_size = bytes;
+    if (ge->spot_surface) {
+        cairo_surface_destroy(ge->spot_surface);
     }
-    ge->rgb_used = bytes;
+    ge->spot_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+                                                  wd,
+                                                  ht);
+
+    guchar *data = cairo_image_surface_get_data(ge->spot_surface);
 
     /*
      * Now create the color spots image.
@@ -865,19 +870,21 @@ gecontrol_make_color_spots(GEControl *ge, gint bpp)
     if (bpp != 8) {
         for (i = 0; i < (1 << bpp); i++) {
             if (bpp == 2)
-              memset(ge->rgb+(i*64), ge->colors[i], 64);
+              memset(data + (i * 64 * 4), ge->colors[i], 64 * 4);
             else
-              memset(ge->rgb+(i*64), ge->colors[i+4], 64);
+              memset(data + (i * 64 * 4), ge->colors[i+4], 64 * 4);
         }
     } else {
         for (c = i = 0; i < 128; i += 8) {
             for (j = 0; j < 128; j += 8, c++)
-              memset(ge->rgb+((i*128)+j), c, 8);
-            memcpy(ge->rgb+((i+1)*128), ge->rgb+(i*128), 128);
-            memcpy(ge->rgb+((i+2)*128), ge->rgb+(i*128), 256);
-            memcpy(ge->rgb+((i+4)*128), ge->rgb+(i*128), 512);
+                memset(data + (i * 128 + j) * 4, c, 8 * 4);
+            memcpy(data + ((i + 1) * 128 * 4), data + (i * 128 * 4), 128 * 4);
+            memcpy(data + ((i + 2) * 128 * 4), data + (i * 128 * 4), 256 * 4);
+            memcpy(data + ((i + 4) * 128 * 4), data + (i * 128 * 4), 512 * 4);
         }
     }
+
+    cairo_surface_mark_dirty(ge->spot_surface);
 }
 
 static void
@@ -906,12 +913,13 @@ gecontrol_draw_glyph_image(GEControl *ge)
      * 3. Draw the points.
      */
     gecontrol_make_rgb_glyph(ge);
-    gdk_draw_rgb_image(gtk_widget_get_window(w),
-                       gtk_widget_get_style(w)->bg_gc[gtk_widget_get_state(w)],
-                       ge->gimage->x + 2, ge->gimage->y + 2,
-                       ge->gimage->width, ge->gimage->height,
-                       GDK_RGB_DITHER_NONE, ge->rgb,
-                       ge->gimage->width * 3);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+    cairo_set_source_surface(cr, ge->glyph_surface, ge->gimage->x + 2, ge->gimage->y + 2);
+    cairo_rectangle(cr, ge->gimage->x + 2, ge->gimage->y + 2,
+                        ge->gimage->width, ge->gimage->height);
+    cairo_fill(cr);
+    cairo_destroy(cr);
+
 }
 
 static gboolean
@@ -1288,6 +1296,9 @@ gecontrol_init(GTypeInstance *instance, gpointer g_class)
     GEControlClass *gc = GECONTROL_CLASS(g_class);
 
     gw->gimage = 0;
+
+    gw->spot_surface = 0;
+    gw->glyph_surface = 0;
 
     gw->last_button = gw->timer_button = -1;
     gw->timer_count = 0;
