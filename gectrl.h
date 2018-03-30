@@ -143,9 +143,8 @@ struct _GEControl {
     /*
      * Buffer for building a grayscale glyph image.
      */
-    guchar *rgb;
-    guint rgb_used;
-    guint rgb_size;
+    cairo_surface_t *glyph_surface;
+    cairo_surface_t *spot_surface;
 
     GEControlButton buttons[18];
 };
