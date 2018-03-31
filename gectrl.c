@@ -109,7 +109,7 @@ static void
 gecontrol_position_buttons(GtkWidget *w)
 {
     GEControl *ge = GECONTROL(w);
-    gint x, y, sx, sy, ix, dx, i, j, v, wd, ht;
+    gint x, y, sx, sy, ix, dx, i, v, wd, ht;
     cairo_rectangle_int_t rect;
     GtkAllocation all;
 
@@ -802,7 +802,6 @@ gecontrol_highlight_selected_spot(GEControl *ge)
 {
     GtkWidget *w = GTK_WIDGET(ge);
     gint x, y;
-    GEControlClass *gec = GECONTROL_GET_CLASS(ge);
 
     if (!gtk_widget_get_realized(w) || ge->gimage == 0 || ge->gimage->bpp == 1)
       return;
@@ -836,12 +835,12 @@ gecontrol_highlight_selected_spot(GEControl *ge)
 static void
 gecontrol_make_color_spots(GEControl *ge, gint bpp)
 {
-    gint i, j, c, wd, ht, bytes;
+    gint i, j, c, wd, ht;
 
     if (bpp < 2 || bpp > 8)
       return;
 
-    bytes = wd = ht = 0;
+    wd = ht = 0;
 
     switch (bpp) {
       case 2:
@@ -853,7 +852,6 @@ gecontrol_make_color_spots(GEControl *ge, gint bpp)
         wd = ht = 128;
         break;
     }
-    bytes = wd * ht;
 
     if (ge->spot_surface) {
         cairo_surface_destroy(ge->spot_surface);
@@ -931,7 +929,6 @@ gecontrol_expose(GtkWidget *w, GdkEventExpose *ev)
 {
     gint i;
     GEControl *ge = GECONTROL(w);
-    GEControlClass *gec = GECONTROL_GET_CLASS(w);
 
     /*
      * Draw the glyph image if one was provided.
