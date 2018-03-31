@@ -2469,7 +2469,7 @@ fontgrid_init(GTypeInstance *obj, gpointer g_class)
     fw->bpp = 1;
 
     screen =
-        gdk_drawable_get_screen(GDK_DRAWABLE(gdk_get_default_root_window()));
+        gdk_window_get_screen(gdk_get_default_root_window());
     fw->hres = (gint32) ((((double) gdk_screen_get_width(screen)) * 25.4) /
                          ((double) gdk_screen_get_width_mm(screen)) + 0.5);
     fw->vres = (gint32) ((((double) gdk_screen_get_height(screen)) * 25.4) /

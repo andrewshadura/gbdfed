@@ -2333,7 +2333,7 @@ editor_setup(int argc, char *argv[])
       options.font_opts.resolution_x = options.font_opts.resolution_y =
           options.resolution;
 
-    screen = gdk_drawable_get_screen(GDK_DRAWABLE(gdk_get_default_root_window()));
+    screen = gdk_window_get_screen(gdk_get_default_root_window());
     if (options.font_opts.resolution_x == 0)
       options.font_opts.resolution_x =
           (unsigned int) ((((double) gdk_screen_get_width(screen)) * 25.4) /
