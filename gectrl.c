@@ -575,8 +575,16 @@ gecontrol_button_normal(GEControl *ge, gint button)
         cairo_line_to(cr, points[3].x, points[3].y);
         cairo_close_path(cr);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+        GtkStyleContext *context = gtk_widget_get_style_context(w);
+        GdkRGBA bg;
+        gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &bg);
+        gdk_cairo_set_source_rgba(cr, &bg);
+#else
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_NORMAL];
         gdk_cairo_set_source_color(cr, &bg);
+#endif
+
         cairo_fill(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
@@ -631,8 +639,15 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         cairo_line_to(cr, points[3].x, points[3].y);
         cairo_close_path(cr);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+        GtkStyleContext *context = gtk_widget_get_style_context(w);
+        GdkRGBA bg;
+        gtk_style_context_get_color(context, GTK_STATE_FLAG_PRELIGHT, &bg);
+        gdk_cairo_set_source_rgba(cr, &bg);
+#else
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_PRELIGHT];
         gdk_cairo_set_source_color(cr, &bg);
+#endif
         cairo_fill(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
@@ -686,8 +701,15 @@ gecontrol_button_active(GEControl *ge, gint button)
         cairo_line_to(cr, points[3].x, points[3].y);
         cairo_close_path(cr);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+        GtkStyleContext *context = gtk_widget_get_style_context(w);
+        GdkRGBA bg;
+        gtk_style_context_get_color(context, GTK_STATE_FLAG_ACTIVE, &bg);
+        gdk_cairo_set_source_rgba(cr, &bg);
+#else
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_ACTIVE];
         gdk_cairo_set_source_color(cr, &bg);
+#endif
         cairo_fill(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
@@ -830,8 +852,6 @@ gecontrol_highlight_selected_spot(GEControl *ge)
     if (!gtk_widget_get_realized(w) || ge->gimage == 0 || ge->gimage->bpp == 1)
       return;
 
-    GdkColor bg = gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)];
-
     if (ge->gimage->bpp != 8) {
         x = ge->spot.x;
         y = ge->spot.y + (8 * ge->cidx);
@@ -841,7 +861,16 @@ gecontrol_highlight_selected_spot(GEControl *ge)
     }
     cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
     cairo_set_line_width(cr, 1.0);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+    GtkStyleContext *context = gtk_widget_get_style_context(w);
+    GdkRGBA bg;
+    gtk_style_context_get_color(context, gtk_widget_get_state_flags(w), &bg);
+    gdk_cairo_set_source_rgba(cr, &bg);
+#else
+    GdkColor bg = gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)];
     gdk_cairo_set_source_color(cr, &bg);
+#endif
     cairo_rectangle(cr, ge->spot.x, ge->spot.y, ge->spot.width, ge->spot.height);
     cairo_stroke(cr);
     cairo_fill(cr);
@@ -922,20 +951,34 @@ gecontrol_draw_glyph_image(GEControl *ge)
     /*
      * 1. Draw the box around the image.
      */
+#if GTK_CHECK_VERSION(3, 0, 0)
+    GtkStyleContext *context = gtk_widget_get_style_context(w);
+    GdkRGBA fg;
+    gtk_style_context_get_color(context, gtk_widget_get_state_flags(w), &fg);
+
+    gdk_cairo_set_source_rgba(cr, &fg);
+#else
     GdkColor fg = gtk_widget_get_style(w)->fg[gtk_widget_get_state(w)];
     GdkColor bg = gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)];
+
+    gdk_cairo_set_source_color(cr, &fg);
+#endif
     cairo_rectangle(cr, ge->gimage->x, ge->gimage->y,
                         ge->gimage->width + 4, ge->gimage->height + 4);
 
     cairo_set_line_width(cr, 1.0);
-    gdk_cairo_set_source_color(cr, &fg);
     cairo_stroke_preserve(cr);
 
     /*
      * 2. Clear the space inside the rectangle.
      */
+#if GTK_CHECK_VERSION(3, 0, 0)
+    gtk_render_background(context, cr, ge->gimage->x + 1, ge->gimage->y + 1,
+                                       ge->gimage->width - 2, ge->gimage->height - 2);
+#else
     gdk_cairo_set_source_color(cr, &bg);
     cairo_fill(cr);
+#endif
 
     /*
      * 3. Draw the points.
