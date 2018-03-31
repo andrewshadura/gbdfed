@@ -113,7 +113,7 @@ enum {
  **************************************************************************/
 
 static GtkWidgetClass *parent_class = 0;
-static guint glyphedit_signals[OPERATION_CHANGE + 1];
+static guint glyphedit_signals[COLOR_CHANGE + 1];
 
 /**************************************************************************
  *
