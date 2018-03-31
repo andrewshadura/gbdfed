@@ -587,7 +587,7 @@ gecontrol_button_normal(GEControl *ge, gint button)
 #if GTK_CHECK_VERSION(3, 0, 0)
         GtkStyleContext *context = gtk_widget_get_style_context(w);
         GdkRGBA bg;
-        gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &bg);
+        gtk_style_context_get_background_color(context, GTK_STATE_FLAG_NORMAL, &bg);
         gdk_cairo_set_source_rgba(cr, &bg);
 #else
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_NORMAL];
@@ -669,7 +669,7 @@ gecontrol_button_prelight(GEControl *ge, gint button)
 #if GTK_CHECK_VERSION(3, 0, 0)
         GtkStyleContext *context = gtk_widget_get_style_context(w);
         GdkRGBA bg;
-        gtk_style_context_get_color(context, GTK_STATE_FLAG_PRELIGHT, &bg);
+        gtk_style_context_get_background_color(context, GTK_STATE_FLAG_PRELIGHT, &bg);
         gdk_cairo_set_source_rgba(cr, &bg);
 #else
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_PRELIGHT];
@@ -749,7 +749,7 @@ gecontrol_button_active(GEControl *ge, gint button)
 #if GTK_CHECK_VERSION(3, 0, 0)
         GtkStyleContext *context = gtk_widget_get_style_context(w);
         GdkRGBA bg;
-        gtk_style_context_get_color(context, GTK_STATE_FLAG_ACTIVE, &bg);
+        gtk_style_context_get_background_color(context, GTK_STATE_FLAG_ACTIVE, &bg);
         gdk_cairo_set_source_rgba(cr, &bg);
 #else
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_ACTIVE];
@@ -919,7 +919,7 @@ gecontrol_highlight_selected_spot(GEControl *ge)
 #if GTK_CHECK_VERSION(3, 0, 0)
     GtkStyleContext *context = gtk_widget_get_style_context(w);
     GdkRGBA bg;
-    gtk_style_context_get_color(context, gtk_widget_get_state_flags(w), &bg);
+    gtk_style_context_get_background_color(context, gtk_widget_get_state_flags(w), &bg);
     gdk_cairo_set_source_rgba(cr, &bg);
 #else
     GdkColor bg = gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)];
