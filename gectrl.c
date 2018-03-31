@@ -550,6 +550,8 @@ gecontrol_button_normal(GEControl *ge, gint button)
     if (button == GEC_GLYPH_IMAGE)
       return;
 
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+
     if (button < 3) {
         gtk_paint_diamond(gtk_widget_get_style(w),
                           gtk_widget_get_window(w), GTK_STATE_NORMAL,
@@ -566,7 +568,6 @@ gecontrol_button_normal(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
         cairo_new_path(cr);
         cairo_move_to(cr, points[0].x, points[0].y);
         cairo_line_to(cr, points[1].x, points[1].y);
@@ -577,7 +578,6 @@ gecontrol_button_normal(GEControl *ge, gint button)
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_NORMAL];
         gdk_cairo_set_source_color(cr, &bg);
         cairo_fill(cr);
-        cairo_destroy(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
@@ -590,7 +590,6 @@ gecontrol_button_normal(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
     gdk_cairo_set_source_pixbuf(cr, ge->buttons[button].image, ge->buttons[button].x + v, ge->buttons[button].y + v);
     cairo_rectangle(cr, ge->buttons[button].x + v, ge->buttons[button].y + v, BMAP_DIM, BMAP_DIM);
     cairo_fill(cr);
@@ -606,6 +605,8 @@ gecontrol_button_prelight(GEControl *ge, gint button)
 
     if (button == GEC_GLYPH_IMAGE)
       return;
+
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
 
     if (button < 3) {
         gtk_paint_diamond(gtk_widget_get_style(w),
@@ -623,7 +624,6 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
         cairo_new_path(cr);
         cairo_move_to(cr, points[0].x, points[0].y);
         cairo_line_to(cr, points[1].x, points[1].y);
@@ -634,7 +634,6 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_PRELIGHT];
         gdk_cairo_set_source_color(cr, &bg);
         cairo_fill(cr);
-        cairo_destroy(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
@@ -646,7 +645,6 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
     gdk_cairo_set_source_pixbuf(cr, ge->buttons[button].image, ge->buttons[button].x + v, ge->buttons[button].y + v);
     cairo_rectangle(cr, ge->buttons[button].x + v, ge->buttons[button].y + v, BMAP_DIM, BMAP_DIM);
     cairo_fill(cr);
@@ -662,6 +660,8 @@ gecontrol_button_active(GEControl *ge, gint button)
 
     if (button == GEC_GLYPH_IMAGE)
       return;
+
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
 
     if (button < 3) {
         gtk_paint_diamond(gtk_widget_get_style(w),
@@ -679,7 +679,6 @@ gecontrol_button_active(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
         cairo_new_path(cr);
         cairo_move_to(cr, points[0].x, points[0].y);
         cairo_line_to(cr, points[1].x, points[1].y);
@@ -690,7 +689,6 @@ gecontrol_button_active(GEControl *ge, gint button)
         GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_ACTIVE];
         gdk_cairo_set_source_color(cr, &bg);
         cairo_fill(cr);
-        cairo_destroy(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
@@ -702,7 +700,6 @@ gecontrol_button_active(GEControl *ge, gint button)
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
     }
 
-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
     gdk_cairo_set_source_pixbuf(cr, ge->buttons[button].image, ge->buttons[button].x + v, ge->buttons[button].y + v);
     cairo_rectangle(cr, ge->buttons[button].x + v, ge->buttons[button].y + v, BMAP_DIM, BMAP_DIM);
     cairo_fill(cr);
