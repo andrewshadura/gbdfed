@@ -934,7 +934,7 @@ gecontrol_highlight_selected_spot(GEControl *ge)
                         ge->spot.width, ge->spot.height);
     cairo_fill(cr);
     cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
-    cairo_rectangle(cr, x, y, 7, 7);
+    cairo_rectangle(cr, x + 0.5, y + 0.5, 7, 7);
     cairo_stroke(cr);
     cairo_destroy(cr);
 }
