@@ -554,8 +554,17 @@ gecontrol_button_normal(GEControl *ge, gint button)
 
     if (button < 3) {
         gtk_paint_diamond(gtk_widget_get_style(w),
-                          gtk_widget_get_window(w), GTK_STATE_NORMAL,
-                          GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+#if GTK_CHECK_VERSION(3, 0, 0)
+                          cr,
+#else
+                          gtk_widget_get_window(w),
+#endif
+                          GTK_STATE_NORMAL,
+                          GTK_SHADOW_OUT,
+#if !GTK_CHECK_VERSION(3, 0, 0)
+                          0,
+#endif
+                          GTK_WIDGET(ge), "gectrl",
                           ge->buttons[button].x, ge->buttons[button].y,
                           GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
@@ -589,9 +598,18 @@ gecontrol_button_normal(GEControl *ge, gint button)
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
-        gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
+        gtk_paint_box(gtk_widget_get_style(w),
+#if GTK_CHECK_VERSION(3, 0, 0)
+                      cr,
+#else
+                      gtk_widget_get_window(w),
+#endif
                       GTK_STATE_NORMAL,
-                      GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+                      GTK_SHADOW_OUT,
+#if !GTK_CHECK_VERSION(3, 0, 0)
+                      0,
+#endif
+                      GTK_WIDGET(ge), "gectrl",
                       ge->buttons[button].x, ge->buttons[button].y,
                       GEC_BUTTON_SIZE, GEC_BUTTON_SIZE);
 
@@ -618,8 +636,17 @@ gecontrol_button_prelight(GEControl *ge, gint button)
 
     if (button < 3) {
         gtk_paint_diamond(gtk_widget_get_style(w),
-                          gtk_widget_get_window(w), GTK_STATE_PRELIGHT,
-                          GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+#if GTK_CHECK_VERSION(3, 0, 0)
+                          cr,
+#else
+                          gtk_widget_get_window(w),
+#endif
+                          GTK_STATE_PRELIGHT,
+                          GTK_SHADOW_OUT,
+#if !GTK_CHECK_VERSION(3, 0, 0)
+                          0,
+#endif
+                          GTK_WIDGET(ge), "gectrl",
                           ge->buttons[button].x, ge->buttons[button].y,
                           GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
@@ -652,9 +679,18 @@ gecontrol_button_prelight(GEControl *ge, gint button)
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
-        gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
+        gtk_paint_box(gtk_widget_get_style(w),
+#if GTK_CHECK_VERSION(3, 0, 0)
+                      cr,
+#else
+                      gtk_widget_get_window(w),
+#endif
                       GTK_STATE_PRELIGHT,
-                      GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+                      GTK_SHADOW_OUT,
+#if !GTK_CHECK_VERSION(3, 0, 0)
+                      0,
+#endif
+                      GTK_WIDGET(ge), "gectrl",
                       ge->buttons[button].x, ge->buttons[button].y,
                       GEC_BUTTON_SIZE, GEC_BUTTON_SIZE);
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
@@ -680,8 +716,17 @@ gecontrol_button_active(GEControl *ge, gint button)
 
     if (button < 3) {
         gtk_paint_diamond(gtk_widget_get_style(w),
-                          gtk_widget_get_window(w), GTK_STATE_ACTIVE,
-                          GTK_SHADOW_OUT, 0, GTK_WIDGET(ge), "gectrl",
+#if GTK_CHECK_VERSION(3, 0, 0)
+                          cr,
+#else
+                          gtk_widget_get_window(w),
+#endif
+                          GTK_STATE_ACTIVE,
+                          GTK_SHADOW_OUT,
+#if !GTK_CHECK_VERSION(3, 0, 0)
+                          0,
+#endif
+                          GTK_WIDGET(ge), "gectrl",
                           ge->buttons[button].x, ge->buttons[button].y,
                           GEC_TOGGLE_SIZE, GEC_TOGGLE_SIZE);
 
@@ -714,9 +759,18 @@ gecontrol_button_active(GEControl *ge, gint button)
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
-        gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
+        gtk_paint_box(gtk_widget_get_style(w),
+#if GTK_CHECK_VERSION(3, 0, 0)
+                      cr,
+#else
+                      gtk_widget_get_window(w),
+#endif
                       GTK_STATE_ACTIVE,
-                      GTK_SHADOW_IN, 0, GTK_WIDGET(ge), "gectrl",
+                      GTK_SHADOW_IN,
+#if !GTK_CHECK_VERSION(3, 0, 0)
+                      0,
+#endif
+                      GTK_WIDGET(ge), "gectrl",
                       ge->buttons[button].x, ge->buttons[button].y,
                       GEC_BUTTON_SIZE, GEC_BUTTON_SIZE);
         v = (GEC_BUTTON_SIZE >> 1) - (BMAP_DIM >> 1);
