@@ -566,13 +566,20 @@ gecontrol_button_normal(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        gdk_draw_polygon(gtk_widget_get_window(w),
-                         gtk_widget_get_style(w)->bg_gc[GTK_STATE_NORMAL],
-                         TRUE,
-                         points, 4);
+        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+        cairo_new_path(cr);
+        cairo_move_to(cr, points[0].x, points[0].y);
+        cairo_line_to(cr, points[1].x, points[1].y);
+        cairo_line_to(cr, points[2].x, points[2].y);
+        cairo_line_to(cr, points[3].x, points[3].y);
+        cairo_close_path(cr);
+
+        GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_NORMAL];
+        gdk_cairo_set_source_color(cr, &bg);
+        cairo_fill(cr);
+        cairo_destroy(cr);
 
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
-
     } else {
         gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
                       GTK_STATE_NORMAL,
@@ -616,9 +623,19 @@ gecontrol_button_prelight(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        gdk_draw_polygon(gtk_widget_get_window(w),
-                         gtk_widget_get_style(w)->bg_gc[GTK_STATE_PRELIGHT],
-                         TRUE, points, 4);
+        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+        cairo_new_path(cr);
+        cairo_move_to(cr, points[0].x, points[0].y);
+        cairo_line_to(cr, points[1].x, points[1].y);
+        cairo_line_to(cr, points[2].x, points[2].y);
+        cairo_line_to(cr, points[3].x, points[3].y);
+        cairo_close_path(cr);
+
+        GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_PRELIGHT];
+        gdk_cairo_set_source_color(cr, &bg);
+        cairo_fill(cr);
+        cairo_destroy(cr);
+
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
         gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
@@ -662,9 +679,19 @@ gecontrol_button_active(GEControl *ge, gint button)
         points[3].x = ge->buttons[button].x + GEC_TOGGLE_SIZE - 3;
         points[3].y = points[1].y;
 
-        gdk_draw_polygon(gtk_widget_get_window(w),
-                         gtk_widget_get_style(w)->bg_gc[GTK_STATE_ACTIVE],
-                         TRUE, points, 4);
+        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+        cairo_new_path(cr);
+        cairo_move_to(cr, points[0].x, points[0].y);
+        cairo_line_to(cr, points[1].x, points[1].y);
+        cairo_line_to(cr, points[2].x, points[2].y);
+        cairo_line_to(cr, points[3].x, points[3].y);
+        cairo_close_path(cr);
+
+        GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_ACTIVE];
+        gdk_cairo_set_source_color(cr, &bg);
+        cairo_fill(cr);
+        cairo_destroy(cr);
+
         v = (GEC_TOGGLE_SIZE >> 1) - (BMAP_DIM >> 1);
     } else {
         gtk_paint_box(gtk_widget_get_style(w), gtk_widget_get_window(w),
@@ -893,25 +920,30 @@ gecontrol_draw_glyph_image(GEControl *ge)
     if (ge->gimage == 0 || !gtk_widget_get_realized(w))
       return;
 
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
+
     /*
      * 1. Draw the box around the image.
      */
-    gdk_draw_rectangle(gtk_widget_get_window(w),
-                       gtk_widget_get_style(w)->fg_gc[gtk_widget_get_state(w)],
-                       FALSE, ge->gimage->x, ge->gimage->y,
-                       ge->gimage->width + 4, ge->gimage->height + 4);
+    GdkColor fg = gtk_widget_get_style(w)->fg[gtk_widget_get_state(w)];
+    GdkColor bg = gtk_widget_get_style(w)->bg[gtk_widget_get_state(w)];
+    cairo_rectangle(cr, ge->gimage->x, ge->gimage->y,
+                        ge->gimage->width + 4, ge->gimage->height + 4);
+
+    cairo_set_line_width(cr, 1.0);
+    gdk_cairo_set_source_color(cr, &fg);
+    cairo_stroke_preserve(cr);
 
     /*
      * 2. Clear the space inside the rectangle.
      */
-    gdk_window_clear_area(gtk_widget_get_window(w), ge->gimage->x + 1, ge->gimage->y + 1,
-                          ge->gimage->width - 2, ge->gimage->height - 2);
+    gdk_cairo_set_source_color(cr, &bg);
+    cairo_fill(cr);
 
     /*
      * 3. Draw the points.
      */
     gecontrol_make_rgb_glyph(ge);
-    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
     cairo_set_source_surface(cr, ge->glyph_surface, ge->gimage->x + 2, ge->gimage->y + 2);
     cairo_rectangle(cr, ge->gimage->x + 2, ge->gimage->y + 2,
                         ge->gimage->width, ge->gimage->height);
