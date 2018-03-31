@@ -309,6 +309,26 @@ glyphedit_preferred_size(GtkWidget *widget, GtkRequisition *preferred)
 }
 
 static void
+glyphedit_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+    GtkRequisition requisition;
+
+    glyphedit_preferred_size(widget, &requisition);
+
+    *minimal_width = *natural_width = requisition.width;
+}
+
+static void
+glyphedit_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+    GtkRequisition requisition;
+
+    glyphedit_preferred_size(widget, &requisition);
+
+    *minimal_height = *natural_height = requisition.height;
+}
+
+static void
 glyphedit_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
     gtk_widget_set_allocation(widget, actual);
@@ -712,7 +732,11 @@ glyphedit_realize(GtkWidget *widget)
 }
 
 static gboolean
+#if GTK_CHECK_VERSION(3, 0, 0)
+glyphedit_draw(GtkWidget *widget, cairo_t *cr)
+#else
 glyphedit_expose(GtkWidget *widget, GdkEventExpose *event)
+#endif
 {
     GtkAllocation all;
 
@@ -2468,10 +2492,16 @@ glyphedit_class_init(gpointer g_class, gpointer class_data)
     /*
      * Set all the functions for handling events for objects of this class.
      */
-    wcp->size_request = glyphedit_preferred_size;
     wcp->size_allocate = glyphedit_actual_size;
     wcp->realize = glyphedit_realize;
+#if GTK_CHECK_VERSION(3, 0, 0)
+    wcp->get_preferred_width = glyphedit_get_preferred_width;
+    wcp->get_preferred_height = glyphedit_get_preferred_height;
+    wcp->draw = glyphedit_draw;
+#else
+    wcp->size_request = glyphedit_preferred_size;
     wcp->expose_event = glyphedit_expose;
+#endif
     wcp->focus_out_event = glyphedit_focus_out;
     wcp->button_press_event = glyphedit_button_press;
     wcp->button_release_event = glyphedit_button_release;
