@@ -199,7 +199,11 @@ glyphedit_get_property(GObject *obj, guint prop_id, GValue *value,
 }
 
 static void
+#if GTK_CHECK_VERSION(3, 0, 0)
+glyphedit_destroy(GtkWidget *obj)
+#else
 glyphedit_destroy(GtkObject *obj)
+#endif
 {
     Glyphedit *gw;
     GlypheditClass *gwc;
@@ -220,26 +224,13 @@ glyphedit_destroy(GtkObject *obj)
      * time since the objects are created at class initialization time.
      */
     if (gwc->cursor != 0)
+#if GTK_CHECK_VERSION(3, 0, 0)
+      g_object_unref(gwc->cursor);
+#else
       gdk_cursor_unref(gwc->cursor);
-
-    if (gwc->gridgc != 0)
-      g_object_unref(G_OBJECT(gwc->gridgc));
-    if (gwc->bbxgc != 0)
-      g_object_unref(G_OBJECT(gwc->bbxgc));
-    if (gwc->pixgc != 0)
-      g_object_unref(G_OBJECT(gwc->pixgc));
-    if (gwc->selgc != 0)
-      g_object_unref(G_OBJECT(gwc->selgc));
-
-    /*
-     * Free up any colors allocated.
-     */
-    if (gw->baselineColor.pixel != 0)
-      gdk_colormap_free_colors(gtk_widget_get_style(&gw->widget)->colormap,
-                               &gw->baselineColor, 1);
+#endif
 
     gwc->cursor = 0;
-    gwc->gridgc = gwc->bbxgc = gwc->pixgc = gwc->selgc = 0;
 
     /*
      * Free up the grid info.
@@ -249,12 +240,11 @@ glyphedit_destroy(GtkObject *obj)
         gw->grid = 0;
     }
 
-    if (gw->spot_size > 0) {
-        g_free(gw->spot);
-        gw->spot_size = gw->spot_used = 0;
-    }
-
+#if GTK_CHECK_VERSION(3, 0, 0)
+    GTK_WIDGET_CLASS(parent_class)->destroy(obj);
+#else
     GTK_OBJECT_CLASS(parent_class)->destroy(obj);
+#endif
 }
 
 static void
@@ -308,6 +298,7 @@ glyphedit_preferred_size(GtkWidget *widget, GtkRequisition *preferred)
         ((gw->pixel_size + 4) * gw->grid->grid_width);
 }
 
+#if GTK_CHECK_VERSION(3, 0, 0)
 static void
 glyphedit_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
 {
@@ -327,6 +318,7 @@ glyphedit_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *na
 
     *minimal_height = *natural_height = requisition.height;
 }
+#endif
 
 static void
 glyphedit_actual_size(GtkWidget *widget, GtkAllocation *actual)
@@ -342,7 +334,6 @@ static void
 glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
 {
     GtkWidget *w = GTK_WIDGET(gw);
-    GlypheditClass *gwc;
     gint16 bpr, set, dx, dy, di, si;
     guchar *masks, *bmap;
     GdkRectangle pix;
@@ -351,7 +342,7 @@ glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
     if (!gtk_widget_get_realized(w) || gw->grid == 0)
       return;
 
-    gwc = GLYPHEDIT_GET_CLASS(gw);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
 
     di = 0;
     masks = 0;
@@ -391,30 +382,55 @@ glyphedit_draw_pixel(Glyphedit *gw, gint16 x, gint16 y, gboolean sel)
 
     if (set) {
         if (gw->grid->bpp > 1) {
+            gdouble color = 0;
             switch (gw->grid->bpp) {
               case 2:
-                memset(gw->spot, gw->colors[set-1], gw->spot_used);
+                color = gw->colors[set - 1] / 255.0;
                 break;
               case 4:
-                memset(gw->spot, gw->colors[set-1+4], gw->spot_used);
+                color = gw->colors[set - 1 + 1] / 255.0;
                 break;
               case 8:
-                memset(gw->spot, set, gw->spot_used);
+                color = set / 255.0;
                 break;
             }
-            gdk_draw_gray_image(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->pixgc,
-                                pix.x, pix.y, pix.width, pix.height,
-                                GDK_RGB_DITHER_NONE, gw->spot, pix.width);
-        } else
-          gdk_draw_rectangle(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->pixgc, TRUE,
-                             pix.x, pix.y, pix.width, pix.height);
-    } else
-      gdk_window_clear_area(gtk_widget_get_window(GTK_WIDGET(gw)), pix.x, pix.y,
-                            pix.width, pix.height);
-    if (sel == TRUE)
-      gdk_draw_rectangle(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->selgc, TRUE,
-                         pix.x + 1, pix.y + 1,
-                         pix.width - 2, pix.height - 2);
+            cairo_set_source_rgb(cr, color, color, color);
+        } else {
+#if GTK_CHECK_VERSION(3, 0, 0)
+            GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(gw));
+            gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &gw->baselineColor);
+            gdk_cairo_set_source_rgba(cr, &gw->baselineColor);
+#else
+            gdk_cairo_set_source_color(cr, &gw->baselineColor);
+#endif
+        }
+
+        cairo_rectangle(cr, pix.x, pix.y, pix.width, pix.height);
+        cairo_fill(cr);
+    } else {
+#if GTK_CHECK_VERSION(3, 0, 0)
+        GtkStyleContext *context = gtk_widget_get_style_context(w);
+        gtk_render_background(context, cr, pix.x, pix.y, pix.width, pix.height);
+#else
+        GdkColor bg = gtk_widget_get_style(w)->bg[GTK_STATE_NORMAL];
+        gdk_cairo_set_source_color(cr, &bg);
+        cairo_rectangle(cr, pix.x, pix.y, pix.width, pix.height);
+        cairo_fill(cr);
+#endif
+    }
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+    gdk_cairo_set_source_rgba(cr, &gw->selectionColor);
+#else
+    gdk_cairo_set_source_color(cr, &gw->selectionColor);
+#endif
+
+    if (sel == TRUE) {
+        cairo_rectangle(cr, pix.x + 1, pix.y + 1, pix.width - 2, pix.height - 2);
+        cairo_fill(cr);
+    }
+
+    cairo_destroy(cr);
 }
 
 static void
@@ -439,7 +455,6 @@ static void
 glyphedit_draw_font_bbx(Glyphedit *gw)
 {
     GtkWidget *w = GTK_WIDGET(gw);
-    GlypheditClass *gwc;
     gint16 xoff, yoff, fxoff, fyoff, psize;
     GdkRectangle frame;
     GtkAllocation all;
@@ -447,7 +462,7 @@ glyphedit_draw_font_bbx(Glyphedit *gw)
     if (!gtk_widget_get_realized(w))
       return;
 
-    gwc = GLYPHEDIT_GET_CLASS(gw);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
 
     psize = gw->pixel_size + 4;
     frame.width = psize * gw->grid->font_bbx.width;
@@ -468,16 +483,15 @@ glyphedit_draw_font_bbx(Glyphedit *gw)
 
     fyoff = psize * (gw->grid->base_y - gw->grid->font_bbx.ascent);
 
-    /*
-     * Due to some odd behavior, the box has to be drawn with the y point off
-     * by one because the top of the rectangle does not get drawn otherwise.
-     * Even calling gdk_draw_line() specifically doesn't work.
-     *
-     * This may have been fixed in later versions of GDK.
-     */
-    gdk_draw_rectangle(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->bbxgc, FALSE,
-                       frame.x + fxoff, frame.y + fyoff + 1,
-                       frame.width, frame.height);
+    cairo_set_line_width(cr, 1.2);
+    cairo_rectangle(cr, frame.x + fxoff + 0.5, frame.y + fyoff + 0.5, frame.width, frame.height);
+    cairo_stroke(cr);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+    gdk_cairo_set_source_rgba(cr, &gw->boundsColor);
+#else
+    gdk_cairo_set_source_color(cr, &gw->boundsColor);
+#endif
 
     /*
      * Draw vertical baseline.
@@ -485,16 +499,16 @@ glyphedit_draw_font_bbx(Glyphedit *gw)
     xoff = (gw->pixel_size + 4) * gw->grid->base_x;
     yoff = (gw->pixel_size + 4) * gw->grid->base_y;
 
-    gdk_draw_line(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->bbxgc,
-                  frame.x + xoff, frame.y + fyoff,
-                  frame.x + xoff, frame.y + fyoff + frame.height);
+    cairo_set_source_rgb(cr, 1.0, 0.0, 0.0);
+    cairo_move_to(cr, frame.x + xoff + 0.5, frame.y + fyoff + 0.5);
+    cairo_rel_line_to(cr, 0, frame.height);
 
     /*
      * Draw horizontal baseline.
      */
-    gdk_draw_line(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->bbxgc,
-                  frame.x + fxoff, frame.y + yoff,
-                  frame.x + fxoff + frame.width, frame.y + yoff);
+    cairo_move_to(cr, frame.x + fxoff + 0.5, frame.y + yoff + 0.5);
+    cairo_rel_line_to(cr, frame.width, 0);
+    cairo_stroke(cr);
 
     /*
      * Draw the CAP_HEIGHT if indicated and exists.
@@ -502,17 +516,22 @@ glyphedit_draw_font_bbx(Glyphedit *gw)
     if (gw->grid && gw->grid->cap_height != 0) {
         yoff = (gw->pixel_size + 4) *
             (gw->grid->base_y - gw->grid->cap_height);
-        if (gw->show_cap_height == TRUE)
-          gdk_draw_line(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->bbxgc,
-                        frame.x + fxoff, frame.y + yoff,
-                        frame.x + fxoff + frame.width, frame.y + yoff);
-        else {
-            gdk_window_clear_area(gtk_widget_get_window(GTK_WIDGET(gw)), frame.x + fxoff,
-                                  frame.y + yoff, frame.width, 1);
-            gdk_draw_line(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->gridgc,
-                          frame.x + fxoff, frame.y + yoff,
-                          frame.x + fxoff + frame.width, frame.y + yoff);
+        if (gw->show_cap_height == TRUE) {
+#if GTK_CHECK_VERSION(3, 0, 0)
+            gdk_cairo_set_source_rgba(cr, &gw->boundsColor);
+#else
+            gdk_cairo_set_source_color(cr, &gw->boundsColor);
+#endif
+        } else {
+#if GTK_CHECK_VERSION(3, 0, 0)
+            gdk_cairo_set_source_rgba(cr, &gw->baselineColor);
+#else
+            gdk_cairo_set_source_color(cr, &gw->baselineColor);
+#endif
         }
+        cairo_move_to(cr, frame.x + fxoff + 0.5, frame.y + yoff + 0.5);
+        cairo_rel_line_to(cr, frame.width, 0);
+        cairo_stroke(cr);
     }
 
     /*
@@ -521,33 +540,38 @@ glyphedit_draw_font_bbx(Glyphedit *gw)
     if (gw->grid && gw->grid->x_height != 0) {
         yoff = (gw->pixel_size + 4) * (gw->grid->base_y - gw->grid->x_height);
         if (gw->show_x_height == TRUE)
-          gdk_draw_line(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->bbxgc,
-                        frame.x + fxoff, frame.y + yoff,
-                        frame.x + fxoff + frame.width, frame.y + yoff);
+#if GTK_CHECK_VERSION(3, 0, 0)
+            gdk_cairo_set_source_rgba(cr, &gw->boundsColor);
+#else
+            gdk_cairo_set_source_color(cr, &gw->boundsColor);
+#endif
         else {
-            gdk_window_clear_area(gtk_widget_get_window(GTK_WIDGET(gw)), frame.x + fxoff,
-                                  frame.y + yoff, frame.width, 1);
-            gdk_draw_line(gtk_widget_get_window(GTK_WIDGET(gw)), gwc->gridgc,
-                          frame.x + fxoff, frame.y + yoff,
-                          frame.x + fxoff + frame.width, frame.y + yoff);
+#if GTK_CHECK_VERSION(3, 0, 0)
+            gdk_cairo_set_source_rgba(cr, &gw->baselineColor);
+#else
+            gdk_cairo_set_source_color(cr, &gw->baselineColor);
+#endif
         }
+        cairo_move_to(cr, frame.x + fxoff + 0.5, frame.y + yoff + 0.5);
+        cairo_rel_line_to(cr, frame.width, 0);
+        cairo_stroke(cr);
     }
+
+    cairo_destroy(cr);
 }
 
-static void
-glyphedit_draw(GtkWidget *widget, GdkRegion *region)
+static gboolean
+glyphedit_draw(GtkWidget *widget, cairo_t *cr)
 {
     Glyphedit *gw;
     gint x, y, limit, unit, wd, ht;
-    GlypheditClass *gwc;
     GdkRectangle frame;
     GtkAllocation all;
 
-    g_return_if_fail(widget != NULL);
-    g_return_if_fail(IS_GLYPHEDIT(widget));
+    g_return_val_if_fail(widget != NULL, FALSE);
+    g_return_val_if_fail(IS_GLYPHEDIT(widget), FALSE);
 
     gw = GLYPHEDIT(widget);
-    gwc = GLYPHEDIT_GET_CLASS(widget);
 
     wd = gw->grid->grid_width;
     ht = gw->grid->grid_height;
@@ -567,110 +591,44 @@ glyphedit_draw(GtkWidget *widget, GdkRegion *region)
     /*
      * Limit the drawing area to the clip region.
      */
-    if (region != 0)
-      gdk_gc_set_clip_region(gwc->gridgc, region);
+
+#if 0
+    double dash = 1.0;
+    cairo_set_dash(cr, &dash, 1, 0);
+#endif
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
 
     /*
      * Draw the outside frame.
      */
-    gdk_draw_rectangle(gtk_widget_get_window(widget), gwc->gridgc, FALSE,
-                       frame.x, frame.y, frame.width, frame.height);
-
+    cairo_rectangle(cr, frame.x + 0.5, frame.y + 0.5, frame.width, frame.height);
     /*
      * Draw the vertical grid lines.
      */
     limit = frame.x + frame.width;
     unit = gw->pixel_size + 4;
-    for (x = frame.x + unit, y = frame.y; x < limit; x += unit)
-      gdk_draw_line(gtk_widget_get_window(widget), gwc->gridgc, x, y, x, y + frame.height);
+    for (x = frame.x + unit, y = frame.y; x < limit; x += unit) {
+        cairo_move_to(cr, x + 0.5, y + 0.5);
+        cairo_rel_line_to(cr, 0, frame.height);
+    }
 
     /*
      * Draw the horizontal grid lines.
      */
     limit = frame.y + frame.height;
-    for (x = frame.x, y = frame.y + unit; y < limit; y += unit)
-      gdk_draw_line(gtk_widget_get_window(widget), gwc->gridgc, x, y, x + frame.width, y);
+    for (x = frame.x, y = frame.y + unit; y < limit; y += unit) {
+        cairo_move_to(cr, x + 0.5, y + 0.5);
+        cairo_rel_line_to(cr, frame.width, 0);
+    }
 
-    if (region != 0)
-      gdk_gc_set_clip_region(gwc->gridgc, 0);
+    cairo_stroke(cr);
 
     glyphedit_draw_font_bbx(gw);
     glyphedit_draw_glyph(gw);
-}
 
-static void
-glyphedit_create_gcs(GtkWidget *widget, gboolean force)
-{
-    Glyphedit *gw;
-    GlypheditClass *gwc;
-    GdkGCValuesMask gcm;
-    GdkGCValues gcv;
-    gint8 dashes[2] = {1, 1};
-
-    gw = GLYPHEDIT(widget);
-    gwc = GLYPHEDIT_GET_CLASS(G_OBJECT(widget));
-
-    gcm = GDK_GC_FOREGROUND|GDK_GC_BACKGROUND|GDK_GC_FUNCTION;
-
-    if (gwc->gridgc == 0 || force == TRUE) {
-        if (gwc->gridgc != 0)
-          g_object_unref(G_OBJECT(gwc->gridgc));
-        gcv.foreground.pixel =
-            gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel;
-        gcv.background.pixel =
-            gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
-        gcv.function = GDK_COPY;
-        gcv.line_style = GDK_LINE_ON_OFF_DASH;
-        gwc->gridgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv,
-                                             gcm|GDK_GC_LINE_STYLE);
-
-        /*
-         * Now set the dash lengths since they can't be set in the GC values.
-         */
-        gdk_gc_set_dashes(gwc->gridgc, 0, dashes, 2);
-    }
-
-    if (gwc->bbxgc == 0 || force == TRUE) {
-        if (gwc->bbxgc != 0)
-          g_object_unref(G_OBJECT(gwc->bbxgc));
-
-        if (gw->baselineColor.pixel == 0)
-          /*
-           * Default to red.
-           */
-          gdk_colormap_alloc_color(gtk_widget_get_style(&gw->widget)->colormap,
-                                   &gw->baselineColor, FALSE, TRUE);
-
-        gcv.foreground.pixel = gw->baselineColor.pixel;
-        gcv.function = GDK_COPY;
-        gwc->bbxgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv,
-                                            GDK_GC_FOREGROUND|GDK_GC_FUNCTION);
-    }
-
-    if (gwc->selgc == 0 || force == TRUE) {
-        if (gwc->selgc != 0)
-          g_object_unref(G_OBJECT(gwc->selgc));
-
-        gcv.foreground.pixel =
-            gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel;
-        gcv.background.pixel =
-            gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
-        gcv.foreground.pixel ^= gcv.background.pixel;
-        gcv.function = GDK_XOR;
-        gwc->selgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv, gcm);
-    }
-
-    if (gwc->pixgc == 0 || force == TRUE) {
-        if (gwc->pixgc != 0)
-          g_object_unref(G_OBJECT(gwc->pixgc));
-
-        gcv.foreground.pixel =
-            gtk_widget_get_style(widget)->fg[gtk_widget_get_state(widget)].pixel;
-        gcv.background.pixel =
-            gtk_widget_get_style(widget)->bg[gtk_widget_get_state(widget)].pixel;
-        gcv.function = GDK_COPY;
-        gwc->pixgc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &gcv, gcm);
-    }
+    return FALSE;
 }
 
 static void
@@ -697,7 +655,6 @@ glyphedit_realize(GtkWidget *widget)
     attributes.height = all.height;
     attributes.wclass = GDK_INPUT_OUTPUT;
     attributes.visual = gtk_widget_get_visual(widget);
-    attributes.colormap = gtk_widget_get_colormap(widget);
     attributes.event_mask = gtk_widget_get_events(widget);
     attributes.event_mask |= (GDK_EXPOSURE_MASK|GDK_BUTTON_PRESS_MASK|
                               GDK_BUTTON_RELEASE_MASK|GDK_ENTER_NOTIFY_MASK|
@@ -706,7 +663,7 @@ glyphedit_realize(GtkWidget *widget)
                               GDK_LEAVE_NOTIFY_MASK|GDK_FOCUS_CHANGE_MASK|
                               GDK_PROPERTY_CHANGE_MASK);
 
-    attributes_mask = GDK_WA_X|GDK_WA_Y|GDK_WA_VISUAL|GDK_WA_COLORMAP;
+    attributes_mask = GDK_WA_X|GDK_WA_Y|GDK_WA_VISUAL;
 
     gtk_widget_set_window(widget, gdk_window_new(gtk_widget_get_parent_window(widget),
                                   &attributes, attributes_mask));
@@ -726,17 +683,12 @@ glyphedit_realize(GtkWidget *widget)
         g_object_unref(G_OBJECT(cb));
     }
 
-    glyphedit_create_gcs(widget, FALSE);
-
     gdk_window_set_cursor(gtk_widget_get_window(widget), gwc->cursor);
 }
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
 static gboolean
-#if GTK_CHECK_VERSION(3, 0, 0)
-glyphedit_draw(GtkWidget *widget, cairo_t *cr)
-#else
 glyphedit_expose(GtkWidget *widget, GdkEventExpose *event)
-#endif
 {
     GtkAllocation all;
 
@@ -753,10 +705,15 @@ glyphedit_expose(GtkWidget *widget, GdkEventExpose *event)
                        all.width,
                        all.height);
 
-    glyphedit_draw(widget, event->region);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
+
+    glyphedit_draw(widget, cr);
+
+    cairo_destroy(cr);
 
     return FALSE;
 }
+#endif
 
 static gint
 glyphedit_focus_out(GtkWidget *widget, GdkEventFocus *event)
@@ -838,25 +795,9 @@ static void
 glyphedit_init(GTypeInstance *obj, gpointer g_class)
 {
     Glyphedit *gw = GLYPHEDIT(obj);
-    GlypheditClass *gwc = GLYPHEDIT_CLASS(g_class);
     gint fwidth, fpad;
 
-    gwc->gridgc = gwc->bbxgc = gwc->pixgc = gwc->selgc = 0;
-
     gw->default_pixel_size = gw->pixel_size = DEFAULT_PIXEL_SIZE;
-
-    /*
-     * Make sure the spot is the right size.
-     */
-    fpad = (gw->pixel_size + 1) * (gw->pixel_size + 1);
-    if (gw->spot_size < fpad) {
-        if (gw->spot_size == 0)
-          gw->spot = g_malloc(fpad);
-        else
-          gw->spot = g_realloc(gw->spot, fpad);
-        gw->spot_size = fpad;
-    }
-    gw->spot_used = fpad;
 
     gw->owns_clipboard = FALSE;
 
@@ -882,6 +823,18 @@ glyphedit_init(GTypeInstance *obj, gpointer g_class)
                          "focus-padding", &fpad,
                          NULL);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+    /* TODO: for some reason the same code as below doesn't work in _init() */
+    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(gw));
+    gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &gw->baselineColor);
+    gtk_style_context_get_background_color(context, GTK_STATE_FLAG_SELECTED, &gw->selectionColor);
+    gdk_rgba_parse(&gw->boundsColor, "#ff0000");
+#else
+    gw->baselineColor = gtk_widget_get_style(GTK_WIDGET(gw))->fg[GTK_STATE_NORMAL];
+    gw->selectionColor = gtk_widget_get_style(GTK_WIDGET(gw))->bg[GTK_STATE_SELECTED];
+    gdk_color_parse("#ff0000", &gw->boundsColor);
+#endif
+
     /*
      * Padding that will appear before and after the focus rectangle.
      * Hardcode this for now.
@@ -890,12 +843,6 @@ glyphedit_init(GTypeInstance *obj, gpointer g_class)
 
     gw->hmargin = gtk_widget_get_style(&gw->widget)->xthickness + fwidth + fpad + gw->border;
     gw->vmargin = gtk_widget_get_style(&gw->widget)->ythickness + fwidth + fpad + gw->border;
-
-    gw->baselineColor.pixel = gw->selectionColor.pixel =
-        gw->cursorColor.pixel = 0;
-
-    gw->baselineColor.red = 0xffff;
-    gw->baselineColor.green = gw->baselineColor.blue = 0;
 
     gw->op = GLYPHEDIT_DRAW;
 }
@@ -924,6 +871,8 @@ glyphedit_signal_glyph_change(Glyphedit *gw)
     g_signal_emit(G_OBJECT(gw), glyphedit_signals[GLYPH_MODIFIED], 0, &si);
     if (image.bytes > 0)
       free(image.bitmap);
+
+    gtk_widget_queue_draw(GTK_WIDGET(gw));
 }
 
 /**************************************************************************
@@ -1343,8 +1292,6 @@ glyphedit_flip_glyph(Glyphedit *gw, GtkOrientation direction)
 void
 glyphedit_set_pixel_size(Glyphedit *gw, guint pixel_size)
 {
-    gint bytes;
-
     g_return_if_fail(gw != NULL);
     g_return_if_fail(IS_GLYPHEDIT(gw));
 
@@ -1355,19 +1302,6 @@ glyphedit_set_pixel_size(Glyphedit *gw, guint pixel_size)
      * Queue up a resize to force the resize and redraw.
      */
     gw->pixel_size = pixel_size;
-
-    /*
-     * Make sure the spot is the right size.
-     */
-    bytes = (pixel_size + 1) * (pixel_size + 1);
-    if (gw->spot_size < bytes) {
-        if (gw->spot_size == 0)
-          gw->spot = g_malloc(bytes);
-        else
-          gw->spot = g_realloc(gw->spot, bytes);
-        gw->spot_size = bytes;
-    }
-    gw->spot_used = bytes;
 
     gtk_widget_queue_resize(GTK_WIDGET(gw));
 }
@@ -2044,6 +1978,7 @@ glyphedit_update_selection(Glyphedit *gw, gint16 x, gint16 y, gboolean set)
               glyphedit_draw_pixel(gw, wd, ht, set);
         }
     }
+    gtk_widget_queue_draw(GTK_WIDGET(gw));
 }
 
 static gboolean
@@ -2104,6 +2039,7 @@ glyphedit_button_press(GtkWidget *w, GdkEventButton *event)
          * rectangle.
          */
         glyphedit_draw_pixel(gw, x, y, TRUE);
+        gtk_widget_queue_draw(w);
 
         gw->sel_start.x = gw->sel_end.x = x;
         gw->sel_start.y = gw->sel_end.y = y;
@@ -2144,6 +2080,7 @@ glyphedit_button_press(GtkWidget *w, GdkEventButton *event)
              * rectangle.
              */
             glyphedit_draw_pixel(gw, x, y, TRUE);
+            gtk_widget_queue_draw(w);
 
             gw->sel_start.x = gw->sel_end.x = x;
             gw->sel_start.y = gw->sel_end.y = y;
@@ -2198,6 +2135,7 @@ glyphedit_button_release(GtkWidget *w, GdkEventButton *event)
                   bdf_detach_selection(gw->grid);
             }
         }
+        gtk_widget_queue_draw(w);
     }
     gw->mouse_down = FALSE;
 
@@ -2389,7 +2327,6 @@ static void
 glyphedit_class_init(gpointer g_class, gpointer class_data)
 {
     GObjectClass *gocp = G_OBJECT_CLASS(g_class);
-    GtkObjectClass *ocp = GTK_OBJECT_CLASS(g_class);
     GtkWidgetClass *wcp = GTK_WIDGET_CLASS(g_class);
 
     /*
@@ -2397,7 +2334,11 @@ glyphedit_class_init(gpointer g_class, gpointer class_data)
      */
     parent_class = g_type_class_peek_parent(g_class);
 
-    ocp->destroy = glyphedit_destroy;
+#if GTK_CHECK_VERSION(3, 0, 0)
+    wcp->destroy = glyphedit_destroy;
+#else
+    GTK_OBJECT_CLASS(g_class)->destroy = glyphedit_destroy;
+#endif
 
     gocp->set_property = glyphedit_set_property;
     gocp->get_property = glyphedit_get_property;

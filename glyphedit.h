@@ -77,9 +77,16 @@ struct _Glyphedit {
     gboolean show_cap_height;
     gboolean show_x_height;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+    GdkRGBA baselineColor;
+    GdkRGBA selectionColor;
+    GdkRGBA boundsColor;
+#else
     GdkColor baselineColor;
     GdkColor selectionColor;
-    GdkColor cursorColor;
+    GdkColor boundsColor;
+#endif
+
 
     guint16 *colors;
     /*
@@ -120,15 +127,6 @@ struct _GlypheditClass {
      * Cursor.
      */
     GdkCursor *cursor;
-
-    /*
-     * GC's used for drawing.
-     */
-    GdkGC *gridgc;
-    GdkGC *bbxgc;
-    GdkGC *pixgc;
-    GdkGC *cleargc;
-    GdkGC *selgc;
 
     /*
      * Signal handlers.
