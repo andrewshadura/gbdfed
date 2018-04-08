@@ -108,110 +108,6 @@ static guint fontgrid_signals[TURN_TO_PAGE + 1];
 
 static bdf_glyph_t empty_glyph;
 
-/**************************************************************************
- *
- * Digits for displaying the cell encoding.
- *
- **************************************************************************/
-
-/*
- * Lists of points that describe the encoding digits.
- */
-typedef struct {
-    GdkPoint *points;
-    guint npoints;
-} fontgrid_digit;
-
-static GdkPoint digit00[] = {{2, 0}, {1, 1}, {3, 1}, {0, 2}, {4, 2}, {0, 3},
-                             {4, 3}, {0, 4}, {4, 4}, {1, 5}, {3, 5}, {2, 6}}; 
-
-static GdkPoint digit01[] = {{2, 0}, {1, 1}, {2, 1}, {0, 2}, {2, 2}, {2, 3},
-                             {2, 4}, {2, 5}, {0, 6}, {1, 6}, {2, 6}, {3, 6},
-                             {4, 6}};
-
-static GdkPoint digit02[] = {{1, 0}, {2, 0}, {3, 0}, {0, 1}, {4, 1}, {4, 2},
-                             {2, 3}, {3, 3}, {1, 4}, {0, 5}, {0, 6}, {1, 6},
-                             {2, 6}, {3, 6}, {4, 6}};
-
-static GdkPoint digit03[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {4, 1},
-                             {3, 2}, {2, 3},{3, 3}, {4, 4}, {0, 5}, {4, 5},
-                             {1, 6}, {2, 6}, {3, 6}};
-
-static GdkPoint digit04[] = {{3, 0}, {2, 1}, {3, 1}, {1, 2}, {3, 2}, {0, 3},
-                             {3, 3}, {0, 4}, {1, 4}, {2, 4}, {3, 4}, {4, 4},
-                             {3, 5}, {3, 6}};
-
-static GdkPoint digit05[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {0, 1},
-                             {0, 2}, {2, 2}, {3, 2}, {0, 3}, {1, 3}, {4, 3},
-                             {4, 4}, {0, 5}, {4, 5}, {1, 6}, {2, 6}, {3, 6}};
-
-static GdkPoint digit06[] = {{2, 0}, {3, 0}, {1, 1}, {0, 2}, {0, 3}, {2, 3},
-                             {3, 3}, {0, 4}, {1, 4}, {4, 4}, {0, 5}, {4, 5},
-                             {1, 6}, {2, 6}, {3, 6}};
-
-static GdkPoint digit07[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {4, 1},
-                             {3, 2}, {3, 3}, {2, 4}, {1, 5}, {1, 6}};
-
-static GdkPoint digit08[] = {{1, 0}, {2, 0}, {3, 0}, {0, 1}, {4, 1}, {0, 2},
-                             {4, 2}, {1, 3}, {2, 3}, {3, 3}, {0, 4}, {4, 4},
-                             {0, 5}, {4, 5}, {1, 6}, {2, 6}, {3, 6}};
-
-static GdkPoint digit09[] = {{1, 0}, {2, 0}, {3, 0}, {0, 1}, {4, 1}, {0, 2},
-                             {3, 2}, {4, 2}, {1, 3}, {2, 3}, {4, 3}, {4, 4},
-                             {3, 5}, {1, 6}, {2, 6}};
-
-static GdkPoint digit10[] = {{2, 0}, {1, 1}, {3, 1}, {0, 2}, {4, 2}, {0, 3},
-                             {4, 3}, {0, 4}, {1, 4}, {2, 4}, {3, 4}, {4, 4},
-                             {0, 5}, {4, 5}, {0, 6}, {4, 6}};
-
-static GdkPoint digit11[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {1, 1}, {4, 1},
-                             {1, 2}, {4, 2}, {1, 3}, {2, 3}, {3, 3}, {1, 4},
-                             {4, 4}, {1, 5}, {4, 5}, {0, 6}, {1, 6}, {2, 6},
-                             {3, 6}};
-
-static GdkPoint digit12[] = {{1, 0}, {2, 0}, {3, 0}, {0, 1}, {4, 1}, {0, 2},
-                             {0, 3}, {0, 4},{0, 5}, {4, 5}, {1, 6}, {2, 6},
-                             {3, 6}};
-
-static GdkPoint digit13[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {1, 1}, {4, 1},
-                             {1, 2}, {4, 2}, {1, 3}, {4, 3}, {1, 4}, {4, 4},
-                             {1, 5}, {4, 5}, {0, 6}, {1, 6}, {2, 6}, {3, 6}};
-
-static GdkPoint digit14[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {0, 1},
-                             {0, 2}, {0, 3}, {1, 3}, {2, 3}, {3, 3}, {0, 4},
-                             {0, 5}, {0, 6}, {1, 6}, {2, 6}, {3, 6}, {4, 6}};
-
-static GdkPoint digit15[] = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {0, 1},
-                             {0, 2}, {0, 3}, {1, 3}, {2, 3}, {3, 3}, {0, 4},
-                             {0, 5}, {0, 6}};
-static GdkPoint minus[] = {{1, 3}, {2, 3}, {3, 3}, {4,3}};
-
-static fontgrid_digit digits[] = {
-   {digit00, sizeof(digit00)/sizeof(GdkPoint)},
-   {digit01, sizeof(digit01)/sizeof(GdkPoint)},
-   {digit02, sizeof(digit02)/sizeof(GdkPoint)},
-   {digit03, sizeof(digit03)/sizeof(GdkPoint)},
-   {digit04, sizeof(digit04)/sizeof(GdkPoint)},
-   {digit05, sizeof(digit05)/sizeof(GdkPoint)},
-   {digit06, sizeof(digit06)/sizeof(GdkPoint)},
-   {digit07, sizeof(digit07)/sizeof(GdkPoint)},
-   {digit08, sizeof(digit08)/sizeof(GdkPoint)},
-   {digit09, sizeof(digit09)/sizeof(GdkPoint)},
-   {digit10, sizeof(digit10)/sizeof(GdkPoint)},
-   {digit11, sizeof(digit11)/sizeof(GdkPoint)},
-   {digit12, sizeof(digit12)/sizeof(GdkPoint)},
-   {digit13, sizeof(digit13)/sizeof(GdkPoint)},
-   {digit14, sizeof(digit14)/sizeof(GdkPoint)},
-   {digit15, sizeof(digit15)/sizeof(GdkPoint)},
-   {minus, sizeof(minus)/sizeof(GdkPoint)},
-};
-
-/*
- * This array is used to hold a set of digits that will be displayed.  It
- * provides for a max of 19 points per digit and a max of 6 digits.
- */
-static GdkPoint encoding_digits[19*6];
-
 /*
  * Used to determine spacing between digits when displaying.
  */
@@ -889,44 +785,38 @@ fontgrid_make_rgb_image(Fontgrid *fw, bdf_glyph_t *glyph)
 
 #if !GTK_CHECK_VERSION(3, 0, 0)
 static void
-fontgrid_draw_encoding(GtkWidget *w, GdkGC *gc, gint x, gint y, gchar *num,
+fontgrid_draw_encoding(GtkWidget *w, gint x, gint y, gchar *num,
                        gint numlen)
 {
     gint i, j, d;
+    Fontgrid *fw = FONTGRID(w);
     GdkPoint *dp;
 
     if (!gtk_widget_get_realized(w))
       return;
 
-    dp = encoding_digits;
-    for (i = 0; i < numlen; i++) {
-        if (num[i] == '-') 
-          d = 16;
-        else if (num[i] <= '9')
-          d = num[i] - '0';
-        else
-          d = (num[i] - 'A') + 10;
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(w));
 
-        /*
-         * Copy the next digit into the display array.
-         */
-        (void) memcpy((char *) dp, (char *) digits[d].points,
-                      sizeof(GdkPoint) * digits[d].npoints);
-        /*
-         * Position the points.
-         */
-        for (j = 0; j < digits[d].npoints; j++) {
-            dp[j].x += x;
-            dp[j].y += y;
-        }
-        dp += digits[d].npoints;
-        x += 6;
-    }
+    double font_size = fw->label_height - 2;
 
-    /*
-     * Draw the points.
-     */
-    gdk_draw_points(gtk_widget_get_window(w), gc, encoding_digits, dp - encoding_digits);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+
+    cairo_set_font_size(cr, font_size);
+
+    cairo_text_extents_t te;
+    cairo_text_extents(cr, "M", &te);
+    cairo_set_font_size(cr, font_size * te.width / te.height);
+
+    cairo_text_extents(cr, num, &te);
+
+    cairo_move_to(cr, (double)x - te.width / 2, (double)y + te.height / 2 - 0.5);
+
+    cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+
+    cairo_show_text (cr, num);
+
+    cairo_destroy(cr);
 }
 
 static void
@@ -1028,8 +918,8 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
             as = 8;
             ds = 0;
 
-            lx = (x + ((fw->cell_width >> 1) - (wd >> 1))) + 1;
-            ly = (y + ((fw->label_height >> 1) - ((as + ds) >> 1))) + 1;
+            lx = x + (fw->cell_width / 2) + 1;
+            ly = y + as;
 
             mod = FALSE;
             if (i <= 0xffff)
@@ -1043,7 +933,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                 gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
                                    rect.x + 2, rect.y + 2,
                                    rect.width - 3, rect.height - 3);
-                fontgrid_draw_encoding(widget, fw->xor_gc, lx, ly, nbuf, len);
+                fontgrid_draw_encoding(widget, lx, ly, nbuf, len);
                 if (gp && gp->encoding == i) {
                     ng++;
                     gp++;
@@ -1064,7 +954,7 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                     if (ng == nglyphs)
                       gp = 0;
                 }
-                fontgrid_draw_encoding(widget, gc, lx, ly, nbuf, len);
+                fontgrid_draw_encoding(widget, lx, ly, nbuf, len);
             }
         }
 
