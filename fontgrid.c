@@ -473,7 +473,11 @@ fontgrid_get_property(GObject *obj, guint prop_id, GValue *value,
  **************************************************************************/
 
 static void
+#if GTK_CHECK_VERSION(3, 0, 0)
+fontgrid_destroy(GtkWidget *obj)
+#else
 fontgrid_destroy(GtkObject *obj)
+#endif
 {
     Fontgrid *f;
     guint32 i;
@@ -495,9 +499,11 @@ fontgrid_destroy(GtkObject *obj)
       bdf_free_font(f->font);
     f->font = 0;
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
     if (f->xor_gc != 0)
       g_object_unref(G_OBJECT(f->xor_gc));
     f->xor_gc = 0;
+#endif
 
     if (f->points_size > 0)
       g_free(f->points);
@@ -530,7 +536,11 @@ fontgrid_destroy(GtkObject *obj)
      * Follow the class chain back up to free up resources allocated in the
      * parent classes.
      */
+#if GTK_CHECK_VERSION(3, 0, 0)
+    GTK_WIDGET_CLASS(parent_class)->destroy(obj);
+#else
     GTK_OBJECT_CLASS(parent_class)->destroy(obj);
+#endif
 }
 
 static void
@@ -566,6 +576,28 @@ fontgrid_preferred_size(GtkWidget *widget, GtkRequisition *preferred)
     preferred->height = (fw->cell_height * fw->cell_rows) + VMARGINS(fw);
 }
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+static void
+fontgrid_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+    GtkRequisition requisition;
+
+    fontgrid_preferred_size(widget, &requisition);
+
+    *minimal_width = *natural_width = requisition.width;
+}
+
+static void
+fontgrid_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+    GtkRequisition requisition;
+
+    fontgrid_preferred_size(widget, &requisition);
+
+    *minimal_height = *natural_height = requisition.height;
+}
+#endif
+
 static void
 fontgrid_actual_size(GtkWidget *widget, GtkAllocation *actual)
 {
@@ -591,7 +623,9 @@ fontgrid_realize(GtkWidget *widget)
 {
     Fontgrid *fw;
     GdkWindowAttr attributes;
+#if !GTK_CHECK_VERSION(3, 0, 0)
     GdkGCValues values;
+#endif
     gint attributes_mask;
     GtkAllocation all;
 
@@ -610,7 +644,9 @@ fontgrid_realize(GtkWidget *widget)
     attributes.height = all.height;
     attributes.wclass = GDK_INPUT_OUTPUT;
     attributes.visual = gtk_widget_get_visual(widget);
+#if !GTK_CHECK_VERSION(3, 0, 0)
     attributes.colormap = gtk_widget_get_colormap(widget);
+#endif
     attributes.event_mask = gtk_widget_get_events(widget);
     attributes.event_mask |= (GDK_EXPOSURE_MASK|GDK_BUTTON_PRESS_MASK|
                               GDK_BUTTON_RELEASE_MASK|GDK_ENTER_NOTIFY_MASK|
@@ -619,7 +655,11 @@ fontgrid_realize(GtkWidget *widget)
                               GDK_LEAVE_NOTIFY_MASK|GDK_FOCUS_CHANGE_MASK|
                               GDK_PROPERTY_CHANGE_MASK);
 
-    attributes_mask = GDK_WA_X|GDK_WA_Y|GDK_WA_VISUAL|GDK_WA_COLORMAP;
+    attributes_mask = GDK_WA_X|GDK_WA_Y|GDK_WA_VISUAL
+#if !GTK_CHECK_VERSION(3, 0, 0)
+        |GDK_WA_COLORMAP
+#endif
+    ;
 
     gtk_widget_set_window(widget, gdk_window_new(gtk_widget_get_parent_window(widget),
                                     &attributes, attributes_mask));
@@ -628,6 +668,7 @@ fontgrid_realize(GtkWidget *widget)
     gtk_widget_set_style(widget, gtk_style_attach(gtk_widget_get_style(widget), gtk_widget_get_window(widget)));
     gtk_style_set_background(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_STATE_NORMAL);
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
     if (fw->xor_gc != 0)
       g_object_unref(G_OBJECT(fw->xor_gc));
 
@@ -642,6 +683,7 @@ fontgrid_realize(GtkWidget *widget)
     fw->xor_gc = gdk_gc_new_with_values(gtk_widget_get_window(widget), &values,
                                         GDK_GC_FOREGROUND|
                                         GDK_GC_BACKGROUND|GDK_GC_FUNCTION);
+#endif
 }
 
 static bdf_glyph_t *
@@ -845,6 +887,7 @@ fontgrid_make_rgb_image(Fontgrid *fw, bdf_glyph_t *glyph)
     }
 }
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
 static void
 fontgrid_draw_encoding(GtkWidget *w, GdkGC *gc, gint x, gint y, gchar *num,
                        gint numlen)
@@ -1107,15 +1150,18 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
         }
     }
 }
+#endif
 
 static void
-fontgrid_draw(GtkWidget *widget, GdkRegion *region)
+fontgrid_draw(GtkWidget *widget, cairo_t *cr)
 {
     Fontgrid *fw;
     gint x, y, i;
     guint16 wd, ht, gw, gh;
     gint32 start, end;
+#if !GTK_CHECK_VERSION(3, 0, 0)
     GdkGC *gc;
+#endif
     GtkAllocation all;
 
     g_return_if_fail(widget != NULL);
@@ -1123,7 +1169,9 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
 
     fw = FONTGRID(widget);
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
     gc = gtk_widget_get_style(widget)->fg_gc[gtk_widget_get_state(widget)];
+#endif
 
     gw = fw->cell_width * fw->cell_cols;
     gh = fw->cell_height * fw->cell_rows;
@@ -1135,6 +1183,7 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
     x = fw->xoff = ((wd >> 1) - (gw >> 1)) - 1;
     y = fw->yoff = ((ht >> 1) - (gh >> 1)) - 1;
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
     /*
      * Draw the horizontal lines.
      */
@@ -1166,6 +1215,7 @@ fontgrid_draw(GtkWidget *widget, GdkRegion *region)
     end = start + (gint32) (fw->pagesize - 1);
 
     fontgrid_draw_cells(widget, start, end, TRUE, TRUE);
+#endif
 }
 
 static void
@@ -1252,6 +1302,7 @@ fontgrid_deselect_all(Fontgrid *fw)
     pi->sel_start = pi->sel_end = opi->sel_start = opi->sel_end = -1;
 }
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
 static void
 fontgrid_draw_focus(GtkWidget *widget, GdkRectangle *area)
 {
@@ -1304,12 +1355,17 @@ fontgrid_expose(GtkWidget *widget, GdkEventExpose *event)
                        all.height);
     }
 
-    fontgrid_draw(widget, event->region);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
+
+    fontgrid_draw(widget, cr);
+
+    cairo_destroy(cr);
 
     fontgrid_draw_focus(widget, &event->area);
 
     return FALSE;
 }
+#endif
 
 static gint
 fontgrid_focus_in(GtkWidget *widget, GdkEventFocus *event)
@@ -2236,7 +2292,6 @@ static void
 fontgrid_class_init(gpointer g_class, gpointer class_data)
 {
     GObjectClass *gocp = G_OBJECT_CLASS(g_class);
-    GtkObjectClass *ocp = GTK_OBJECT_CLASS(g_class);
     GtkWidgetClass *wcp = GTK_WIDGET_CLASS(g_class);
 
     /*
@@ -2251,18 +2306,25 @@ fontgrid_class_init(gpointer g_class, gpointer class_data)
     gocp->get_property = fontgrid_get_property;
     gocp->finalize = fontgrid_finalize;
 
-    /*
-     * GtkObjectClass functions.
-     */
-    ocp->destroy = fontgrid_destroy;
+#if GTK_CHECK_VERSION(3, 0, 0)
+    wcp->destroy = fontgrid_destroy;
+#else
+    GTK_OBJECT_CLASS(g_class)->destroy = fontgrid_destroy;
+#endif
 
     /*
      * Instance functions.
      */
-    wcp->size_request = fontgrid_preferred_size;
     wcp->size_allocate = fontgrid_actual_size;
     wcp->realize = fontgrid_realize;
+#if GTK_CHECK_VERSION(3, 0, 0)
+    wcp->get_preferred_width = fontgrid_get_preferred_width;
+    wcp->get_preferred_height = fontgrid_get_preferred_height;
+    wcp->draw = fontgrid_draw;
+#else
+    wcp->size_request = fontgrid_preferred_size;
     wcp->expose_event = fontgrid_expose;
+#endif
     wcp->focus_in_event = fontgrid_focus_in;
     wcp->focus_out_event = fontgrid_focus_out;
     wcp->button_press_event = fontgrid_button_press;
@@ -2489,7 +2551,9 @@ fontgrid_init(GTypeInstance *obj, gpointer g_class)
      */
     fw->unencoded = FALSE;
     fw->debug = FALSE;
+#if !GTK_CHECK_VERSION(3, 0, 0)
     fw->xor_gc = 0;
+#endif
     fw->points_used = 0;
     fw->points_size = 0;
     fw->rgb_used = 0;
