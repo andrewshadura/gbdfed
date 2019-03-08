@@ -607,8 +607,8 @@ extern void bdf_set_modified(bdf_font_t *font, int modified);
 
 extern int bdf_has_xlfd_name(bdf_font_t *font);
 
-extern char *bdf_make_xlfd_name(bdf_font_t *font, char *foundry,
-                                char *family);
+extern char *bdf_make_xlfd_name(bdf_font_t *font, const char *foundry,
+                                const char *family);
 
 extern void bdf_update_name_from_properties(bdf_font_t *font);
 
