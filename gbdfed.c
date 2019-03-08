@@ -593,7 +593,7 @@ static void
 handle_modified_signal(GtkWidget *w, gpointer minfo, gpointer editor)
 {
     gbdfed_editor_t *ed = editors + GPOINTER_TO_UINT(editor);
-    gchar *prgname = g_get_prgname();
+    const gchar *prgname = g_get_prgname();
     FontgridModificationInfo *mi;
 
     mi = (FontgridModificationInfo *) minfo;
