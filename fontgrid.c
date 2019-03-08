@@ -829,7 +829,9 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
     bdf_font_t *font;
     bdf_glyph_t *glyph, *gp;
     FontgridInternalPageInfo *pi;
+#if !GTK_CHECK_VERSION(3, 0, 0)
     GdkGC *gc;
+#endif
     GdkRectangle rect;
     gchar nbuf[16];
 
@@ -839,6 +841,8 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
     fw = FONTGRID(widget);
 
     font = fw->font;
+
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
     glyph = 0;
     nglyphs = 0;
@@ -876,7 +880,9 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
 
     gp = glyph;
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
     gc = gtk_widget_get_style(widget)->fg_gc[gtk_widget_get_state(widget)];
+#endif
 
     for (ng = 0, i = start; i <= end; i++) {
         /*
@@ -908,8 +914,12 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
             rect.y = y + 1;
             rect.width = fw->cell_width - 2;
             rect.height = fw->label_height - 2;
-            gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE,
-                               rect.x, rect.y, rect.width, rect.height);
+
+            cairo_save(cr);
+            cairo_set_line_width(cr, 1.0);
+            cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
+            cairo_stroke(cr);
+            cairo_restore(cr);
 
             len = strlen(nbuf);
             wd = len * 6;
@@ -924,13 +934,24 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
               mod = (!fw->unencoded) ? bdf_glyph_modified(font, i, 0) :
                 bdf_glyph_modified(font, i, 1);
 
-            gdk_window_clear_area(gtk_widget_get_window(widget), rect.x + 1, rect.y + 1,
-                                  rect.width - 1, rect.height - 1);
+            cairo_save(cr);
+#if GTK_CHECK_VERSION(3, 0, 0)
+            GtkStyleContext *context = gtk_widget_get_style_context(widget);
+            gtk_render_background(context, cr, rect.x, rect.y, rect.width, rect.height);
+#else
+            GdkColor bg = gtk_widget_get_style(widget)->bg[GTK_STATE_NORMAL];
+            gdk_cairo_set_source_color(cr, &bg);
+            cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
+            cairo_fill(cr);
+#endif
+            cairo_restore(cr);
 
             if (!fw->unencoded && mod) {
-                gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
-                                   rect.x + 2, rect.y + 2,
-                                   rect.width - 3, rect.height - 3);
+                /*
+                cairo_rectangle(cr, rect.x + 2, rect.y + 2, rect.width - 3, rect.height - 3);
+                cairo_stroke(cr);
+                */
+
                 fontgrid_draw_encoding(widget, lx, ly, nbuf, len);
                 if (gp && gp->encoding == i) {
                     ng++;
@@ -944,9 +965,16 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                  * this.
                  */
                 if (gp && gp->encoding == i) {
-                    gdk_draw_rectangle(gtk_widget_get_window(widget), gc, FALSE,
-                                       rect.x + 1, rect.y + 1,
-                                       rect.width - 2, rect.height - 2);
+                    cairo_save(cr);
+                    /*
+                    cairo_set_source_rgb(cr, 0.3, 0.5, 0.7);
+                    cairo_move_to(cr, rect.x, rect.y);
+                    cairo_rel_line_to(cr, 0, rect.height);
+                    cairo_move_to(cr, rect.x + rect.width, rect.y);
+                    cairo_rel_line_to(cr, 0, rect.height);
+                    cairo_stroke(cr);
+                    */
+                    cairo_restore(cr);
                     ng++;
                     gp++;
                     if (ng == nglyphs)
@@ -959,8 +987,23 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
         if (glyphs) {
             rect.x = x + 1;
             rect.y = y + fw->label_height + 1;
-            rect.width = fw->cell_width - 2;
-            rect.height = (fw->cell_height - fw->label_height) - 2;
+            rect.width = fw->cell_width - 1;
+            rect.height = (fw->cell_height - fw->label_height) - 1;
+
+            cairo_save(cr);
+            /* Draw the glyph background */
+#if GTK_CHECK_VERSION(3, 0, 0)
+            GtkStyleContext *context = gtk_widget_get_style_context(widget);
+            GdkRGBA bg;
+            gtk_style_context_get_background_color(context, IsSelected(i, pi->selmap) ? GTK_STATE_FLAG_SELECTED : GTK_STATE_FLAG_NORMAL, &bg);
+            gdk_cairo_set_source_rgba(cr, &bg);
+#else
+            GdkColor bg = gtk_widget_get_style(widget)->bg[IsSelected(i, pi->selmap) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL];
+            gdk_cairo_set_source_color(cr, &bg);
+#endif
+            cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
+            cairo_fill(cr);
+            cairo_restore(cr);
 
             if (i <= 0xffff && nglyphs > 0 && glyph->encoding == i) {
                 /*
@@ -983,9 +1026,6 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                 y += fw->label_height + font->bbx.ascent + 3;
 
                 if (IsSelected(glyph->encoding, pi->selmap)) {
-                    gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
-                                       rect.x + 1, rect.y + 1,
-                                       rect.width - 1, rect.height - 1);
                     if (glyph->bytes > 0) {
                         fontgrid_get_glyph_points(fw, x, y, lx, ly, glyph);
                         if (fw->points_used > 0)
@@ -997,8 +1037,6 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                      * The glyph is not selected, so draw it according to
                      * the bytes-per-pixel of the font.
                      */
-                    gdk_window_clear_area(gtk_widget_get_window(widget), rect.x, rect.y,
-                                          rect.width, rect.height);
                     if (glyph->bytes > 0) {
                         fontgrid_make_rgb_image(fw, glyph);
                         gdk_draw_rgb_image(gtk_widget_get_window(widget), gc,
@@ -1016,27 +1054,43 @@ fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                 }
             } else {
                 /*
-                 * Clear the empty cell.
+                 * Draw an X over the empty cell.
                  */
-                if (i <= 0xffff && IsSelected(i, pi->selmap))
-                  gdk_draw_rectangle(gtk_widget_get_window(widget), gc, TRUE,
-                                     rect.x + 1, rect.y + 1,
-                                     rect.width - 1, rect.height - 1);
+                cairo_save(cr);
+                cairo_set_line_width(cr, 0.7);
+                cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+                cairo_move_to(cr, rect.x, rect.y);
+                cairo_rel_line_to(cr, rect.width, rect.height);
+                cairo_move_to(cr, rect.x + rect.width, rect.y);
+                cairo_rel_line_to(cr, -rect.width, rect.height);
+                cairo_stroke(cr);
+                cairo_restore(cr);
+
+                if (i <= 0xffff && IsSelected(i, pi->selmap)) {
+                    /*
+                    cairo_rectangle(cr, rect.x + 1, rect.y + 1, rect.width - 1, rect.height - 1);
+                    cairo_stroke(cr);
+                    */
+                }
                 else {
-                    gdk_window_clear_area(gtk_widget_get_window(widget), rect.x, rect.y,
-                                          rect.width, rect.height);
+
                     if (i > 0xffff) {
-                        gdk_draw_line(gtk_widget_get_window(widget), gc, rect.x, rect.y,
-                                      rect.x + rect.width,
-                                      rect.y + rect.height);
-                        gdk_draw_line(gtk_widget_get_window(widget), gc,
-                                      rect.x + rect.width, rect.y,
-                                      rect.x, rect.y + rect.height);
+                        /*
+                        cairo_move_to(cr, rect.x, rect.y);
+                        cairo_rel_line_to(cr, rect.width, rect.height);
+                        cairo_stroke(cr);
+
+                        cairo_move_to(cr, rect.x + rect.width, rect.y);
+                        cairo_rel_line_to(cr, -rect.width, rect.height);
+                        cairo_stroke(cr);
+                        */
                     }
                 }
             }
         }
     }
+
+    cairo_destroy(cr);
 }
 #endif
 
