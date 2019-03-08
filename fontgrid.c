@@ -783,14 +783,11 @@ fontgrid_make_rgb_image(Fontgrid *fw, bdf_glyph_t *glyph)
     }
 }
 
-#if !GTK_CHECK_VERSION(3, 0, 0)
 static void
 fontgrid_draw_encoding(GtkWidget *w, gint x, gint y, gchar *num,
                        gint numlen)
 {
-    gint i, j, d;
     Fontgrid *fw = FONTGRID(w);
-    GdkPoint *dp;
 
     if (!gtk_widget_get_realized(w))
       return;
@@ -819,6 +816,7 @@ fontgrid_draw_encoding(GtkWidget *w, gint x, gint y, gchar *num,
     cairo_destroy(cr);
 }
 
+#if !GTK_CHECK_VERSION(3, 0, 0)
 static void
 fontgrid_draw_cells(GtkWidget *widget, gint32 start, gint32 end,
                     gboolean labels, gboolean glyphs)
