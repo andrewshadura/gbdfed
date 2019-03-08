@@ -5730,7 +5730,7 @@ bdf_has_xlfd_name(bdf_font_t *font)
 }
 
 char *
-bdf_make_xlfd_name(bdf_font_t *font, char *foundry, char *family)
+bdf_make_xlfd_name(bdf_font_t *font, const char *foundry, const char *family)
 {
     int len;
     double dp, dr;
