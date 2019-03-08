@@ -342,7 +342,7 @@ update_font(GtkWidget *w, gpointer data)
     GlypheditRec *ge = glyph_editors + GPOINTER_TO_UINT(data);
     gbdfed_editor_t *ed = editors + ge->owner;
     const gchar *s;
-    gchar *prgname = g_get_prgname();
+    const gchar *prgname = g_get_prgname();
     gboolean unencoded;
     bdf_glyph_t *glyph;
     GlypheditOperation op;
@@ -1728,7 +1728,7 @@ glyph_modified(GtkWidget *w, gpointer cb, gpointer ged)
     GlypheditRec *ge = glyph_editors + GPOINTER_TO_UINT(ged);
     gbdfed_editor_t *ed = editors + ge->owner;
     GlypheditSignalInfo *si = (GlypheditSignalInfo *) cb;
-    gchar *prgname = g_get_prgname();
+    const gchar *prgname = g_get_prgname();
 
     if (si->metrics == 0)
       return;
