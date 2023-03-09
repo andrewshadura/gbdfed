@@ -40,7 +40,7 @@ dnl These use the pkgconfig macro (in aclocal.m4) to check on libraries.
 PKG_CHECK_MODULES(FREETYPE, freetype2 >= 2.0,DEFINES="-DHAVE_FREETYPE" CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS" LIBS="$LIBS $FREETYPE_LIBS",)
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6,CPPFLAGS="$CPPFLAGS $GTK_CFLAGS" LIBS="$LIBS $GTK_LIBS",)
 
-AC_CHECK_FILE(hbf.c, DEFINES="$DEFINES -DHAVE_HBF" HBFSRC="hbf.c" HBFOBJ="hbf.o",)
+AS_IF([test -e hbf.c],[DEFINES="$DEFINES -DHAVE_HBF" HBFSRC="hbf.c" HBFOBJ="hbf.o"])
 
 AC_PATH_XTRA
 
