@@ -82,9 +82,24 @@
 
 #define	reg	register
 
+#if __STDC_VERSION__ >= 202000
+
+#define	TRUE	true
+#define	FALSE	false
+
+#elif __STDC_VERSION__ >= 199901L
+
+#include <stdbool.h>
+#define	TRUE	true
+#define	FALSE	false
+
+#else
+
 typedef	int	bool;
 #define	TRUE	1
 #define	FALSE	0
+
+#endif
 
 #define	Bit(n)	(1<<(7 - (n)))
 
