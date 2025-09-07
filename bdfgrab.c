@@ -244,7 +244,7 @@ bdf_load_server_font(Display *d, XFontStruct *f, char *name,
     XCharStruct *cp;
     bdf_property_t *pp, prop;
     bdf_callback_struct_t cb;
-    int (*old_error_handler)();
+    int (*old_error_handler)(Display *, XErrorEvent *);
 
     if (f == 0)
       return 0;
