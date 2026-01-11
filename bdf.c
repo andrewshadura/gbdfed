@@ -988,19 +988,25 @@ _bdf_add_comment(bdf_font_t *font, char *comment, unsigned int len)
 static void
 _bdf_set_default_spacing(bdf_font_t *font, bdf_options_t *opts)
 {
-    unsigned int len;
     char name[128];
     _bdf_list_t list;
+    size_t n;
 
     if (font == 0 || font->name == 0 || font->name[0] == 0)
       return;
 
     font->spacing = opts->font_spacing;
 
-    len = (unsigned int) (strlen(font->name) + 1);
-    (void) memcpy(name, font->name, len);
+    n = strlen(font->name);
+    if (n > sizeof(name) - 1)
+      n = sizeof(name) - 1;
+    (void) memcpy(name, font->name, n);
+    /*
+     * Ensure termination even when the name is truncated.
+     */
+    name[n] = '\0';
     list.size = list.used = 0;
-    _bdf_split("-", name, len, &list);
+    _bdf_split("-", name, (unsigned int) (n + 1), &list);
     if (list.used == 15) {
         switch (list.field[11][0]) {
           case 'C': case 'c': font->spacing = BDF_CHARCELL; break;
