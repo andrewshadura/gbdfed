@@ -731,8 +731,6 @@ static unsigned char hdigits[32] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-#define isdigok(m, d) (m[(d) >> 3] & (1 << ((d) & 7)))
-
 /*
  * Routine to convert an ASCII string into an unsigned int integer.
  */
@@ -764,7 +762,7 @@ _bdf_atoul(char *s, char **end, int base)
         s += 2;
     }
 
-    for (v = 0; *s && isdigok(dmap, *s); s++)
+    for (v = 0; *s && sbitset(dmap, *s); s++)
       v = (v * base) + a2i[(int) *s];
 
     if (end != 0)
@@ -813,7 +811,7 @@ _bdf_atol(char *s, char **end, int base)
         s += 2;
     }
 
-    for (v = 0; *s && isdigok(dmap, *s); s++)
+    for (v = 0; *s && sbitset(dmap, *s); s++)
       v = (v * base) + a2i[(int) *s];
 
     if (end != 0)
@@ -861,7 +859,7 @@ _bdf_atos(char *s, char **end, int base)
         s += 2;
     }
 
-    for (v = 0; *s && isdigok(dmap, *s); s++)
+    for (v = 0; *s && sbitset(dmap, *s); s++)
       v = (v * base) + a2i[(int) *s];
 
     if (end != 0)
