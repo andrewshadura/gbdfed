@@ -1786,8 +1786,12 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
         }
         _bdf_split(" +", line, linelen, &p->list);
         p->cnt = p->font->props_size = _bdf_atoul(p->list.field[1], 0, 10);
-        p->font->props = (bdf_property_t *)
-            malloc(sizeof(bdf_property_t) * p->cnt);
+        if (p->cnt > 0) {
+            p->font->props = (bdf_property_t *)
+                malloc(sizeof(bdf_property_t) * p->cnt);
+        } else {
+            p->font->props = 0;
+        }
         p->flags |= _BDF_PROPS;
         *next = _bdf_parse_properties;
         return 0;
@@ -2162,8 +2166,12 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         if (memcmp(line, "STARTPROPERTIES", 15) == 0) {
             _bdf_split(" +", line, linelen, &p->list);
             p->cnt = p->font->props_size = _bdf_atoul(p->list.field[1], 0, 10);
-            p->font->props = (bdf_property_t *)
-                malloc(sizeof(bdf_property_t) * p->cnt);
+            if (p->cnt > 0) {
+                p->font->props = (bdf_property_t *)
+                    malloc(sizeof(bdf_property_t) * p->cnt);
+            } else {
+                p->font->props = 0;
+            }
             p->flags |= _BDF_PROPS;
             return 0;
         }
