@@ -942,6 +942,7 @@ by_encoding(const void *a, const void *b)
 #define BDF_ERR_MISSING_FIELD "[line %d] Missing \"%s\" line."
 #define BDF_ERR_CORRUPT_HEADER "[line %d] Font header corrupted or missing fields."
 #define BDF_ERR_CORRUPT_GLYPHS "[line %d] Font glyphs corrupted or missing fields."
+#define BDF_ERR_DUPLICATE_FIELD "[line %d] Duplicate \"%s\" field."
 
 void
 _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned int len)
@@ -1777,6 +1778,14 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
      * Check for the start of the properties.
      */
     if (memcmp(line, "STARTPROPERTIES", 15) == 0) {
+        if (p->flags & _BDF_PROPS) {
+            /*
+             * STARTPROPERTIES field already seen - this is a duplicate.
+             */
+            sprintf(nbuf, BDF_ERR_DUPLICATE_FIELD, lineno, "STARTPROPERTIES");
+            _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
+            return BDF_INVALID_LINE;
+        }
         _bdf_split(" +", line, linelen, &p->list);
         p->cnt = p->font->props_size = _bdf_atoul(p->list.field[1], 0, 10);
         p->font->props = (bdf_property_t *)
@@ -1813,6 +1822,14 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
      * The next thing to check for is the FONT field.
      */
     if (memcmp(line, "FONT", 4) == 0) {
+        if (p->flags & _BDF_FONT_NAME) {
+            /*
+             * FONT field already seen - this is a duplicate.
+             */
+            sprintf(nbuf, BDF_ERR_DUPLICATE_FIELD, lineno, "FONT");
+            _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
+            return BDF_INVALID_LINE;
+        }
         _bdf_split(" +", line, linelen, &p->list);
         _bdf_shift(1, &p->list);
         s = _bdf_join(' ', &slen, &p->list);
