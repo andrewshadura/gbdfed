@@ -1560,6 +1560,18 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     }
 
     /*
+     * Check that ENCODING field was present before accessing glyph.
+     */
+    if (!(p->flags & _BDF_ENCODING)) {
+        /*
+         * Missing ENCODING field.
+         */
+        sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "ENCODING");
+        _bdf_add_acmsg(font, nbuf, strlen(nbuf));
+        return BDF_MISSING_ENCODING;
+    }
+
+    /*
      * Point at the glyph being constructed.
      */
     if (p->glyph_enc == -1)
@@ -1617,14 +1629,6 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
      * Expect the SWIDTH (scalable width) field next.
      */
     if (_bdf_strncmp(line, "SWIDTH", 6) == 0) {
-        if (!(p->flags & _BDF_ENCODING)) {
-            /*
-             * Missing ENCODING field.
-             */
-            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "ENCODING");
-            _bdf_add_acmsg(font, nbuf, strlen(nbuf));
-            return BDF_MISSING_ENCODING;
-        }
         _bdf_split(" +", line, linelen, &p->list);
         glyph->swidth = _bdf_atoul(p->list.field[1], 0, 10);
         p->flags |= _BDF_SWIDTH;
