@@ -1224,12 +1224,14 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
     else if (memcmp(name, "FONT_DESCENT", 12) == 0)
       font->font_descent = fp->value.int32;
     else if (memcmp(name, "SPACING", 7) == 0) {
-        if (fp->value.atom[0] == 'p' || fp->value.atom[0] == 'P')
-          font->spacing = BDF_PROPORTIONAL;
-        else if (fp->value.atom[0] == 'm' || fp->value.atom[0] == 'M')
-          font->spacing = BDF_MONOWIDTH;
-        else if (fp->value.atom[0] == 'c' || fp->value.atom[0] == 'C')
-          font->spacing = BDF_CHARCELL;
+        if (fp->value.atom != 0 && fp->value.atom[0] != 0) {
+            if (fp->value.atom[0] == 'p' || fp->value.atom[0] == 'P')
+              font->spacing = BDF_PROPORTIONAL;
+            else if (fp->value.atom[0] == 'm' || fp->value.atom[0] == 'M')
+              font->spacing = BDF_MONOWIDTH;
+            else if (fp->value.atom[0] == 'c' || fp->value.atom[0] == 'C')
+              font->spacing = BDF_CHARCELL;
+        }
     }
 }
 
