@@ -20,6 +20,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include "bdfP.h"
+#include <limits.h>
 
 #ifdef HAVE_HBF
 #include "hbf.h"
@@ -769,7 +770,15 @@ _bdf_atoul(char *s, char **end, int base)
     }
 
     for (v = 0; *s && sbitset(dmap, *s); s++)
-      v = (v * base) + a2i[(int) *s];
+    {
+      if (v < (UINT_MAX - (base - 1)) / base)
+        v = (v * base) + a2i[(int) *s];
+      else
+      {
+        v = UINT_MAX;
+        break;
+      }
+    }
 
     if (end != 0)
       *end = s;
@@ -818,7 +827,15 @@ _bdf_atol(char *s, char **end, int base)
     }
 
     for (v = 0; *s && sbitset(dmap, *s); s++)
-      v = (v * base) + a2i[(int) *s];
+    {
+      if (v < (INT_MAX - (base - 1)) / base)
+        v = (v * base) + a2i[(int) *s];
+      else
+      {
+        v = INT_MAX;
+        break;
+      }
+    }
 
     if (end != 0)
       *end = s;
@@ -866,7 +883,15 @@ _bdf_atos(char *s, char **end, int base)
     }
 
     for (v = 0; *s && sbitset(dmap, *s); s++)
-      v = (v * base) + a2i[(int) *s];
+    {
+      if (v < (SHRT_MAX - (base - 1)) / base)
+        v = (v * base) + a2i[(int) *s];
+      else
+      {
+        v = SHRT_MAX;
+        break;
+      }
+    }
 
     if (end != 0)
       *end = s;
