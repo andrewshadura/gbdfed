@@ -947,6 +947,7 @@ by_encoding(const void *a, const void *b)
 #define BDF_ERR_CORRUPT_HEADER "[line %d] Font header corrupted or missing fields."
 #define BDF_ERR_CORRUPT_GLYPHS "[line %d] Font glyphs corrupted or missing fields."
 #define BDF_ERR_DUPLICATE_FIELD "[line %d] Duplicate \"%s\" field."
+#define BDF_ERR_BBX_TOO_BIG "[line %d] BBX too big."
 #define BDF_ERR_TOO_MANY_PROPERTIES "[line %ld] Excessive number of properties %u."
 #define BDF_ERR_TOO_MANY_GLYPHS "[line %ld] Excessive number of glyphs %u."
 
@@ -1644,6 +1645,8 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
      * And finally, gather up the bitmap.
      */
     if (memcmp(line, "BITMAP", 6) == 0) {
+        unsigned long bitmap_size;
+
         if (!(p->flags & _BDF_BBX)) {
             /*
              * Missing BBX field.
@@ -1656,7 +1659,13 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
          * Allocate enough space for the bitmap.
          */
         p->bpr = ((glyph->bbx.width * p->font->bpp) + 7) >> 3;
-        glyph->bytes = p->bpr * glyph->bbx.height;
+        bitmap_size = p->bpr * glyph->bbx.height;
+        if (bitmap_size > 0xFFFFU) {
+            sprintf(nbuf, BDF_ERR_BBX_TOO_BIG, lineno);
+            _bdf_add_acmsg(font, nbuf, strlen(nbuf));
+            return BDF_BBX_TOO_BIG;
+        }
+        glyph->bytes = (unsigned short) bitmap_size;
         glyph->bitmap = (unsigned char *) malloc(glyph->bytes);
         p->row = 0;
         p->flags |= _BDF_BITMAP;

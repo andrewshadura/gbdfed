@@ -371,6 +371,7 @@ typedef struct {
 #define BDF_MISSING_STARTCHAR -6
 #define BDF_MISSING_ENCODING  -7
 #define BDF_MISSING_BBX       -8
+#define BDF_BBX_TOO_BIG       -9
 
 #define BDF_NOT_CONSOLE_FONT  -10
 #define BDF_NOT_MF_FONT       -11
