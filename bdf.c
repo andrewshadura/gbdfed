@@ -1577,6 +1577,12 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     }
 
     /*
+     * Do not leak the bitmap or reset its size.
+     */
+    if (p->flags & _BDF_BITMAP)
+      return BDF_INVALID_LINE;
+
+    /*
      * Expect the BBX field next.
      */
     if (memcmp(line, "BBX", 3) == 0) {
