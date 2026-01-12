@@ -939,9 +939,9 @@ by_encoding(const void *a, const void *b)
 /*
  * Error messages.
  */
-#define ERRMSG1 "[line %d] Missing \"%s\" line."
-#define ERRMSG2 "[line %d] Font header corrupted or missing fields."
-#define ERRMSG3 "[line %d] Font glyphs corrupted or missing fields."
+#define BDF_ERR_MISSING_FIELD "[line %d] Missing \"%s\" line."
+#define BDF_ERR_CORRUPT_HEADER "[line %d] Font header corrupted or missing fields."
+#define BDF_ERR_CORRUPT_GLYPHS "[line %d] Font glyphs corrupted or missing fields."
 
 void
 _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned int len)
@@ -1268,7 +1268,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
      */
     if (!(p->flags & _BDF_GLYPHS)) {
         if (memcmp(line, "CHARS", 5) != 0) {
-            sprintf(nbuf, ERRMSG1, lineno, "CHARS");
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "CHARS");
             _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
             return BDF_MISSING_CHARS;
         }
@@ -1370,7 +1370,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
             /*
              * Missing STARTCHAR field.
              */
-            sprintf(nbuf, ERRMSG1, lineno, "STARTCHAR");
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "STARTCHAR");
             _bdf_add_acmsg(font, nbuf, strlen(nbuf));
             return BDF_MISSING_STARTCHAR;
         }
@@ -1522,7 +1522,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
             /*
              * Missing ENCODING field.
              */
-            sprintf(nbuf, ERRMSG1, lineno, "ENCODING");
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "ENCODING");
             _bdf_add_acmsg(font, nbuf, strlen(nbuf));
             return BDF_MISSING_ENCODING;
         }
@@ -1629,7 +1629,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
             /*
              * Missing BBX field.
              */
-            sprintf(nbuf, ERRMSG1, lineno, "BBX");
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "BBX");
             _bdf_add_acmsg(font, nbuf, strlen(nbuf));
             return BDF_MISSING_BBX;
         }
@@ -1794,7 +1794,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
             /*
              * Missing the SIZE field.
              */
-            sprintf(nbuf, ERRMSG1, lineno, "SIZE");
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "SIZE");
             _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
             return BDF_MISSING_SIZE;
         }
@@ -1835,7 +1835,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
             /*
              * Missing the FONT field.
              */
-            sprintf(nbuf, ERRMSG1, lineno, "FONT");
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "FONT");
             _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
             return BDF_MISSING_FONTNAME;
         }
@@ -2010,12 +2010,12 @@ bdf_load_font(FILE *in, bdf_options_t *opts, bdf_callback_t callback,
               /*
                * Error happened while parsing header.
                */
-              sprintf(msgbuf, ERRMSG2, lineno);
+              sprintf(msgbuf, BDF_ERR_CORRUPT_HEADER, lineno);
             else
               /*
                * Error happened when parsing glyphs.
                */
-              sprintf(msgbuf, ERRMSG3, lineno);
+              sprintf(msgbuf, BDF_ERR_CORRUPT_GLYPHS, lineno);
 
             _bdf_add_acmsg(p.font, msgbuf, strlen(msgbuf));
         }
