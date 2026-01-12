@@ -1262,6 +1262,25 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
 }
 
 /*
+ * No-op function to ignore data after ENDFONT.
+ */
+static int
+_bdf_parse_end(char *line, unsigned int linelen, unsigned int lineno,
+               void *call_data, void *client_data)
+{
+    /*
+     * A no-op; we ignore everything after ENDFONT.
+     */
+    (void) line;
+    (void) linelen;
+    (void) lineno;
+    (void) call_data;
+    (void) client_data;
+
+    return 0;
+}
+
+/*
  * Actually parse the glyph info and bitmaps.
  */
 static int
@@ -1359,6 +1378,8 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
               by_encoding);
 
         p->flags &= ~_BDF_START;
+        *next = _bdf_parse_end;
+
         return 0;
     }
 
