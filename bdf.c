@@ -3174,7 +3174,7 @@ bdf_free_font(bdf_font_t *font)
           free(font->props[i].value.atom);
     }
 
-    if (font->props_size > 0 && font->props != 0)
+    if (font->props != 0)
       free((char *) font->props);
 
     /*
@@ -3197,10 +3197,10 @@ bdf_free_font(bdf_font_t *font)
           free((char *) glyphs->unicode.map);
     }
 
-    if (font->glyphs_size > 0)
+    if (font->glyphs != 0)
       free((char *) font->glyphs);
 
-    if (font->unencoded_size > 0)
+    if (font->unencoded != 0)
       free((char *) font->unencoded);
 
     /*
@@ -3215,7 +3215,7 @@ bdf_free_font(bdf_font_t *font)
         if (glyphs->unicode.map_size > 0)
           free((char *) glyphs->unicode.map);
     }
-    if (font->overflow.glyphs_size > 0)
+    if (font->overflow.glyphs != 0)
       free((char *) font->overflow.glyphs);
 
     free((char *) font);
