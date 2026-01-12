@@ -1732,7 +1732,6 @@ _bdf_parse_properties(char *line, unsigned int linelen, unsigned int lineno,
             _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
             p->font->modified = 1;
         }
-        p->flags &= ~_BDF_PROPS;
         *next = _bdf_parse_glyphs;
         return 0;
     }
