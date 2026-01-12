@@ -1228,7 +1228,7 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
      * If the property happens to be a comment, then it doesn't need
      * to be added to the internal hash table.
      */
-    if (memcmp(name, "COMMENT", 7) != 0)
+    if (strncmp(name, "COMMENT", 7) != 0)
       /*
        * Add the property to the font property table.
        */
@@ -1243,13 +1243,13 @@ _bdf_add_property(bdf_font_t *font, char *name, char *value)
      * and FONT_DESCENT need to be assigned if they are present, and the
      * SPACING property should override the default spacing.
      */
-    if (memcmp(name, "DEFAULT_CHAR", 12) == 0)
+    if (strncmp(name, "DEFAULT_CHAR", 12) == 0)
       font->default_glyph = fp->value.int32;
-    else if (memcmp(name, "FONT_ASCENT", 11) == 0)
+    else if (strncmp(name, "FONT_ASCENT", 11) == 0)
       font->font_ascent = fp->value.int32;
-    else if (memcmp(name, "FONT_DESCENT", 12) == 0)
+    else if (strncmp(name, "FONT_DESCENT", 12) == 0)
       font->font_descent = fp->value.int32;
-    else if (memcmp(name, "SPACING", 7) == 0) {
+    else if (strncmp(name, "SPACING", 7) == 0) {
         if (fp->value.atom != 0 && fp->value.atom[0] != 0) {
             if (fp->value.atom[0] == 'p' || fp->value.atom[0] == 'P')
               font->spacing = BDF_PROPORTIONAL;
@@ -1306,7 +1306,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for a comment.
      */
-    if (memcmp(line, "COMMENT", 7) == 0) {
+    if (strncmp(line, "COMMENT", 7) == 0) {
         linelen -= 7;
         s = line + 7;
         if (*s != 0) {
@@ -1321,7 +1321,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
      * The very first thing expected is the number of glyphs.
      */
     if (!(p->flags & _BDF_GLYPHS)) {
-        if (memcmp(line, "CHARS", 5) != 0) {
+        if (strncmp(line, "CHARS", 5) != 0) {
             sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "CHARS");
             _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
             return BDF_MISSING_CHARS;
@@ -1370,7 +1370,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the ENDFONT field.
      */
-    if (memcmp(line, "ENDFONT", 7) == 0) {
+    if (strncmp(line, "ENDFONT", 7) == 0) {
         /*
          * Sort the glyphs by encoding.
          */
@@ -1386,7 +1386,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the ENDCHAR field.
      */
-    if (memcmp(line, "ENDCHAR", 7) == 0) {
+    if (strncmp(line, "ENDCHAR", 7) == 0) {
         /*
          * Set up and call the callback if it was passed.
          */
@@ -1420,7 +1420,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the STARTCHAR field.
      */
-    if (memcmp(line, "STARTCHAR", 9) == 0) {
+    if (strncmp(line, "STARTCHAR", 9) == 0) {
         if (p->flags & _BDF_GLYPH_BITS) {
             /*
              * Missing ENDCHAR field.
@@ -1448,7 +1448,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the ENCODING field.
      */
-    if (memcmp(line, "ENCODING", 8) == 0) {
+    if (strncmp(line, "ENCODING", 8) == 0) {
         if (!(p->flags & _BDF_GLYPH)) {
             /*
              * Missing STARTCHAR field.
@@ -1600,7 +1600,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Expect the SWIDTH (scalable width) field next.
      */
-    if (memcmp(line, "SWIDTH", 6) == 0) {
+    if (strncmp(line, "SWIDTH", 6) == 0) {
         if (!(p->flags & _BDF_ENCODING)) {
             /*
              * Missing ENCODING field.
@@ -1618,7 +1618,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Expect the DWIDTH (scalable width) field next.
      */
-    if (memcmp(line, "DWIDTH", 6) == 0) {
+    if (strncmp(line, "DWIDTH", 6) == 0) {
         _bdf_split(" +", line, linelen, &p->list);
         glyph->dwidth = _bdf_atoul(p->list.field[1], 0, 10);
 
@@ -1648,7 +1648,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Expect the BBX field next.
      */
-    if (memcmp(line, "BBX", 3) == 0) {
+    if (strncmp(line, "BBX", 3) == 0) {
         _bdf_split(" +", line, linelen, &p->list);
         glyph->bbx.width = _bdf_atos(p->list.field[1], 0, 10);
         glyph->bbx.height = _bdf_atos(p->list.field[2], 0, 10);
@@ -1713,7 +1713,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * And finally, gather up the bitmap.
      */
-    if (memcmp(line, "BITMAP", 6) == 0) {
+    if (strncmp(line, "BITMAP", 6) == 0) {
         unsigned long bitmap_size;
 
         if (!(p->flags & _BDF_BBX)) {
@@ -1762,7 +1762,7 @@ _bdf_parse_properties(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the end of the properties.
      */
-    if (memcmp(line, "ENDPROPERTIES", 13) == 0) {
+    if (strncmp(line, "ENDPROPERTIES", 13) == 0) {
         /*
          * If the FONT_ASCENT or FONT_DESCENT properties have not been
          * encountered yet, then make sure they are added as properties and
@@ -1794,15 +1794,15 @@ _bdf_parse_properties(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Ignore the _XFREE86_GLYPH_RANGES and _XMBDFED_INFO properties.
      */
-    if (memcmp(line, "_XFREE86_GLYPH_RANGES", 21) == 0 ||
-        memcmp(line, "_XMBDFED_INFO", 13) == 0)
+    if (strncmp(line, "_XFREE86_GLYPH_RANGES", 21) == 0 ||
+        strncmp(line, "_XMBDFED_INFO", 13) == 0)
       return 0;
 
     /*
      * Handle COMMENT fields and properties in a special way to preserve
      * the spacing.
      */
-    if (memcmp(line, "COMMENT", 7) == 0) {
+    if (strncmp(line, "COMMENT", 7) == 0) {
         name = value = line;
         value += 7;
         if (*value)
@@ -1841,7 +1841,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
      * Check for a comment.  This is done to handle those fonts that have
      * comments before the STARTFONT line for some reason.
      */
-    if (memcmp(line, "COMMENT", 7) == 0) {
+    if (strncmp(line, "COMMENT", 7) == 0) {
         if (p->opts->keep_comments != 0 && p->font != 0) {
             linelen -= 7;
             s = line + 7;
@@ -1855,7 +1855,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
     }
 
     if (!(p->flags & _BDF_START)) {
-        if (memcmp(line, "STARTFONT", 9) != 0)
+        if (strncmp(line, "STARTFONT", 9) != 0)
           /*
            * No STARTFONT field is a good indication of a problem.
            */
@@ -1872,7 +1872,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the start of the properties.
      */
-    if (memcmp(line, "STARTPROPERTIES", 15) == 0) {
+    if (strncmp(line, "STARTPROPERTIES", 15) == 0) {
         if (p->flags & _BDF_PROPS) {
             /*
              * STARTPROPERTIES field already seen - this is a duplicate.
@@ -1906,7 +1906,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the FONTBOUNDINGBOX field.
      */
-    if (memcmp(line, "FONTBOUNDINGBOX", 15) == 0) {
+    if (strncmp(line, "FONTBOUNDINGBOX", 15) == 0) {
         if (!(p->flags & _BDF_SIZE)) {
             /*
              * Missing the SIZE field.
@@ -1929,7 +1929,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * The next thing to check for is the FONT field.
      */
-    if (memcmp(line, "FONT", 4) == 0) {
+    if (strncmp(line, "FONT", 4) == 0) {
         if (p->flags & _BDF_FONT_NAME) {
             /*
              * FONT field already seen - this is a duplicate.
@@ -1955,7 +1955,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the SIZE field.
      */
-    if (memcmp(line, "SIZE", 4) == 0) {
+    if (strncmp(line, "SIZE", 4) == 0) {
         if (!(p->flags & _BDF_FONT_NAME)) {
             /*
              * Missing the FONT field.
@@ -2206,7 +2206,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for comments.
      */
-    if (memcmp(line, "COMMENT", 7) == 0) {
+    if (strncmp(line, "COMMENT", 7) == 0) {
         if (p->opts->keep_comments != 0 && p->font != 0) {
             name = line;
             value = name + 7;
@@ -2229,7 +2229,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
     }
 
     if (!(p->flags & _BDF_START)) {
-        if (memcmp(line, "HBF_START_FONT", 14) != 0)
+        if (strncmp(line, "HBF_START_FONT", 14) != 0)
           return -1;
         p->flags |= _BDF_START;
         p->font = (bdf_font_t *) calloc(1, sizeof(bdf_font_t));
@@ -2248,7 +2248,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
     /*
      * Check for the HBF_END_FONT field.
      */
-    if (memcmp(line, "HBF_END_FONT", 12) == 0)
+    if (strncmp(line, "HBF_END_FONT", 12) == 0)
       /*
        * Need to perform some checks here to see whether some fields are
        * missing or not.
@@ -2259,7 +2259,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
      * Check for HBF keywords which will be added as comments.  These should
      * never occur in the properties list.  Assume they won't.
      */
-    if (memcmp(line, "HBF_", 4) == 0) {
+    if (strncmp(line, "HBF_", 4) == 0) {
         if (p->opts->keep_comments != 0)
           _bdf_add_comment(p->font, line, linelen);
         return 0;
@@ -2269,7 +2269,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         /*
          * Check for the start of the properties.
          */
-        if (memcmp(line, "STARTPROPERTIES", 15) == 0) {
+        if (strncmp(line, "STARTPROPERTIES", 15) == 0) {
             _bdf_split(" +", line, linelen, &p->list);
             p->cnt = p->font->props_size = _bdf_atoul(p->list.field[1], 0, 10);
             /*
@@ -2290,7 +2290,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         /*
          * Check for the CHARS field.
          */
-        if (memcmp(line, "CHARS", 5) == 0) {
+        if (strncmp(line, "CHARS", 5) == 0) {
             _bdf_split(" +", line, linelen, &p->list);
             p->cnt = p->font->glyphs_size =
                 _bdf_atoul(p->list.field[1], 0, 10);
@@ -2311,7 +2311,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         /*
          * Check for the FONTBOUNDINGBOX field.
          */
-        if (memcmp(line, "FONTBOUNDINGBOX", 15) == 0) {
+        if (strncmp(line, "FONTBOUNDINGBOX", 15) == 0) {
             if (!(p->flags & (_BDF_START|_BDF_FONT_NAME|_BDF_SIZE)))
               return -1;
             _bdf_split(" +", line, linelen, &p->list);
@@ -2328,7 +2328,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         /*
          * The next thing to check for is the FONT field.
          */
-        if (memcmp(line, "FONT", 4) == 0) {
+        if (strncmp(line, "FONT", 4) == 0) {
             if (!(p->flags & _BDF_START))
               return -1;
             _bdf_split(" +", line, linelen, &p->list);
@@ -2349,7 +2349,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         /*
          * Check for the SIZE field.
          */
-        if (memcmp(line, "SIZE", 4) == 0) {
+        if (strncmp(line, "SIZE", 4) == 0) {
             if (!(p->flags & (_BDF_START|_BDF_FONT_NAME)))
               return -1;
             _bdf_split(" +", line, linelen, &p->list);
@@ -2363,7 +2363,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         /*
          * Check for the end of the properties.
          */
-        if (memcmp(line, "ENDPROPERTIES", 13) == 0) {
+        if (strncmp(line, "ENDPROPERTIES", 13) == 0) {
             /*
              * If the FONT_ASCENT or FONT_DESCENT properties have not been
              * encountered yet, then make sure they are added as properties and
