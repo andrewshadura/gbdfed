@@ -31,6 +31,12 @@
 #undef MIN
 #define MIN(l, o) ((l) < (o) ? (l) : (o))
 
+/*
+ * Sanity limits to prevent integer overflow and excessive memory allocation.
+ */
+#define BDF_MAX_PROPERTIES 32768
+#define BDF_MAX_GLYPHS 1048576
+
 /**************************************************************************
  *
  * Masks used for checking different bits per pixel cases.
@@ -941,6 +947,8 @@ by_encoding(const void *a, const void *b)
 #define BDF_ERR_CORRUPT_HEADER "[line %d] Font header corrupted or missing fields."
 #define BDF_ERR_CORRUPT_GLYPHS "[line %d] Font glyphs corrupted or missing fields."
 #define BDF_ERR_DUPLICATE_FIELD "[line %d] Duplicate \"%s\" field."
+#define BDF_ERR_TOO_MANY_PROPERTIES "[line %ld] Excessive number of properties %u."
+#define BDF_ERR_TOO_MANY_GLYPHS "[line %ld] Excessive number of glyphs %u."
 
 void
 _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned int len)
@@ -1279,6 +1287,16 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
          */
         if (p->cnt == 0)
           font->glyphs_size = 64;
+
+        /*
+         * Sanity check: reject unreasonably large number of glyphs to prevent
+         * integer overflow and excessive memory allocation.
+         */
+        if (font->glyphs_size > BDF_MAX_GLYPHS) {
+            sprintf(nbuf, BDF_ERR_TOO_MANY_GLYPHS, lineno, font->glyphs_size);
+            _bdf_add_acmsg(font, nbuf, strlen(nbuf));
+            return BDF_INVALID_LINE;
+        }
 
         font->glyphs = (bdf_glyph_t *) malloc(sizeof(bdf_glyph_t) *
                                               font->glyphs_size);
@@ -1786,6 +1804,15 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
         }
         _bdf_split(" +", line, linelen, &p->list);
         p->cnt = p->font->props_size = _bdf_atoul(p->list.field[1], 0, 10);
+        /*
+         * Sanity check: reject unreasonably large number of properties to
+         * prevent integer overflow and excessive memory allocation.
+         */
+        if (p->cnt > BDF_MAX_PROPERTIES) {
+            sprintf(nbuf, BDF_ERR_TOO_MANY_PROPERTIES, lineno, p->cnt);
+            _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
+            return BDF_INVALID_LINE;
+        }
         if (p->cnt > 0) {
             p->font->props = (bdf_property_t *)
                 malloc(sizeof(bdf_property_t) * p->cnt);
@@ -2166,6 +2193,11 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
         if (memcmp(line, "STARTPROPERTIES", 15) == 0) {
             _bdf_split(" +", line, linelen, &p->list);
             p->cnt = p->font->props_size = _bdf_atoul(p->list.field[1], 0, 10);
+            /*
+             * Sanity check: reject unreasonably large number of properties.
+             */
+            if (p->cnt > BDF_MAX_PROPERTIES)
+              return BDF_INVALID_LINE;
             if (p->cnt > 0) {
                 p->font->props = (bdf_property_t *)
                     malloc(sizeof(bdf_property_t) * p->cnt);
@@ -2183,8 +2215,17 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
             _bdf_split(" +", line, linelen, &p->list);
             p->cnt = p->font->glyphs_size =
                 _bdf_atoul(p->list.field[1], 0, 10);
-            p->font->glyphs = (bdf_glyph_t *)
-                malloc(sizeof(bdf_glyph_t) * p->cnt);
+            /*
+             * Sanity check: reject unreasonably large number of glyphs.
+             */
+            if (p->cnt > BDF_MAX_GLYPHS)
+              return BDF_INVALID_LINE;
+            if (p->cnt > 0) {
+                p->font->glyphs = (bdf_glyph_t *)
+                    malloc(sizeof(bdf_glyph_t) * p->cnt);
+            } else {
+                p->font->glyphs = 0;
+            }
             return 0;
         }
 
