@@ -1708,7 +1708,7 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
          */
         p->bpr = ((glyph->bbx.width * p->font->bpp) + 7) >> 3;
         bitmap_size = p->bpr * glyph->bbx.height;
-        if (bitmap_size > 0xFFFFU) {
+        if (p->bpr > 0xFFFFU || bitmap_size > 0xFFFFU) {
             sprintf(nbuf, BDF_ERR_BBX_TOO_BIG, lineno);
             _bdf_add_acmsg(font, nbuf, strlen(nbuf));
             return BDF_BBX_TOO_BIG;
