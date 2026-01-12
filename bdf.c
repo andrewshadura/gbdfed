@@ -1889,6 +1889,14 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
      * Check for the start of the properties.
      */
     if (_bdf_strncmp(line, "STARTPROPERTIES", 15) == 0) {
+        if (!(p->flags & _BDF_FONT_BBX)) {
+            /*
+             * Missing FONTBOUNDINGBOX field.
+             */
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "FONTBOUNDINGBOX");
+            _bdf_add_acmsg(p->font, nbuf, strlen(nbuf));
+            return BDF_MISSING_FONTBBX;
+        }
         if (p->flags & _BDF_PROPS) {
             /*
              * STARTPROPERTIES field already seen - this is a duplicate.
