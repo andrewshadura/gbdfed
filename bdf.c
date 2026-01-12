@@ -366,8 +366,10 @@ typedef struct {
     _bdf_list_t list;
 } _bdf_parse_t;
 
-#define setsbit(m, cc) (m[(cc) >> 3] |= (1 << ((cc) & 7)))
-#define sbitset(m, cc) (m[(cc) >> 3] & (1 << ((cc) & 7)))
+#define setsbit(m, cc) \
+    (m[((unsigned char)(cc)) >> 3] |= (1 << (((unsigned char)(cc)) & 7)))
+#define sbitset(m, cc) \
+    (m[((unsigned char)(cc)) >> 3] & (1 << (((unsigned char)(cc)) & 7)))
 
 /*
  * An empty string for empty fields.
