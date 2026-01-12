@@ -764,7 +764,7 @@ _bdf_atoul(char *s, char **end, int base)
         s += 2;
     }
 
-    for (v = 0; isdigok(dmap, *s); s++)
+    for (v = 0; *s && isdigok(dmap, *s); s++)
       v = (v * base) + a2i[(int) *s];
 
     if (end != 0)
@@ -813,7 +813,7 @@ _bdf_atol(char *s, char **end, int base)
         s += 2;
     }
 
-    for (v = 0; isdigok(dmap, *s); s++)
+    for (v = 0; *s && isdigok(dmap, *s); s++)
       v = (v * base) + a2i[(int) *s];
 
     if (end != 0)
@@ -861,7 +861,7 @@ _bdf_atos(char *s, char **end, int base)
         s += 2;
     }
 
-    for (v = 0; isdigok(dmap, *s); s++)
+    for (v = 0; *s && isdigok(dmap, *s); s++)
       v = (v * base) + a2i[(int) *s];
 
     if (end != 0)
