@@ -1350,6 +1350,14 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
             p->cb.current = font->glyphs_used;
             (*p->callback)(&p->cb, p->client_data);
         }
+
+        /*
+         * Free unused glyph_name.
+         */
+        if (p->glyph_name != 0)
+          free(p->glyph_name);
+        p->glyph_name = 0;
+
         p->glyph_enc = 0;
         p->flags &= ~_BDF_GLYPH_BITS;
         return 0;
