@@ -1,0 +1,5 @@
+*.log
+*.o
+configure
+config.*
+gbdfed
