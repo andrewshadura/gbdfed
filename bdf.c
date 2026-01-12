@@ -38,6 +38,62 @@
 #define BDF_MAX_PROPERTIES 32768
 #define BDF_MAX_GLYPHS 1048576
 
+/*
+ * Parse flags.
+ */
+#define _BDF_START     0x0001
+#define _BDF_FONT_NAME 0x0002
+#define _BDF_SIZE      0x0004
+#define _BDF_FONT_BBX  0x0008
+#define _BDF_PROPS     0x0010
+#define _BDF_GLYPHS    0x0020
+#define _BDF_GLYPH     0x0040
+#define _BDF_ENCODING  0x0080
+#define _BDF_SWIDTH    0x0100
+#define _BDF_DWIDTH    0x0200
+#define _BDF_BBX       0x0400
+#define _BDF_BITMAP    0x0800
+
+#define _BDF_SWIDTH_ADJ 0x1000
+
+#define _BDF_GLYPH_BITS (_BDF_GLYPH|_BDF_ENCODING|_BDF_SWIDTH|\
+                         _BDF_DWIDTH|_BDF_BBX|_BDF_BITMAP)
+
+#define _BDF_GLYPH_WIDTH_CHECK 0x40000000
+#define _BDF_GLYPH_HEIGHT_CHECK 0x80000000
+
+/*
+ * Auto correction messages.
+ */
+#define ACMSG1 "FONT_ASCENT property missing.  Added \"FONT_ASCENT %hd\"."
+#define ACMSG2 "FONT_DESCENT property missing.  Added \"FONT_DESCENT %hd\"."
+#define ACMSG3 "Font width != actual width.  Old: %hd New: %hd."
+#define ACMSG4 "Font left bearing != actual left bearing.  Old: %hd New: %hd."
+#define ACMSG5 "Font ascent != actual ascent.  Old: %hd New: %hd."
+#define ACMSG6 "Font descent != actual descent.  Old: %hd New: %hd."
+#define ACMSG7 "Font height != actual height. Old: %hd New: %hd."
+#define ACMSG8 "Glyph scalable width (SWIDTH) adjustments made."
+#define ACMSG9 "SWIDTH field missing at line %d.  Set automatically."
+#define ACMSG10 "DWIDTH field missing at line %d.  Set to glyph width."
+#define ACMSG11 "SIZE bits per pixel field adjusted to %hd."
+#define ACMSG12 "Duplicate encoding %d (%s) changed to unencoded."
+#define ACMSG13 "Glyph %d extra rows removed."
+#define ACMSG14 "Glyph %d extra columns removed."
+#define ACMSG15 "Incorrect glyph count: %d indicated but %d found."
+
+/*
+ * Error messages.
+ */
+#define BDF_ERR_MISSING_FIELD "[line %d] Missing \"%s\" line."
+#define BDF_ERR_CORRUPT_HEADER "[line %d] Font header corrupted or missing fields."
+#define BDF_ERR_CORRUPT_GLYPHS "[line %d] Font glyphs corrupted or missing fields."
+#define BDF_ERR_DUPLICATE_FIELD "[line %d] Duplicate \"%s\" field."
+#define BDF_ERR_BBX_TOO_BIG "[line %d] BBX too big."
+#define BDF_ERR_TOO_MANY_PROPERTIES "[line %ld] Excessive number of properties %u."
+#define BDF_ERR_TOO_MANY_GLYPHS "[line %ld] Excessive number of glyphs %u."
+
+
+
 /**************************************************************************
  *
  * Masks used for checking different bits per pixel cases.
@@ -921,60 +977,6 @@ by_encoding(const void *a, const void *b)
  * BDF font file parsing flags and functions.
  *
  **************************************************************************/
-
-/*
- * Parse flags.
- */
-#define _BDF_START     0x0001
-#define _BDF_FONT_NAME 0x0002
-#define _BDF_SIZE      0x0004
-#define _BDF_FONT_BBX  0x0008
-#define _BDF_PROPS     0x0010
-#define _BDF_GLYPHS    0x0020
-#define _BDF_GLYPH     0x0040
-#define _BDF_ENCODING  0x0080
-#define _BDF_SWIDTH    0x0100
-#define _BDF_DWIDTH    0x0200
-#define _BDF_BBX       0x0400
-#define _BDF_BITMAP    0x0800
-
-#define _BDF_SWIDTH_ADJ 0x1000
-
-#define _BDF_GLYPH_BITS (_BDF_GLYPH|_BDF_ENCODING|_BDF_SWIDTH|\
-                         _BDF_DWIDTH|_BDF_BBX|_BDF_BITMAP)
-
-#define _BDF_GLYPH_WIDTH_CHECK 0x40000000
-#define _BDF_GLYPH_HEIGHT_CHECK 0x80000000
-
-/*
- * Auto correction messages.
- */
-#define ACMSG1 "FONT_ASCENT property missing.  Added \"FONT_ASCENT %hd\"."
-#define ACMSG2 "FONT_DESCENT property missing.  Added \"FONT_DESCENT %hd\"."
-#define ACMSG3 "Font width != actual width.  Old: %hd New: %hd."
-#define ACMSG4 "Font left bearing != actual left bearing.  Old: %hd New: %hd."
-#define ACMSG5 "Font ascent != actual ascent.  Old: %hd New: %hd."
-#define ACMSG6 "Font descent != actual descent.  Old: %hd New: %hd."
-#define ACMSG7 "Font height != actual height. Old: %hd New: %hd."
-#define ACMSG8 "Glyph scalable width (SWIDTH) adjustments made."
-#define ACMSG9 "SWIDTH field missing at line %d.  Set automatically."
-#define ACMSG10 "DWIDTH field missing at line %d.  Set to glyph width."
-#define ACMSG11 "SIZE bits per pixel field adjusted to %hd."
-#define ACMSG12 "Duplicate encoding %d (%s) changed to unencoded."
-#define ACMSG13 "Glyph %d extra rows removed."
-#define ACMSG14 "Glyph %d extra columns removed."
-#define ACMSG15 "Incorrect glyph count: %d indicated but %d found."
-
-/*
- * Error messages.
- */
-#define BDF_ERR_MISSING_FIELD "[line %d] Missing \"%s\" line."
-#define BDF_ERR_CORRUPT_HEADER "[line %d] Font header corrupted or missing fields."
-#define BDF_ERR_CORRUPT_GLYPHS "[line %d] Font glyphs corrupted or missing fields."
-#define BDF_ERR_DUPLICATE_FIELD "[line %d] Duplicate \"%s\" field."
-#define BDF_ERR_BBX_TOO_BIG "[line %d] BBX too big."
-#define BDF_ERR_TOO_MANY_PROPERTIES "[line %ld] Excessive number of properties %u."
-#define BDF_ERR_TOO_MANY_GLYPHS "[line %ld] Excessive number of glyphs %u."
 
 void
 _bdf_add_acmsg(bdf_font_t *font, char *msg, unsigned int len)
