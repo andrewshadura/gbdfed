@@ -1806,7 +1806,7 @@ _bdf_parse_start(char *line, unsigned int linelen, unsigned int lineno,
            * No STARTFONT field is a good indication of a problem.
            */
           return BDF_MISSING_START;
-        p->flags = _BDF_START;
+        p->flags |= _BDF_START;
         p->font = font = (bdf_font_t *) calloc(1, sizeof(bdf_font_t));
         p->font->internal = (void *) malloc(sizeof(hashtable));
         hash_init((hashtable *) p->font->internal);
@@ -2177,7 +2177,7 @@ _bdf_parse_hbf_header(char *line, unsigned int linelen, unsigned int lineno,
     if (!(p->flags & _BDF_START)) {
         if (memcmp(line, "HBF_START_FONT", 14) != 0)
           return -1;
-        p->flags = _BDF_START;
+        p->flags |= _BDF_START;
         p->font = (bdf_font_t *) calloc(1, sizeof(bdf_font_t));
         /*
          * HBF fonts are always assumed to be 1 bit per pixel.
