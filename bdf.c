@@ -3218,54 +3218,55 @@ bdf_free_font(bdf_font_t *font)
     /*
      * Free up the properties.
      */
-    for (i = 0; i < font->props_size; i++) {
-        if (font->props[i].format == BDF_ATOM && font->props[i].value.atom)
-          free(font->props[i].value.atom);
+    if (font->props != 0) {
+        for (i = 0; i < font->props_size; i++) {
+            if (font->props[i].format == BDF_ATOM && font->props[i].value.atom)
+              free(font->props[i].value.atom);
+        }
+        free((char *) font->props);
     }
-
-    if (font->props != 0)
-      free((char *) font->props);
 
     /*
      * Free up the character info.
      */
-    for (i = 0, glyphs = font->glyphs; i < font->glyphs_used; i++, glyphs++) {
-        if (glyphs->name)
-          free(glyphs->name);
-        if (glyphs->bytes > 0 && glyphs->bitmap != 0)
-          free((char *) glyphs->bitmap);
+    if (font->glyphs != 0) {
+        for (i = 0, glyphs = font->glyphs; i < font->glyphs_used; i++, glyphs++) {
+            if (glyphs->name)
+              free(glyphs->name);
+            if (glyphs->bytes > 0 && glyphs->bitmap != 0)
+              free((char *) glyphs->bitmap);
+        }
+        free((char *) font->glyphs);
     }
 
-    for (i = 0, glyphs = font->unencoded; i < font->unencoded_used;
-         i++, glyphs++) {
-        if (glyphs->name)
-          free(glyphs->name);
-        if (glyphs->bytes > 0)
-          free((char *) glyphs->bitmap);
-        if (glyphs->unicode.map_size > 0)
-          free((char *) glyphs->unicode.map);
+    if (font->unencoded != 0) {
+        for (i = 0, glyphs = font->unencoded; i < font->unencoded_used;
+             i++, glyphs++) {
+            if (glyphs->name)
+              free(glyphs->name);
+            if (glyphs->bytes > 0)
+              free((char *) glyphs->bitmap);
+            if (glyphs->unicode.map_size > 0)
+              free((char *) glyphs->unicode.map);
+        }
+        free((char *) font->unencoded);
     }
-
-    if (font->glyphs != 0)
-      free((char *) font->glyphs);
-
-    if (font->unencoded != 0)
-      free((char *) font->unencoded);
 
     /*
      * Free up the overflow storage if it was used.
      */
-    for (i = 0, glyphs = font->overflow.glyphs; i < font->overflow.glyphs_used;
-         i++, glyphs++) {
-        if (glyphs->name != 0)
-          free(glyphs->name);
-        if (glyphs->bytes > 0)
-          free((char *) glyphs->bitmap);;
-        if (glyphs->unicode.map_size > 0)
-          free((char *) glyphs->unicode.map);
+    if (font->overflow.glyphs != 0) {
+        for (i = 0, glyphs = font->overflow.glyphs; i < font->overflow.glyphs_used;
+             i++, glyphs++) {
+            if (glyphs->name != 0)
+              free(glyphs->name);
+            if (glyphs->bytes > 0)
+              free((char *) glyphs->bitmap);;
+            if (glyphs->unicode.map_size > 0)
+              free((char *) glyphs->unicode.map);
+        }
+        free((char *) font->overflow.glyphs);
     }
-    if (font->overflow.glyphs != 0)
-      free((char *) font->overflow.glyphs);
 
     free((char *) font);
 }
