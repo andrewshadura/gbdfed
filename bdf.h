@@ -381,6 +381,7 @@ typedef struct {
 #define BDF_PSF_CORRUPT_UTF8  -15
 #define BDF_PSF_BUFFER_OVRFL  -16
 #define BDF_PSF_UNSUPPORTED   -17
+#define BDF_MISSING_ENDCHAR   -18
 #define BDF_BAD_RANGE         -98
 #define BDF_EMPTY_FONT        -99
 #define BDF_INVALID_LINE      -100

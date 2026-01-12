@@ -1400,6 +1400,15 @@ _bdf_parse_glyphs(char *line, unsigned int linelen, unsigned int lineno,
      * Check for the STARTCHAR field.
      */
     if (memcmp(line, "STARTCHAR", 9) == 0) {
+        if (p->flags & _BDF_GLYPH_BITS) {
+            /*
+             * Missing ENDCHAR field.
+             */
+            sprintf(nbuf, BDF_ERR_MISSING_FIELD, lineno, "ENDCHAR");
+            _bdf_add_acmsg(font, nbuf, strlen(nbuf));
+            return BDF_MISSING_ENDCHAR;
+        }
+
         /*
          * Set the character name in the parse info first until the
          * encoding can be checked for an unencoded character.
